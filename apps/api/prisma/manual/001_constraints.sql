@@ -1,0 +1,10 @@
+-- ⚠️ OBSOLÈTE — conservé pour référence historique (Lot 1).
+--
+-- La version initiale de ce fichier utilisait une sous-requête dans le WHERE d'une
+-- contrainte d'exclusion, ce que PostgreSQL n'autorise pas. Les contraintes correctes
+-- (RG17 via colonne dénormalisée + trigger, et intégrité des allocations) sont désormais
+-- une migration Prisma versionnée, appliquée automatiquement par `prisma migrate deploy` :
+--
+--     prisma/migrations/0001_constraints/migration.sql
+--
+-- Ne plus appliquer ce fichier manuellement.

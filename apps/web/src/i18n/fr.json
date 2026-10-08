@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "CitéGest",
+    "offline": "Hors ligne",
+    "pending": "{{count}} en attente de synchro"
+  },
+  "nav": {
+    "home": "Accueil",
+    "rooms": "Chambres",
+    "collect": "Encaisser",
+    "reminders": "Relances",
+    "more": "Plus"
+  },
+  "login": {
+    "title": "Connexion",
+    "phone": "Téléphone",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Téléphone ou mot de passe incorrect"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "expected": "Attendu",
+    "collected": "Encaissé",
+    "remaining": "Reste",
+    "recovery": "Recouvrement",
+    "occupancy": "Taux d'occupation",
+    "topArrears": "Top impayés"
+  },
+  "rooms": {
+    "title": "Plan des chambres",
+    "legend": "Légende",
+    "free": "Libre",
+    "upToDate": "À jour",
+    "dueSoon": "Due < 3j",
+    "late": "En retard",
+    "reserved": "Réservée"
+  },
+  "room": {
+    "occupant": "Occupant",
+    "balance": "Solde dû",
+    "coveredUntil": "Mois couverts jusqu'au",
+    "charges": "Échéances",
+    "collect": "Encaisser sur cette chambre"
+  },
+  "unit": {
+    "title": "Chambre",
+    "code": "Code",
+    "type": "Type",
+    "status": "Statut",
+    "capacity": "Capacité",
+    "chargesIncluded": "Charges incluses",
+    "shared": "Chambre partagée (plusieurs lits)",
+    "amenities": "Équipements",
+    "amenitiesHint": "Séparés par des virgules",
+    "photos": "Photos",
+    "addPhoto": "Ajouter une photo"
+  },
+  "collect": {
+    "title": "Encaisser",
+    "amount": "Montant",
+    "mode": "Mode",
+    "preview": "Aperçu de l'affectation",
+    "validate": "Valider l'encaissement",
+    "queued": "Enregistré hors-ligne, en file de synchro",
+    "done": "Reçu {{number}} enregistré",
+    "proof": "Preuve (capture MoMo, photo)"
+  },
+  "reminders": {
+    "title": "Relances du jour",
+    "send": "WhatsApp",
+    "markSent": "Marquer envoyée",
+    "none": "Aucune relance aujourd'hui"
+  },
+  "arrears": { "title": "Impayés", "export": "Exporter CSV", "daysLate": "{{days}} j" },
+  "more": { "title": "Plus" },
+  "tenants": {
+    "title": "Locataires",
+    "search": "Rechercher nom ou téléphone",
+    "add": "Nouveau locataire",
+    "empty": "Aucun locataire"
+  },
+  "tenant": {
+    "guarantors": "Garants",
+    "primaryPayer": "Payeur principal",
+    "addGuarantor": "Ajouter un garant",
+    "occupations": "Occupations",
+    "active": "active",
+    "closed": "clôturée",
+    "notice": "préavis",
+    "checkout": "Sortie",
+    "relationship": "Lien de parenté",
+    "idDoc": "Pièce d'identité",
+    "viewIdDoc": "Voir la pièce"
+  },
+  "newEntry": {
+    "title": "Nouvelle entrée",
+    "step1": "Étape 1/3 · Chambre",
+    "step2": "Étape 2/3 · Locataire",
+    "step3": "Étape 3/3 · Conditions & avance",
+    "selectRoom": "Choisir une chambre libre",
+    "name": "Nom",
+    "rent": "Loyer",
+    "deposit": "Caution",
+    "dueDay": "Jour d'échéance",
+    "startDate": "Date d'entrée",
+    "advanceMonths": "Avance (mois)",
+    "total": "À encaisser",
+    "submit": "Créer + encaisser",
+    "success": "Entrée créée · reçu {{number}}",
+    "next": "Suivant",
+    "back": "Retour",
+    "idDocType": "Type de pièce",
+    "idDocNumber": "Numéro de pièce",
+    "photo": "Photo du locataire",
+    "idDoc": "Pièce d'identité"
+  },
+  "expenses": {
+    "title": "Dépenses",
+    "add": "Ajouter",
+    "category": "Catégorie",
+    "amount": "Montant",
+    "date": "Date",
+    "description": "Description",
+    "attachment": "Pièce jointe"
+  },
+  "cash": {
+    "title": "Caisse",
+    "expected": "Espèces encaissées",
+    "handed": "Déjà remis",
+    "toHand": "À remettre",
+    "handover": "Enregistrer une remise",
+    "handedAmount": "Montant remis",
+    "note": "Note",
+    "submit": "Remettre"
+  },
+  "checkout": {
+    "title": "Sortie du locataire",
+    "actualEndDate": "Date de sortie effective",
+    "deposit": "Caution versée",
+    "unpaid": "Impayés",
+    "retenues": "Retenues",
+    "addRetenue": "Ajouter une retenue",
+    "reason": "Motif",
+    "refund": "À rembourser",
+    "owed": "Reste dû",
+    "submit": "Clôturer",
+    "success": "Occupation clôturée"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profile": "Profil",
+    "language": "Langue",
+    "sites": "Sites",
+    "users": "Utilisateurs",
+    "createSite": "Créer un site",
+    "siteName": "Nom du site",
+    "siteType": "Type",
+    "bulkRooms": "Créer des chambres en série",
+    "prefix": "Préfixe",
+    "from": "De",
+    "to": "À",
+    "rentLabel": "Loyer de base",
+    "invite": "Inviter un utilisateur",
+    "role": "Rôle",
+    "deactivate": "Désactiver",
+    "activate": "Activer",
+    "logo": "Logo",
+    "accountName": "Nom affiché sur les reçus",
+    "receiptFooter": "Mentions en pied de reçu (adresse, conditions…)",
+    "profileSaved": "Profil enregistré"
+  },
+  "file": {
+    "choose": "Choisir un fichier",
+    "uploading": "Envoi…",
+    "remove": "Retirer",
+    "error": "Échec de l'envoi"
+  },
+  "templates": {
+    "title": "Modèles de messages",
+    "variables": "Variables disponibles",
+    "placeholder": "Saisissez le message avec les variables entre accolades…",
+    "saved": "Modèle enregistré",
+    "kind": { "REMINDER": "Relance", "CONTRACT": "Contrat", "RECEIPT": "Reçu" },
+    "stage": {
+      "J_MINUS_3": "J-3 (rappel)",
+      "J_0": "J0 (échéance)",
+      "J_PLUS_5": "J+5 (retard)",
+      "J_PLUS_15": "J+15 (retard)",
+      "END_OF_ADVANCE": "Fin d'avance"
+    }
+  },
+  "common": {
+    "loading": "Chargement…",
+    "logout": "Déconnexion",
+    "language": "Langue",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "add": "Ajouter"
+  }
+}

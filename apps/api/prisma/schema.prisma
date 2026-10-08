@@ -1,0 +1,645 @@
+// CitéGest — Schéma Prisma (MVP)
+// Règles transverses :
+//   - Toutes les tables métier portent account_id (cloisonnement NF7), created_at, updated_at, created_by.
+//   - Identifiants UUID, générables côté client (mode hors-ligne, NF3).
+//   - Montants en entiers FCFA/XAF, sans décimales (RG22) -> type Int.
+//   - Les données personnelles (fichiers pièce d'identité, photos) ne sont que des clés objet S3,
+//     jamais le binaire ni un lien signé stocké en clair (NF8).
+//
+// Contraintes non exprimables directement en Prisma (voir prisma/manual/001_constraints.sql) :
+//   - Contrainte d'exclusion GIST : pas deux occupations actives chevauchantes sur une unité non partagée (RG17).
+//   - CHECK sur les montants d'allocation (somme <= paiement, somme <= échéance) — garanti aussi par transaction applicative.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  OWNER // Propriétaire — titulaire du compte
+  MANAGER // Gérant
+  CARETAKER // Gardien / caissier
+}
+
+enum SiteType {
+  CITE
+  IMMEUBLE
+  MIXTE
+}
+
+enum ProrataMode {
+  FULL // mois d'entrée incomplet facturé plein
+  PRORATA // au prorata des jours (RG4)
+}
+
+enum UnitType {
+  CHAMBRE
+  STUDIO
+  APPARTEMENT
+}
+
+// Statut posé manuellement par le bailleur ; la couleur "vivante" (RG18) est calculée par une vue SQL.
+enum UnitManualStatus {
+  AVAILABLE // libre
+  UNAVAILABLE // indisponible (travaux, réservé usage perso)
+  RESERVED // réservée (bleu) — MVP : posé à la main, réservations réelles en V2
+}
+
+enum OccupancyStatus {
+  ACTIVE // active
+  NOTICE // préavis déposé, pas encore sortie
+  CLOSED // clôturée
+}
+
+enum ChargeType {
+  LOYER
+  CAUTION
+  EAU
+  ELECTRICITE
+  FRAIS // frais d'entrée
+  PENALITE
+  REPARATION
+}
+
+enum ChargeStatus {
+  UPCOMING // à venir
+  DUE // due (jour d'échéance atteint)
+  PARTIAL // partiellement payée
+  PAID // payée
+  OVERDUE // en retard
+  CANCELLED // annulée / remise (motif obligatoire)
+}
+
+enum PaymentMode {
+  ESPECES
+  MTN_MOMO
+  ORANGE_MONEY
+  VIREMENT
+  AUTRE
+}
+
+enum PaymentStatus {
+  VALID // valide
+  VOIDED // annulé par écriture d'annulation (RG8)
+}
+
+enum ReminderStage {
+  J_MINUS_3
+  J_0
+  J_PLUS_5
+  J_PLUS_15
+  END_OF_ADVANCE // rappel "fin d'avance" 30 j avant le dernier mois couvert (RG13)
+}
+
+enum ReminderRecipient {
+  TENANT
+  GUARANTOR
+  BOTH
+}
+
+enum ReminderChannel {
+  WHATSAPP
+  SMS
+}
+
+enum ReminderStatus {
+  PENDING // à faire (dans la liste du jour)
+  SENT // marquée envoyée
+  SKIPPED // ignorée (échéance payée entre-temps, etc.)
+}
+
+enum SubscriptionPlan {
+  DISCOVERY // Découverte (gratuit, 5 unités)
+  CITE
+  CITE_PRO
+  MANAGER // Gérant multi-propriétaires
+}
+
+enum ExpenseCategory {
+  EAU
+  ELECTRICITE
+  ENTRETIEN
+  REPARATION
+  SALAIRE
+  TAXE
+  AUTRE
+}
+
+enum OtpPurpose {
+  SIGNUP
+  LOGIN
+  PASSWORD_RESET
+}
+
+enum TemplateKind {
+  REMINDER // modèle de message de relance
+  CONTRACT // modèle de contrat / fiche d'engagement
+  RECEIPT // mentions du reçu
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  VOID
+  CLOSE
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Comptes, utilisateurs, accès
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Account {
+  id                String           @id @default(uuid())
+  name              String
+  phone             String           @unique
+  logoKey           String? // clé objet S3
+  plan              SubscriptionPlan @default(DISCOVERY)
+  subscriptionEndAt DateTime?
+  receiptPrefix     String           @default("CG") // préfixe des numéros de reçu (RG9)
+  receiptFooter     String? // mentions libres affichées en pied de reçu (F1.5)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  users            User[]
+  sites            Site[]
+  tenants          Tenant[]
+  occupancies      Occupancy[]
+  charges          Charge[]
+  payments         Payment[]
+  allocations      Allocation[]
+  cashHandovers    CashHandover[]
+  expenses         Expense[]
+  reminders        Reminder[]
+  auditLogs        AuditLog[]
+  templates        Template[]
+  receiptSequences ReceiptSequence[]
+
+  @@map("account")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  accountId    String
+  name         String
+  phone        String
+  passwordHash String
+  role         UserRole
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+
+  account       Account        @relation(fields: [accountId], references: [id])
+  sites         UserSite[]
+  refreshTokens RefreshToken[]
+
+  // Un numéro est unique à l'intérieur d'un compte (deux comptes peuvent avoir le même gardien logiquement,
+  // mais un même numéro ne se connecte qu'à un compte : voir résolution à la connexion dans la doc auth).
+  @@unique([accountId, phone])
+  @@index([accountId])
+  @@map("user")
+}
+
+// Sites assignés à un gérant / gardien (le propriétaire voit tout : pas d'entrée nécessaire).
+model UserSite {
+  userId String
+  siteId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@id([userId, siteId])
+  @@index([siteId])
+  @@map("user_site")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_token")
+}
+
+// Code OTP. Pas d'account_id : émis avant/hors session, indexé par téléphone.
+model OtpCode {
+  id         String     @id @default(uuid())
+  phone      String
+  codeHash   String
+  purpose    OtpPurpose
+  attempts   Int        @default(0)
+  consumedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime   @default(now())
+
+  @@index([phone, purpose])
+  @@map("otp_code")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sites, blocs, unités
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Site {
+  id            String      @id @default(uuid())
+  accountId    String
+  name          String
+  type          SiteType
+  city          String?
+  district      String? // quartier
+  landmark      String? // repère
+  graceDays     Int         @default(0) // délai de grâce avant "en retard" (RG10)
+  prorataMode   ProrataMode @default(FULL) // RG4
+  reminderJm3   Boolean     @default(true) // paliers activables par site (RG11)
+  reminderJ0    Boolean     @default(true)
+  reminderJp5   Boolean     @default(true)
+  reminderJp15  Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  createdBy     String?
+
+  account Account    @relation(fields: [accountId], references: [id])
+  blocks  Block[]
+  units   Unit[]
+  users   UserSite[]
+  expenses Expense[]
+
+  @@index([accountId])
+  @@map("site")
+}
+
+model Block {
+  id        String   @id @default(uuid())
+  accountId String
+  siteId    String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  site  Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  units Unit[]
+
+  @@index([siteId])
+  @@index([accountId])
+  @@map("block")
+}
+
+model Unit {
+  id             String           @id @default(uuid())
+  accountId      String
+  siteId         String
+  blockId        String?
+  code           String // ex. "A12"
+  type           UnitType         @default(CHAMBRE)
+  baseRent       Int // loyer de base FCFA
+  chargesIncluded Boolean         @default(false)
+  shared         Boolean          @default(false) // chambre à plusieurs lits (RG17)
+  capacity       Int              @default(1)
+  manualStatus   UnitManualStatus @default(AVAILABLE)
+  amenities      String[]         @default([])
+  photoKeys      String[]         @default([]) // clés objet S3
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  createdBy      String?
+
+  site        Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  block       Block?      @relation(fields: [blockId], references: [id], onDelete: SetNull)
+  occupancies Occupancy[]
+
+  @@unique([siteId, code])
+  @@index([accountId])
+  @@index([siteId])
+  @@map("unit")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Locataires et garants (fiches uniquement — aucun accès plateforme)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Tenant {
+  id            String   @id @default(uuid())
+  accountId     String
+  name          String
+  phone         String?
+  whatsapp      String?
+  idDocType     String? // type de pièce d'identité
+  idDocNumber   String?
+  idDocKey      String? // clé objet S3 (chiffrée), jamais publique
+  photoKey      String?
+  occupation    String? // école ou profession
+  emergencyName  String?
+  emergencyPhone String?
+  notes         String?
+  archived      Boolean  @default(false) // ancien locataire
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+
+  account     Account     @relation(fields: [accountId], references: [id])
+  guarantors  Guarantor[]
+  occupancies Occupancy[]
+
+  @@index([accountId])
+  @@index([accountId, name])
+  @@index([accountId, phone])
+  @@map("tenant")
+}
+
+model Guarantor {
+  id           String   @id @default(uuid())
+  accountId    String
+  tenantId     String
+  name         String
+  phone        String?
+  whatsapp     String?
+  relationship String? // lien de parenté
+  isPrimaryPayer Boolean @default(false) // payeur principal
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([accountId])
+  @@map("guarantor")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Occupations
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Occupancy {
+  id            String          @id @default(uuid())
+  accountId     String
+  unitId        String
+  tenantId      String
+  startDate     DateTime // date d'entrée
+  plannedEndDate DateTime? // fin prévue (null = reconduction auto)
+  actualEndDate DateTime? // sortie effective (RG16)
+  noticeDate    DateTime? // préavis (RG16)
+  monthlyRent   Int // loyer négocié (fige les échéances, RG2)
+  dueDay        Int // jour d'échéance 1..28 (RG3)
+  deposit       Int             @default(0) // caution
+  status        OccupancyStatus @default(ACTIVE)
+  chargesGeneratedUntil DateTime? // borne de génération auto des échéances (RG1)
+  closeSummary  Json? // instantané de clôture (caution, impayés, retenues, à rembourser) RG15
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  createdBy     String?
+
+  account  Account   @relation(fields: [accountId], references: [id])
+  unit     Unit      @relation(fields: [unitId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  charges  Charge[]
+  payments Payment[]
+
+  @@index([accountId])
+  @@index([unitId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("occupancy")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Échéances (charges)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Charge {
+  id            String       @id @default(uuid())
+  accountId     String
+  occupancyId   String
+  type          ChargeType
+  periodMonth   Int? // pour les loyers : mois concerné, 1..12
+  periodYear    Int? // pour les loyers : année
+  amount        Int // figé à la création (RG2)
+  dueDate       DateTime
+  status        ChargeStatus @default(UPCOMING)
+  cancelReason  String? // motif obligatoire d'annulation/remise (F5.5)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  createdBy     String?
+
+  account     Account      @relation(fields: [accountId], references: [id])
+  occupancy   Occupancy    @relation(fields: [occupancyId], references: [id])
+  allocations Allocation[]
+  reminders   Reminder[]
+
+  // Une seule échéance de loyer par occupation et par période.
+  @@unique([occupancyId, type, periodYear, periodMonth])
+  @@index([accountId])
+  @@index([occupancyId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("charge")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Paiements, affectations, caisse
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Payment {
+  id            String        @id @default(uuid())
+  accountId     String
+  occupancyId   String
+  clientId      String        @unique // UUID généré côté client, anti-doublon hors-ligne (NF3)
+  amount        Int
+  mode          PaymentMode
+  reference     String? // réf. MoMo/virement
+  paidAt        DateTime // date de paiement
+  receivedBy    String // user.id de l'encaisseur (reçu par)
+  proofKey      String? // clé objet S3 de la preuve
+  receiptNumber String // numéro continu par compte (RG9)
+  status        PaymentStatus @default(VALID)
+  voidReason    String? // motif d'annulation (RG8)
+  voidedAt      DateTime?
+  voidedBy      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdBy     String?
+
+  account     Account      @relation(fields: [accountId], references: [id])
+  occupancy   Occupancy    @relation(fields: [occupancyId], references: [id])
+  allocations Allocation[]
+
+  @@unique([accountId, receiptNumber])
+  @@index([accountId])
+  @@index([occupancyId])
+  @@index([receivedBy])
+  @@index([paidAt])
+  @@map("payment")
+}
+
+model Allocation {
+  id        String   @id @default(uuid())
+  accountId String
+  paymentId String
+  chargeId  String
+  amount    Int
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  charge  Charge  @relation(fields: [chargeId], references: [id])
+
+  @@index([accountId])
+  @@index([paymentId])
+  @@index([chargeId])
+  @@map("allocation")
+}
+
+// Journal de caisse par encaisseur + remise au propriétaire (F6.6).
+model CashHandover {
+  id           String    @id @default(uuid())
+  accountId    String
+  collectorId  String // user.id de l'encaisseur
+  periodStart  DateTime
+  periodEnd    DateTime
+  expectedAmount Int // total espèces valides sur la période
+  handedAmount Int // montant réellement remis
+  variance     Int // écart = handed - expected
+  note         String?
+  settledAt    DateTime? // null tant que non remis
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([collectorId])
+  @@map("cash_handover")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dépenses
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Expense {
+  id          String          @id @default(uuid())
+  accountId   String
+  siteId      String
+  unitId      String? // facultatif
+  category    ExpenseCategory
+  amount      Int
+  spentAt     DateTime
+  description String?
+  attachmentKey String? // clé objet S3
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   String?
+
+  account Account @relation(fields: [accountId], references: [id])
+  site    Site    @relation(fields: [siteId], references: [id])
+
+  @@index([accountId])
+  @@index([siteId])
+  @@index([spentAt])
+  @@map("expense")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Relances
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Reminder {
+  id         String            @id @default(uuid())
+  accountId  String
+  chargeId   String
+  stage      ReminderStage
+  recipient  ReminderRecipient
+  channel    ReminderChannel
+  message    String // message rendu (FR/EN) au moment de l'envoi
+  status     ReminderStatus    @default(PENDING)
+  scheduledFor DateTime // date à laquelle la relance doit apparaître
+  sentAt     DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  createdBy  String?
+
+  account Account @relation(fields: [accountId], references: [id])
+  charge  Charge  @relation(fields: [chargeId], references: [id])
+
+  // Une relance par échéance et par palier (idempotence de la génération).
+  @@unique([chargeId, stage])
+  @@index([accountId])
+  @@index([status, scheduledFor])
+  @@map("reminder")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modèles (messages de relance, contrat, mentions de reçu)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Template {
+  id        String       @id @default(uuid())
+  accountId String
+  kind      TemplateKind
+  name      String
+  locale    String       @default("fr") // "fr" | "en"
+  stage     ReminderStage? // pour les modèles de relance
+  bodyHtml  String // contient les variables {nom} {chambre} {montant} {date}
+  isDefault Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  createdBy String?
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, kind])
+  @@map("template")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Numérotation continue des reçus par compte (RG9)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReceiptSequence {
+  accountId String
+  year      Int
+  lastValue Int    @default(0)
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@id([accountId, year])
+  @@map("receipt_sequence")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Journal d'audit non modifiable (RG21, NF11)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  accountId  String
+  entity     String // nom de table, ex. "payment"
+  entityId   String
+  action     AuditAction
+  before     Json?
+  after      Json?
+  reason     String?
+  actorId    String // user.id
+  createdAt  DateTime    @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, entity, entityId])
+  @@index([accountId, createdAt])
+  @@map("audit_log")
+}

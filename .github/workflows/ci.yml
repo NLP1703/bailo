@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @citegest/shared build
+      - run: pnpm --filter @citegest/api prisma:generate
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm --filter @citegest/shared test
+      - run: pnpm --filter @citegest/api test
+      - name: Build front (PWA)
+        run: pnpm --filter @citegest/web build
+        env:
+          VITE_API_URL: /api/v1
+          VITE_PUBLIC_RECEIPT_BASE: /r
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: citegest
+          POSTGRES_PASSWORD: citegest
+          POSTGRES_DB: citegest_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U citegest" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://citegest:citegest@localhost:5432/citegest_test?schema=public
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @citegest/shared build
+      - run: pnpm --filter @citegest/api prisma:generate
+      - run: pnpm --filter @citegest/api exec prisma migrate deploy
+      - run: pnpm --filter @citegest/api test:e2e
+
+  images:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f apps/api/Dockerfile -t citegest-api .
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t citegest-web .

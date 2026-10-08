@@ -1,0 +1,198 @@
+{
+  "app": { "title": "CitéGest", "offline": "Offline", "pending": "{{count}} pending sync" },
+  "nav": {
+    "home": "Home",
+    "rooms": "Rooms",
+    "collect": "Collect",
+    "reminders": "Reminders",
+    "more": "More"
+  },
+  "login": {
+    "title": "Sign in",
+    "phone": "Phone",
+    "password": "Password",
+    "submit": "Sign in",
+    "error": "Wrong phone or password"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "expected": "Expected",
+    "collected": "Collected",
+    "remaining": "Remaining",
+    "recovery": "Recovery",
+    "occupancy": "Occupancy rate",
+    "topArrears": "Top arrears"
+  },
+  "rooms": {
+    "title": "Rooms map",
+    "legend": "Legend",
+    "free": "Free",
+    "upToDate": "Up to date",
+    "dueSoon": "Due < 3d",
+    "late": "Overdue",
+    "reserved": "Reserved"
+  },
+  "room": {
+    "occupant": "Tenant",
+    "balance": "Balance due",
+    "coveredUntil": "Covered until",
+    "charges": "Charges",
+    "collect": "Collect on this room"
+  },
+  "unit": {
+    "title": "Room",
+    "code": "Code",
+    "type": "Type",
+    "status": "Status",
+    "capacity": "Capacity",
+    "chargesIncluded": "Charges included",
+    "shared": "Shared room (multiple beds)",
+    "amenities": "Amenities",
+    "amenitiesHint": "Comma-separated",
+    "photos": "Photos",
+    "addPhoto": "Add a photo"
+  },
+  "collect": {
+    "title": "Collect",
+    "amount": "Amount",
+    "mode": "Method",
+    "preview": "Allocation preview",
+    "validate": "Confirm payment",
+    "queued": "Saved offline, queued for sync",
+    "done": "Receipt {{number}} saved",
+    "proof": "Proof (MoMo screenshot, photo)"
+  },
+  "reminders": {
+    "title": "Today's reminders",
+    "send": "WhatsApp",
+    "markSent": "Mark sent",
+    "none": "No reminders today"
+  },
+  "arrears": { "title": "Arrears", "export": "Export CSV", "daysLate": "{{days}} d" },
+  "more": { "title": "More" },
+  "tenants": {
+    "title": "Tenants",
+    "search": "Search name or phone",
+    "add": "New tenant",
+    "empty": "No tenants"
+  },
+  "tenant": {
+    "guarantors": "Guarantors",
+    "primaryPayer": "Primary payer",
+    "addGuarantor": "Add guarantor",
+    "occupations": "Occupancies",
+    "active": "active",
+    "closed": "closed",
+    "notice": "notice",
+    "checkout": "Check-out",
+    "relationship": "Relationship",
+    "idDoc": "ID document",
+    "viewIdDoc": "View document"
+  },
+  "newEntry": {
+    "title": "New entry",
+    "step1": "Step 1/3 · Room",
+    "step2": "Step 2/3 · Tenant",
+    "step3": "Step 3/3 · Terms & advance",
+    "selectRoom": "Pick a free room",
+    "name": "Name",
+    "rent": "Rent",
+    "deposit": "Deposit",
+    "dueDay": "Due day",
+    "startDate": "Start date",
+    "advanceMonths": "Advance (months)",
+    "total": "To collect",
+    "submit": "Create + collect",
+    "success": "Entry created · receipt {{number}}",
+    "next": "Next",
+    "back": "Back",
+    "idDocType": "ID type",
+    "idDocNumber": "ID number",
+    "photo": "Tenant photo",
+    "idDoc": "ID document"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "add": "Add",
+    "category": "Category",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description",
+    "attachment": "Attachment"
+  },
+  "cash": {
+    "title": "Cash",
+    "expected": "Cash collected",
+    "handed": "Already handed",
+    "toHand": "To hand over",
+    "handover": "Record a handover",
+    "handedAmount": "Handed amount",
+    "note": "Note",
+    "submit": "Hand over"
+  },
+  "checkout": {
+    "title": "Tenant check-out",
+    "actualEndDate": "Actual end date",
+    "deposit": "Deposit paid",
+    "unpaid": "Unpaid",
+    "retenues": "Deductions",
+    "addRetenue": "Add a deduction",
+    "reason": "Reason",
+    "refund": "To refund",
+    "owed": "Still owed",
+    "submit": "Close",
+    "success": "Occupancy closed"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "language": "Language",
+    "sites": "Sites",
+    "users": "Users",
+    "createSite": "Create a site",
+    "siteName": "Site name",
+    "siteType": "Type",
+    "bulkRooms": "Create rooms in bulk",
+    "prefix": "Prefix",
+    "from": "From",
+    "to": "To",
+    "rentLabel": "Base rent",
+    "invite": "Invite a user",
+    "role": "Role",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "logo": "Logo",
+    "accountName": "Name shown on receipts",
+    "receiptFooter": "Receipt footer notes (address, terms…)",
+    "profileSaved": "Profile saved"
+  },
+  "file": {
+    "choose": "Choose a file",
+    "uploading": "Uploading…",
+    "remove": "Remove",
+    "error": "Upload failed"
+  },
+  "templates": {
+    "title": "Message templates",
+    "variables": "Available variables",
+    "placeholder": "Type the message with variables in braces…",
+    "saved": "Template saved",
+    "kind": { "REMINDER": "Reminder", "CONTRACT": "Contract", "RECEIPT": "Receipt" },
+    "stage": {
+      "J_MINUS_3": "D-3 (reminder)",
+      "J_0": "D0 (due)",
+      "J_PLUS_5": "D+5 (overdue)",
+      "J_PLUS_15": "D+15 (overdue)",
+      "END_OF_ADVANCE": "End of advance"
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "logout": "Sign out",
+    "language": "Language",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add"
+  }
+}
