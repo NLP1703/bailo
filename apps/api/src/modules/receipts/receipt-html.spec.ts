@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatFcfa } from '@citegest/shared';
+import { formatFcfa } from '@bailo/shared';
 import { buildReceiptHtml } from './receipt-html';
 
 describe('buildReceiptHtml', () => {
@@ -15,14 +15,14 @@ describe('buildReceiptHtml', () => {
       { label: 'Caution', amount: 25000 },
       { label: 'Loyer 09/2026', amount: 25000 },
     ],
-    verifyUrl: 'https://citegest.app/r/abc',
+    verifyUrl: 'https://bailo.app/r/abc',
   };
 
   it('inclut numéro, montant formaté et URL de vérification', () => {
     const html = buildReceiptHtml(data);
     expect(html).toContain('CG-2026-000123');
     expect(html).toContain(formatFcfa(175000));
-    expect(html).toContain('https://citegest.app/r/abc');
+    expect(html).toContain('https://bailo.app/r/abc');
     expect(html).toContain('A12');
   });
 

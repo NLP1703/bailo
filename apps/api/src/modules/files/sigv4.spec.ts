@@ -31,7 +31,7 @@ describe('presignS3Url (AWS Signature V4)', () => {
     const minio: PresignConfig = {
       endpoint: 'http://localhost:9000',
       region: 'us-east-1',
-      bucket: 'citegest',
+      bucket: 'bailo',
       accessKey: 'minioadmin',
       secretKey: 'minioadmin',
       forcePathStyle: true,
@@ -42,7 +42,7 @@ describe('presignS3Url (AWS Signature V4)', () => {
       expiresIn: 300,
       now: new Date('2026-10-01T10:00:00Z'),
     });
-    expect(url.startsWith('http://localhost:9000/citegest/accounts/abc/payment-proof/x.jpg?')).toBe(
+    expect(url.startsWith('http://localhost:9000/bailo/accounts/abc/payment-proof/x.jpg?')).toBe(
       true,
     );
     expect(url).toMatch(/X-Amz-Signature=[0-9a-f]{64}$/);

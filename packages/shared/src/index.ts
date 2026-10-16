@@ -1,5 +1,6 @@
 export * from './enums';
 export * from './money';
+export * from './error-codes';
 export * from './domain';
 export * from './dto/common';
 export * from './dto/auth';
@@ -13,7 +14,6 @@ export * from './dto/payments';
 export * from './dto/cash';
 export * from './dto/templates';
 export * from './dto/reminders';
-export * from './dto/expenses';
 export * from './dto/reports';
 export * from './dto/sync';
 export * from './dto/import';

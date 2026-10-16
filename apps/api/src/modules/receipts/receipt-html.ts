@@ -1,7 +1,7 @@
 // Construction du HTML d'un reçu (fonction pure, testable — le rendu PDF est séparé).
 // Montants en FCFA (RG22), dates JJ/MM/AAAA (NF5).
 
-import { formatFcfa } from '@citegest/shared';
+import { formatFcfa } from '@bailo/shared';
 
 export interface ReceiptLine {
   label: string; // ex. "Loyer 09/2026" ou "Caution"

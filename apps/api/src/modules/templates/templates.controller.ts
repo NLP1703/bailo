@@ -5,7 +5,7 @@ import {
   upsertTemplateDto,
   type ListTemplatesQuery,
   type UpsertTemplateDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { TemplatesService } from './templates.service';

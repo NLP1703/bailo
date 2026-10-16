@@ -1,27 +1,298 @@
 {
-  "app": { "title": "CitéGest", "offline": "Offline", "pending": "{{count}} pending sync" },
+  "app": {
+    "title": "Bailo",
+    "offline": "Offline",
+    "pending": "{{count}} pending sync",
+    "online": "Online",
+    "synced": "All data is synced"
+  },
   "nav": {
     "home": "Home",
     "rooms": "Rooms",
     "collect": "Collect",
     "reminders": "Reminders",
-    "more": "More"
+    "addSite": "Add a site",
+    "plans": "Plans",
+    "more": "More",
+    "menu": "Menu",
+    "profile": "My profile",
+    "dashboard": "Dashboard",
+    "arrears": "Arrears",
+    "tenants": "Tenants",
+    "newEntry": "New move-in",
+    "cash": "Cash book",
+    "templates": "Templates",
+    "settings": "Settings",
+    "tagline": "Property management",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "breadcrumb": "Breadcrumb",
+    "section": {
+      "pilotage": "Overview",
+      "rental": "Rentals",
+      "finance": "Finance",
+      "admin": "Administration"
+    },
+    "crumb": {
+      "unit": "Unit details",
+      "tenant": "Tenant file",
+      "checkout": "Move-out",
+      "site": "Site settings"
+    }
+  },
+  "search": {
+    "title": "Global search",
+    "trigger": "Search…",
+    "placeholder": "Search a page, tenant, unit or site…",
+    "placeholderPages": "Search a page…",
+    "groupPages": "Pages",
+    "groupTenants": "Tenants",
+    "groupSites": "Sites",
+    "empty": "No results for “{{q}}”",
+    "minChars": "Type at least 2 characters to search tenants.",
+    "hintNavigate": "navigate",
+    "hintOpen": "open",
+    "hintToggle": "open / close",
+    "esc": "Esc"
+  },
+  "status": {
+    "upToDate": "Up to date",
+    "advance": "Paid ahead",
+    "dueSoon": "Due soon",
+    "overdue": "Overdue",
+    "reserved": "Reserved",
+    "vacant": "Vacant",
+    "notice": "On notice",
+    "closed": "Closed"
+  },
+  "table": {
+    "range": "{{from}}–{{to}} of {{total}}",
+    "prev": "Previous",
+    "next": "Next",
+    "results": "{{count}} result(s)",
+    "tenant": "Tenant",
+    "unit": "Unit",
+    "site": "Site",
+    "status": "Status",
+    "paid": "Paid",
+    "remaining": "Owed",
+    "nextDue": "Next due",
+    "type": "Type",
+    "dueDate": "Due date",
+    "late": "Late",
+    "amount": "Amount",
+    "date": "Date",
+    "receipt": "Receipt",
+    "total": "Total"
+  },
+  "lists": {
+    "allSites": "All sites",
+    "lateAll": "All",
+    "late30": "≤ 30 d",
+    "late60": "31–60 d",
+    "late60plus": "> 60 d",
+    "debtors": "Tenants concerned",
+    "avgLate": "Average delay",
+    "days": "{{n}} d",
+    "depositIncomplete": "Deposit incomplete",
+    "reservations": "Reserved units",
+    "confirmArrival": "Confirm arrival",
+    "cancelReservation": "Cancel",
+    "cashPayments": "Cash collections",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "advance": "Paid ahead",
+      "upcoming": "Due < 3 d",
+      "overdue": "Overdue",
+      "notice": "On notice",
+      "closed": "Closed",
+      "archived": "Archived"
+    },
+    "chargeType": {
+      "LOYER": "Rent",
+      "CAUTION": "Deposit",
+      "EAU": "Water",
+      "ELECTRICITE": "Electricity",
+      "FRAIS": "Fees",
+      "PENALITE": "Penalty",
+      "REPARATION": "Repair"
+    }
+  },
+  "pageSub": {
+    "dashboard": "Overview of this month's collections, occupancy and payments.",
+    "rooms": "Live status of every unit: vacant, occupied, overdue or reserved.",
+    "tenants": "Tenant files, payments made and upcoming due dates.",
+    "newEntry": "Record a tenant move-in: unit, lease and first payment.",
+    "arrears": "Tenants behind on rent and amounts still owed.",
+    "collect": "Record a payment and issue the receipt instantly.",
+    "cash": "Collections log and cash hand-overs.",
+    "reminders": "Reminders to send today via WhatsApp or SMS.",
+    "settings": "Account profile, sites, users and preferences.",
+    "plans": "Your current plan, usage and available plans."
+  },
+  "plans": {
+    "title": "Plans & subscription",
+    "forbidden": "Only the account owner can manage the subscription.",
+    "confirmTitle": "Switch to the {{name}} plan?",
+    "confirmPrice": "Price: {{price}} FCFA per month.",
+    "confirmOk": "Switch to {{name}}",
+    "overWarn": "Warning — your current usage exceeds this plan's limits:",
+    "overSites": "{{used}} sites for {{max}} allowed",
+    "overUnits": "{{used}} units for {{max}} allowed",
+    "overUsers": "{{used}} users for {{max}} allowed",
+    "changed": "You are now on the {{name}} plan."
+  },
+  "empty": {
+    "noMatchTitle": "No results",
+    "noMatchMsg": "Nothing matches your search or the selected filters.",
+    "resetFilters": "Reset filters",
+    "noTenantsTitle": "No tenants yet",
+    "noTenantsMsg": "Record your first tenant move-in: unit, lease and first payment.",
+    "noArrearsTitle": "No arrears",
+    "noArrearsMsg": "Every past-due charge has been paid. Nothing to chase."
+  },
+  "print": {
+    "button": "Print",
+    "editedOn": "Printed on {{date}} at {{time}}",
+    "generatedBy": "Document generated by Bailo",
+    "filters": "Filters: {{filters}}",
+    "page": "Page"
+  },
+  "confirm": {
+    "ok": "Confirm",
+    "keep": "Keep it",
+    "typeToConfirm": "To confirm, type {{word}} below.",
+    "deleteWord": "DELETE",
+    "deleteUserMsg": "This user will immediately lose access to the account. Payments they recorded are kept.",
+    "userDeleted": "{{name}} was removed.",
+    "cancelReservationTitle": "Cancel the reservation for {{unit}}?",
+    "cancelReservationMsg": "The unit will become vacant again and the reservation for {{name}} will be removed.",
+    "cancelReservationOk": "Cancel reservation",
+    "reservationCancelled": "Reservation for {{unit}} cancelled.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "addSite": {
+    "title": "Add a site",
+    "subtitle": "Register a new site, building or mixed complex. You can then add its rooms.",
+    "name": "Name",
+    "namePlaceholder": "Palmiers residence",
+    "nameTooShort": "Name must be at least 2 characters.",
+    "type": "Type",
+    "types": {
+      "CITE": "Site",
+      "IMMEUBLE": "Building",
+      "MIXTE": "Mixed"
+    },
+    "furnishedQuestion": "Are the units furnished?",
+    "furnished": {
+      "YES": "Yes, furnished",
+      "NO": "No, unfurnished"
+    },
+    "furnishedHint": "This pre-selects the furnished flag when you add rooms later.",
+    "nbChambres": "Number of rooms",
+    "rentChambre": "Base rent (FCFA / room)",
+    "nbAppartements": "Number of apartments",
+    "rentAppartement": "Base rent (FCFA / apartment)",
+    "rentRequired": "Enter a base rent greater than 0.",
+    "city": "City",
+    "district": "District",
+    "submit": "Create site",
+    "error": "Could not create the site right now.",
+    "forbidden": "Only owners and managers can create a site."
+  },
+  "profile": {
+    "title": "My profile",
+    "account": "Account",
+    "role": {
+      "OWNER": "Owner",
+      "MANAGER": "Manager",
+      "CARETAKER": "Caretaker"
+    }
   },
   "login": {
     "title": "Sign in",
+    "subtitle": "Welcome back",
+    "email": "Email address",
     "phone": "Phone",
     "password": "Password",
     "submit": "Sign in",
-    "error": "Wrong phone or password"
+    "error": "Wrong credentials or password",
+    "needIdentifier": "Enter your email or phone",
+    "noAccount": "No account yet?"
+  },
+  "signup": {
+    "title": "Create an account",
+    "subtitle": "A few details to get started",
+    "accountName": "Residence / business name",
+    "ownerName": "Your name",
+    "email": "Email address",
+    "submit": "Create account",
+    "haveAccount": "Already have an account?",
+    "invalid": "Please check the details you entered",
+    "error": "Sign-up failed, please try again"
+  },
+  "onboarding": {
+    "title": "Your first building",
+    "subtitle": "A few details to get started",
+    "step1": "The building",
+    "step2": "The units",
+    "buildingName": "Building / residence name",
+    "buildingType": "Type",
+    "city": "City",
+    "district": "District",
+    "furnished": "The units are furnished",
+    "hasTenants": "I already have tenants",
+    "counts": "How many of each type?",
+    "count": "Count",
+    "price": "Rent (FCFA)",
+    "chambre": "Rooms",
+    "studio": "Studios",
+    "appartement": "Apartments",
+    "maison": "Houses",
+    "describeHouses": "Describe the houses",
+    "house": "House {{n}}",
+    "bedrooms": "Number of bedrooms",
+    "rooms": "Other rooms (living room, kitchen…)",
+    "roomsHint": "Comma-separated",
+    "needOne": "Add at least one unit",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Create building",
+    "created": "Building created"
   },
   "dashboard": {
     "title": "Dashboard",
     "expected": "Expected",
+    "expectedGross": "Gross month",
     "collected": "Collected",
     "remaining": "Remaining",
     "recovery": "Recovery",
     "occupancy": "Occupancy rate",
-    "topArrears": "Top arrears"
+    "byMode": "By payment method",
+    "byCollector": "By collector",
+    "perSite": "Income by site",
+    "income": "Income",
+    "topArrears": "Top arrears",
+    "tenantPayments": "Tenants & payments",
+    "nextDue": "Next due",
+    "noNextDue": "Up to date · nothing left to pay",
+    "noActiveTenants": "No active tenants",
+    "loadError": "The dashboard could not be loaded right now.",
+    "vsPrev": "vs {{month}}",
+    "thisMonth": "This month",
+    "coveredHint": "incl. {{amount}} FCFA covered by advances",
+    "remainingHint": "Still to collect: {{amount}} FCFA",
+    "unitsHint": "{{occupied}} / {{units}} units occupied",
+    "chartTitle": "Collections — last 6 months",
+    "chartSub": "Validated payments, all methods",
+    "showChart": "Chart",
+    "showTable": "Table",
+    "monthCol": "Month",
+    "noData": "No collections over this period",
+    "occupancyBySite": "Occupancy by site",
+    "occupancyBySiteSub": "Occupied units and this month's income",
+    "seeAll": "See all"
   },
   "rooms": {
     "title": "Rooms map",
@@ -31,6 +302,23 @@
     "dueSoon": "Due < 3d",
     "late": "Overdue",
     "reserved": "Reserved"
+  },
+  "site": {
+    "title": "Site settings",
+    "city": "City",
+    "district": "District",
+    "landmark": "Landmark",
+    "graceDays": "Grace days",
+    "prorataMode": "Entry month",
+    "prorataFull": "Full month",
+    "prorataProrata": "Pro rata",
+    "reminders": "Active reminder stages",
+    "penaltyEnabled": "Enable late penalties",
+    "penaltyMode": "Penalty type",
+    "penaltyFixed": "Fixed amount (FCFA)",
+    "penaltyPercent": "Percentage (%)",
+    "penaltyValue": "Value",
+    "penaltyGraceDays": "Days before penalty"
   },
   "room": {
     "occupant": "Tenant",
@@ -47,6 +335,10 @@
     "capacity": "Capacity",
     "chargesIncluded": "Charges included",
     "shared": "Shared room (multiple beds)",
+    "furnished": "Furnished",
+    "bedrooms": "Bedrooms",
+    "rooms": "Rooms",
+    "roomsHint": "living room, kitchen, shower…",
     "amenities": "Amenities",
     "amenitiesHint": "Comma-separated",
     "photos": "Photos",
@@ -60,7 +352,9 @@
     "validate": "Confirm payment",
     "queued": "Saved offline, queued for sync",
     "done": "Receipt {{number}} saved",
-    "proof": "Proof (MoMo screenshot, photo)"
+    "proof": "Proof (MoMo screenshot, photo)",
+    "viewReceipt": "View receipt",
+    "sendReceipt": "Send (WhatsApp)"
   },
   "reminders": {
     "title": "Today's reminders",
@@ -68,8 +362,14 @@
     "markSent": "Mark sent",
     "none": "No reminders today"
   },
-  "arrears": { "title": "Arrears", "export": "Export CSV", "daysLate": "{{days}} d" },
-  "more": { "title": "More" },
+  "arrears": {
+    "title": "Arrears",
+    "export": "Export CSV",
+    "daysLate": "{{days}} d"
+  },
+  "more": {
+    "title": "More"
+  },
   "tenants": {
     "title": "Tenants",
     "search": "Search name or phone",
@@ -85,9 +385,38 @@
     "closed": "closed",
     "notice": "notice",
     "checkout": "Check-out",
+    "contract": "Contract",
     "relationship": "Relationship",
     "idDoc": "ID document",
-    "viewIdDoc": "View document"
+    "viewIdDoc": "View document",
+    "delete": "Delete",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archivedBadge": "Archived",
+    "archivedBanner": "This tenant is archived and no longer shows in lists. Their payments and receipts stay in the books.",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteMsg": "No payment has been recorded for this tenant, so they can be permanently deleted.",
+    "deleteWill": "This will also erase:",
+    "deleteCountOcc_one": "{{count}} tenancy",
+    "deleteCountOcc_other": "{{count}} tenancies",
+    "deleteCountCharges_one": "{{count}} charge",
+    "deleteCountCharges_other": "{{count}} charges",
+    "deleteCountGuarantors_one": "{{count}} guarantor",
+    "deleteCountGuarantors_other": "{{count}} guarantors",
+    "deleteUnitFreed": "Their room will become available again.",
+    "deleteIrreversible": "This cannot be undone.",
+    "deleteOk": "Delete permanently",
+    "deleted": "{{name}} has been deleted.",
+    "archiveTitle": "Archive {{name}}?",
+    "archiveMsg_one": "This tenant has {{count}} recorded payment. To keep the books and receipt numbering intact, they will be archived instead of deleted.",
+    "archiveMsg_other": "This tenant has {{count}} recorded payments. To keep the books and receipt numbering intact, they will be archived instead of deleted.",
+    "archiveHint": "They will disappear from lists and can be restored at any time.",
+    "archiveOk": "Archive tenant",
+    "archived": "{{name}} has been archived.",
+    "blockedTitle": "{{name}} can't be deleted",
+    "blockedMsg": "This tenant still occupies a unit and payments have been recorded. Record their move-out first (balance, deposit); you can archive them afterwards.",
+    "blockedOk": "Record move-out",
+    "restored": "{{name}} has been restored."
   },
   "newEntry": {
     "title": "New entry",
@@ -111,15 +440,6 @@
     "photo": "Tenant photo",
     "idDoc": "ID document"
   },
-  "expenses": {
-    "title": "Expenses",
-    "add": "Add",
-    "category": "Category",
-    "amount": "Amount",
-    "date": "Date",
-    "description": "Description",
-    "attachment": "Attachment"
-  },
   "cash": {
     "title": "Cash",
     "expected": "Cash collected",
@@ -127,6 +447,7 @@
     "toHand": "To hand over",
     "handover": "Record a handover",
     "handedAmount": "Handed amount",
+    "collector": "Collector",
     "note": "Note",
     "submit": "Hand over"
   },
@@ -142,6 +463,46 @@
     "owed": "Still owed",
     "submit": "Close",
     "success": "Occupancy closed"
+  },
+  "billing": {
+    "title": "Subscription",
+    "sites": "Sites",
+    "units": "Units",
+    "usersCount": "Users",
+    "until": "Valid until {{date}}",
+    "readOnlyBanner": "Account is read-only — please renew your subscription",
+    "paymentNote": "Mobile Money payment coming soon. Plan changes are manual for now.",
+    "manage": "Manage plans",
+    "free": "Free",
+    "month": "month",
+    "orYear": "or {{price}} FCFA / year",
+    "current": "Current plan",
+    "choose": "Choose this plan",
+    "unlimited": "unlimited",
+    "months": "{{n}} months",
+    "quota": {
+      "sites": "{{n}} site(s) / building(s)",
+      "units": "{{n}} units",
+      "users": "{{n}} user(s)",
+      "history": "History: {{n}}"
+    },
+    "feat": {
+      "whatsapp": "Automated WhatsApp reminders",
+      "sms": "SMS reminders",
+      "allReminderStages": "All reminder stages (D-3, D0, D+5, D+15, End of advance)",
+      "penaltiesAuto": "Automated late penalties",
+      "advancedReports": "Advanced reports + accounting export",
+      "noWatermark": "Receipts without watermark (your logo)",
+      "multiAccount": "Multi-landlord switch",
+      "apiAccess": "API / webhooks",
+      "whiteLabel": "White label"
+    },
+    "plan": {
+      "DISCOVERY": "Discovery",
+      "CITE": "Cité",
+      "CITE_PRO": "Cité Pro",
+      "MANAGER": "Manager"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -161,10 +522,18 @@
     "role": "Role",
     "deactivate": "Deactivate",
     "activate": "Activate",
+    "editUser": "Edit",
+    "deleteUser": "Delete",
+    "deleteConfirm": "Permanently delete {{name}}?",
     "logo": "Logo",
     "accountName": "Name shown on receipts",
     "receiptFooter": "Receipt footer notes (address, terms…)",
-    "profileSaved": "Profile saved"
+    "profileSaved": "Profile saved",
+    "dangerZone": "Danger zone",
+    "deleteMyAccount": "Delete my account",
+    "deleteAccountOwnerWarn": "This permanently deletes the account and ALL its data (sites, tenants, payments…). Irreversible.",
+    "deleteAccountSelfWarn": "This permanently deletes your access. Payments you recorded are kept.",
+    "deleteAccountConfirm": "Confirm permanent deletion?"
   },
   "file": {
     "choose": "Choose a file",
@@ -177,7 +546,11 @@
     "variables": "Available variables",
     "placeholder": "Type the message with variables in braces…",
     "saved": "Template saved",
-    "kind": { "REMINDER": "Reminder", "CONTRACT": "Contract", "RECEIPT": "Receipt" },
+    "kind": {
+      "REMINDER": "Reminder",
+      "CONTRACT": "Contract",
+      "RECEIPT": "Receipt"
+    },
     "stage": {
       "J_MINUS_3": "D-3 (reminder)",
       "J_0": "D0 (due)",
@@ -193,6 +566,11 @@
     "retry": "Retry",
     "save": "Save",
     "cancel": "Cancel",
+    "close": "Close",
     "add": "Add"
+  },
+  "errors": {
+    "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
+    "TENANT_NOT_FOUND": "Tenant not found."
   }
 }

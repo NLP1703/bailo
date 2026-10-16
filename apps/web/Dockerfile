@@ -14,7 +14,7 @@ COPY apps/web apps/web
 ARG VITE_API_URL=/api/v1
 ARG VITE_PUBLIC_RECEIPT_BASE=/r
 ENV VITE_API_URL=$VITE_API_URL VITE_PUBLIC_RECEIPT_BASE=$VITE_PUBLIC_RECEIPT_BASE
-RUN pnpm --filter @citegest/shared build && pnpm --filter @citegest/web build
+RUN pnpm --filter @bailo/shared build && pnpm --filter @bailo/web build
 
 # ─── Service statique ──────────────────────────────────────────────────────────
 FROM nginx:alpine AS runtime

@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { AuthTokens, UserRole } from '@citegest/shared';
+import type { AuthTokens, UserRole } from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { durationToMs } from '../../common/time/duration';
 import { PrismaService } from '../../common/prisma/prisma.service';

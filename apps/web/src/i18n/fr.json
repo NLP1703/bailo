@@ -1,31 +1,298 @@
 {
   "app": {
-    "title": "CitéGest",
+    "title": "Bailo",
     "offline": "Hors ligne",
-    "pending": "{{count}} en attente de synchro"
+    "pending": "{{count}} en attente de synchro",
+    "online": "En ligne",
+    "synced": "Toutes les données sont synchronisées"
   },
   "nav": {
     "home": "Accueil",
     "rooms": "Chambres",
     "collect": "Encaisser",
     "reminders": "Relances",
-    "more": "Plus"
+    "addSite": "Ajouter une cité",
+    "plans": "Offres",
+    "more": "Plus",
+    "menu": "Menu",
+    "profile": "Mon profil",
+    "dashboard": "Tableau de bord",
+    "arrears": "Impayés",
+    "tenants": "Locataires",
+    "newEntry": "Nouvelle entrée",
+    "cash": "Caisse",
+    "templates": "Modèles",
+    "settings": "Paramètres",
+    "tagline": "Gestion locative",
+    "collapse": "Réduire le menu",
+    "expand": "Déplier le menu",
+    "breadcrumb": "Fil d'Ariane",
+    "section": {
+      "pilotage": "Pilotage",
+      "rental": "Gestion locative",
+      "finance": "Finances",
+      "admin": "Administration"
+    },
+    "crumb": {
+      "unit": "Fiche chambre",
+      "tenant": "Fiche locataire",
+      "checkout": "Sortie du locataire",
+      "site": "Réglages de la cité"
+    }
+  },
+  "search": {
+    "title": "Recherche globale",
+    "trigger": "Rechercher…",
+    "placeholder": "Rechercher une page, un locataire, une chambre, une cité…",
+    "placeholderPages": "Rechercher une page…",
+    "groupPages": "Pages",
+    "groupTenants": "Locataires",
+    "groupSites": "Cités",
+    "empty": "Aucun résultat pour « {{q}} »",
+    "minChars": "Saisissez au moins 2 caractères pour chercher parmi les locataires.",
+    "hintNavigate": "naviguer",
+    "hintOpen": "ouvrir",
+    "hintToggle": "ouvrir / fermer",
+    "esc": "Échap"
+  },
+  "status": {
+    "upToDate": "À jour",
+    "advance": "En avance",
+    "dueSoon": "Échéance proche",
+    "overdue": "En retard",
+    "reserved": "Réservée",
+    "vacant": "Libre",
+    "notice": "En préavis",
+    "closed": "Clôturé"
+  },
+  "table": {
+    "range": "{{from}}–{{to}} sur {{total}}",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "results": "{{count}} résultat(s)",
+    "tenant": "Locataire",
+    "unit": "Logement",
+    "site": "Cité",
+    "status": "Statut",
+    "paid": "Payé",
+    "remaining": "Reste dû",
+    "nextDue": "Prochaine échéance",
+    "type": "Nature",
+    "dueDate": "Échéance",
+    "late": "Retard",
+    "amount": "Montant",
+    "date": "Date",
+    "receipt": "Reçu",
+    "total": "Total"
+  },
+  "lists": {
+    "allSites": "Toutes les cités",
+    "lateAll": "Tous",
+    "late30": "≤ 30 j",
+    "late60": "31–60 j",
+    "late60plus": "> 60 j",
+    "debtors": "Locataires concernés",
+    "avgLate": "Retard moyen",
+    "days": "{{n}} j",
+    "depositIncomplete": "Caution incomplète",
+    "reservations": "Chambres réservées",
+    "confirmArrival": "Confirmer l'arrivée",
+    "cancelReservation": "Annuler",
+    "cashPayments": "Encaissements en espèces",
+    "filter": {
+      "all": "Tous",
+      "active": "Actifs",
+      "advance": "En avance",
+      "upcoming": "Échéance < 3 j",
+      "overdue": "En retard",
+      "notice": "En préavis",
+      "closed": "Clôturés",
+      "archived": "Archivés"
+    },
+    "chargeType": {
+      "LOYER": "Loyer",
+      "CAUTION": "Caution",
+      "EAU": "Eau",
+      "ELECTRICITE": "Électricité",
+      "FRAIS": "Frais",
+      "PENALITE": "Pénalité",
+      "REPARATION": "Réparation"
+    }
+  },
+  "pageSub": {
+    "dashboard": "Vue d'ensemble des encaissements, de l'occupation et des paiements du mois.",
+    "rooms": "État de chaque logement en temps réel : libre, occupé, en retard ou réservé.",
+    "tenants": "Dossiers locataires, paiements effectués et prochaines échéances.",
+    "newEntry": "Enregistrez l'arrivée d'un locataire : logement, contrat et premier paiement.",
+    "arrears": "Locataires en retard de paiement et montants restant dus.",
+    "collect": "Enregistrez un paiement et générez le reçu en un instant.",
+    "cash": "Journal des encaissements et remises d'espèces.",
+    "reminders": "Rappels à envoyer aujourd'hui par WhatsApp ou SMS.",
+    "settings": "Profil du compte, cités, utilisateurs et préférences.",
+    "plans": "Votre offre actuelle, votre consommation et les offres disponibles."
+  },
+  "plans": {
+    "title": "Offres & abonnement",
+    "forbidden": "Seul le propriétaire du compte peut gérer l'abonnement.",
+    "confirmTitle": "Passer à l'offre {{name}} ?",
+    "confirmPrice": "Tarif : {{price}} FCFA par mois.",
+    "confirmOk": "Passer à {{name}}",
+    "overWarn": "Attention, votre usage actuel dépasse les limites de cette offre :",
+    "overSites": "{{used}} cités pour {{max}} autorisée(s)",
+    "overUnits": "{{used}} logements pour {{max}} autorisés",
+    "overUsers": "{{used}} utilisateurs pour {{max}} autorisé(s)",
+    "changed": "Vous êtes maintenant sur l'offre {{name}}."
+  },
+  "empty": {
+    "noMatchTitle": "Aucun résultat",
+    "noMatchMsg": "Aucun élément ne correspond à la recherche ou aux filtres choisis.",
+    "resetFilters": "Réinitialiser les filtres",
+    "noTenantsTitle": "Aucun locataire pour l'instant",
+    "noTenantsMsg": "Enregistrez l'arrivée de votre premier locataire : logement, contrat et premier paiement.",
+    "noArrearsTitle": "Aucun impayé",
+    "noArrearsMsg": "Toutes les échéances échues sont réglées. Rien à relancer."
+  },
+  "print": {
+    "button": "Imprimer",
+    "editedOn": "Édité le {{date}} à {{time}}",
+    "generatedBy": "Document généré par Bailo",
+    "filters": "Filtres : {{filters}}",
+    "page": "Page"
+  },
+  "confirm": {
+    "ok": "Confirmer",
+    "keep": "Conserver",
+    "typeToConfirm": "Pour confirmer, saisissez {{word}} ci-dessous.",
+    "deleteWord": "SUPPRIMER",
+    "deleteUserMsg": "Cet utilisateur perdra immédiatement l'accès au compte. Les paiements qu'il a enregistrés sont conservés.",
+    "userDeleted": "{{name}} a été supprimé.",
+    "cancelReservationTitle": "Annuler la réservation de {{unit}} ?",
+    "cancelReservationMsg": "La chambre redeviendra libre et la réservation au nom de {{name}} sera retirée.",
+    "cancelReservationOk": "Annuler la réservation",
+    "reservationCancelled": "Réservation de {{unit}} annulée.",
+    "genericError": "Une erreur est survenue. Réessayez."
+  },
+  "addSite": {
+    "title": "Ajouter une cité",
+    "subtitle": "Enregistrez une nouvelle cité, un immeuble ou un ensemble mixte. Vous pourrez ensuite y créer les chambres.",
+    "name": "Nom",
+    "namePlaceholder": "Cité des Palmiers",
+    "nameTooShort": "Le nom doit contenir au moins 2 caractères.",
+    "type": "Type",
+    "types": {
+      "CITE": "Cité",
+      "IMMEUBLE": "Immeuble",
+      "MIXTE": "Mixte"
+    },
+    "furnishedQuestion": "Les logements sont-ils meublés ?",
+    "furnished": {
+      "YES": "Oui, meublés",
+      "NO": "Non, vides"
+    },
+    "furnishedHint": "Ce choix pré-coche le statut « meublé » lors de la création des logements.",
+    "nbChambres": "Nombre de chambres",
+    "rentChambre": "Loyer de base (FCFA / chambre)",
+    "nbAppartements": "Nombre d'appartements",
+    "rentAppartement": "Loyer de base (FCFA / appartement)",
+    "rentRequired": "Indiquez un loyer de base supérieur à 0.",
+    "city": "Ville",
+    "district": "Quartier",
+    "submit": "Créer la cité",
+    "error": "Impossible de créer la cité pour le moment.",
+    "forbidden": "Seuls les propriétaires et les gérants peuvent créer une cité."
+  },
+  "profile": {
+    "title": "Mon profil",
+    "account": "Compte",
+    "role": {
+      "OWNER": "Propriétaire",
+      "MANAGER": "Gérant",
+      "CARETAKER": "Gardien"
+    }
   },
   "login": {
     "title": "Connexion",
+    "subtitle": "Ravi de vous revoir",
+    "email": "Adresse email",
     "phone": "Téléphone",
     "password": "Mot de passe",
     "submit": "Se connecter",
-    "error": "Téléphone ou mot de passe incorrect"
+    "error": "Identifiant ou mot de passe incorrect",
+    "needIdentifier": "Entrez votre email ou votre téléphone",
+    "noAccount": "Pas encore de compte ?"
+  },
+  "signup": {
+    "title": "Créer un compte",
+    "subtitle": "Quelques informations pour démarrer",
+    "accountName": "Nom de la cité / de l'activité",
+    "ownerName": "Votre nom",
+    "email": "Adresse email",
+    "submit": "Créer le compte",
+    "haveAccount": "Déjà un compte ?",
+    "invalid": "Veuillez vérifier les informations saisies",
+    "error": "Échec de l'inscription, réessayez"
+  },
+  "onboarding": {
+    "title": "Votre premier bâtiment",
+    "subtitle": "Quelques informations pour démarrer",
+    "step1": "Le bâtiment",
+    "step2": "Les logements",
+    "buildingName": "Nom du bâtiment / de la cité",
+    "buildingType": "Type",
+    "city": "Ville",
+    "district": "Quartier",
+    "furnished": "Les logements sont meublés",
+    "hasTenants": "J'ai déjà des locataires",
+    "counts": "Combien de chaque type ?",
+    "count": "Nombre",
+    "price": "Loyer (FCFA)",
+    "chambre": "Chambres",
+    "studio": "Studios",
+    "appartement": "Appartements",
+    "maison": "Maisons",
+    "describeHouses": "Décrire les maisons",
+    "house": "Maison {{n}}",
+    "bedrooms": "Nombre de chambres",
+    "rooms": "Autres pièces (salon, cuisine…)",
+    "roomsHint": "Séparées par des virgules",
+    "needOne": "Ajoutez au moins un logement",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Créer le bâtiment",
+    "created": "Bâtiment créé"
   },
   "dashboard": {
     "title": "Tableau de bord",
     "expected": "Attendu",
+    "expectedGross": "Brut du mois",
     "collected": "Encaissé",
     "remaining": "Reste",
     "recovery": "Recouvrement",
     "occupancy": "Taux d'occupation",
-    "topArrears": "Top impayés"
+    "byMode": "Par mode de paiement",
+    "byCollector": "Par encaisseur",
+    "perSite": "Recettes par site",
+    "income": "Recettes",
+    "topArrears": "Top impayés",
+    "tenantPayments": "Locataires & paiements",
+    "nextDue": "Prochaine échéance",
+    "noNextDue": "À jour · aucune échéance restante",
+    "noActiveTenants": "Aucun locataire actif",
+    "loadError": "Impossible de charger le tableau de bord pour le moment.",
+    "vsPrev": "vs {{month}}",
+    "thisMonth": "Ce mois-ci",
+    "coveredHint": "dont {{amount}} FCFA couverts par des avances",
+    "remainingHint": "Reste à encaisser : {{amount}} FCFA",
+    "unitsHint": "{{occupied}} / {{units}} logements occupés",
+    "chartTitle": "Encaissements — 6 derniers mois",
+    "chartSub": "Paiements validés, tous modes confondus",
+    "showChart": "Graphique",
+    "showTable": "Tableau",
+    "monthCol": "Mois",
+    "noData": "Aucun encaissement sur la période",
+    "occupancyBySite": "Occupation par cité",
+    "occupancyBySiteSub": "Logements occupés et recettes du mois",
+    "seeAll": "Voir tout"
   },
   "rooms": {
     "title": "Plan des chambres",
@@ -35,6 +302,23 @@
     "dueSoon": "Due < 3j",
     "late": "En retard",
     "reserved": "Réservée"
+  },
+  "site": {
+    "title": "Réglages du site",
+    "city": "Ville",
+    "district": "Quartier",
+    "landmark": "Repère",
+    "graceDays": "Délai de grâce (j)",
+    "prorataMode": "Mois d'entrée",
+    "prorataFull": "Mois plein",
+    "prorataProrata": "Au prorata",
+    "reminders": "Paliers de relance actifs",
+    "penaltyEnabled": "Activer les pénalités de retard",
+    "penaltyMode": "Type de pénalité",
+    "penaltyFixed": "Montant fixe (FCFA)",
+    "penaltyPercent": "Pourcentage (%)",
+    "penaltyValue": "Valeur",
+    "penaltyGraceDays": "Délai avant pénalité (j)"
   },
   "room": {
     "occupant": "Occupant",
@@ -51,6 +335,10 @@
     "capacity": "Capacité",
     "chargesIncluded": "Charges incluses",
     "shared": "Chambre partagée (plusieurs lits)",
+    "furnished": "Meublé",
+    "bedrooms": "Chambres",
+    "rooms": "Pièces",
+    "roomsHint": "salon, cuisine, douche…",
     "amenities": "Équipements",
     "amenitiesHint": "Séparés par des virgules",
     "photos": "Photos",
@@ -64,7 +352,9 @@
     "validate": "Valider l'encaissement",
     "queued": "Enregistré hors-ligne, en file de synchro",
     "done": "Reçu {{number}} enregistré",
-    "proof": "Preuve (capture MoMo, photo)"
+    "proof": "Preuve (capture MoMo, photo)",
+    "viewReceipt": "Voir le reçu",
+    "sendReceipt": "Envoyer (WhatsApp)"
   },
   "reminders": {
     "title": "Relances du jour",
@@ -72,8 +362,14 @@
     "markSent": "Marquer envoyée",
     "none": "Aucune relance aujourd'hui"
   },
-  "arrears": { "title": "Impayés", "export": "Exporter CSV", "daysLate": "{{days}} j" },
-  "more": { "title": "Plus" },
+  "arrears": {
+    "title": "Impayés",
+    "export": "Exporter CSV",
+    "daysLate": "{{days}} j"
+  },
+  "more": {
+    "title": "Plus"
+  },
   "tenants": {
     "title": "Locataires",
     "search": "Rechercher nom ou téléphone",
@@ -89,9 +385,38 @@
     "closed": "clôturée",
     "notice": "préavis",
     "checkout": "Sortie",
+    "contract": "Contrat",
     "relationship": "Lien de parenté",
     "idDoc": "Pièce d'identité",
-    "viewIdDoc": "Voir la pièce"
+    "viewIdDoc": "Voir la pièce",
+    "delete": "Supprimer",
+    "archive": "Archiver",
+    "restore": "Restaurer",
+    "archivedBadge": "Archivé",
+    "archivedBanner": "Ce locataire est archivé : il n'apparaît plus dans les listes. Ses paiements et reçus restent en comptabilité.",
+    "deleteTitle": "Supprimer {{name}} ?",
+    "deleteMsg": "Aucun paiement n'a été enregistré pour ce locataire : il peut être supprimé définitivement.",
+    "deleteWill": "Seront effacés avec lui :",
+    "deleteCountOcc_one": "{{count}} occupation",
+    "deleteCountOcc_other": "{{count}} occupations",
+    "deleteCountCharges_one": "{{count}} échéance",
+    "deleteCountCharges_other": "{{count}} échéances",
+    "deleteCountGuarantors_one": "{{count}} garant",
+    "deleteCountGuarantors_other": "{{count}} garants",
+    "deleteUnitFreed": "Sa chambre redeviendra libre.",
+    "deleteIrreversible": "Cette action est irréversible.",
+    "deleteOk": "Supprimer définitivement",
+    "deleted": "{{name}} a été supprimé.",
+    "archiveTitle": "Archiver {{name}} ?",
+    "archiveMsg_one": "Ce locataire a {{count}} paiement enregistré. Pour garder la comptabilité et la numérotation des reçus intactes, il sera archivé plutôt que supprimé.",
+    "archiveMsg_other": "Ce locataire a {{count}} paiements enregistrés. Pour garder la comptabilité et la numérotation des reçus intactes, il sera archivé plutôt que supprimé.",
+    "archiveHint": "Il disparaîtra des listes et pourra être restauré à tout moment.",
+    "archiveOk": "Archiver le locataire",
+    "archived": "{{name}} a été archivé.",
+    "blockedTitle": "Impossible de supprimer {{name}}",
+    "blockedMsg": "Ce locataire occupe encore un logement et des paiements ont été enregistrés. Enregistrez d'abord sa sortie (solde, caution) ; vous pourrez ensuite l'archiver.",
+    "blockedOk": "Enregistrer la sortie",
+    "restored": "{{name}} a été restauré."
   },
   "newEntry": {
     "title": "Nouvelle entrée",
@@ -115,15 +440,6 @@
     "photo": "Photo du locataire",
     "idDoc": "Pièce d'identité"
   },
-  "expenses": {
-    "title": "Dépenses",
-    "add": "Ajouter",
-    "category": "Catégorie",
-    "amount": "Montant",
-    "date": "Date",
-    "description": "Description",
-    "attachment": "Pièce jointe"
-  },
   "cash": {
     "title": "Caisse",
     "expected": "Espèces encaissées",
@@ -131,6 +447,7 @@
     "toHand": "À remettre",
     "handover": "Enregistrer une remise",
     "handedAmount": "Montant remis",
+    "collector": "Encaisseur",
     "note": "Note",
     "submit": "Remettre"
   },
@@ -146,6 +463,46 @@
     "owed": "Reste dû",
     "submit": "Clôturer",
     "success": "Occupation clôturée"
+  },
+  "billing": {
+    "title": "Abonnement",
+    "sites": "Cités",
+    "units": "Chambres",
+    "usersCount": "Utilisateurs",
+    "until": "Valable jusqu'au {{date}}",
+    "readOnlyBanner": "Compte en lecture seule — abonnement à régulariser",
+    "paymentNote": "Paiement par Mobile Money bientôt disponible. Changement d'offre manuel pour l'instant.",
+    "manage": "Gérer les offres",
+    "free": "Gratuit",
+    "month": "mois",
+    "orYear": "ou {{price}} FCFA / an",
+    "current": "Offre actuelle",
+    "choose": "Choisir cette offre",
+    "unlimited": "illimité",
+    "months": "{{n}} mois",
+    "quota": {
+      "sites": "{{n}} cité(s) / immeuble(s)",
+      "units": "{{n}} logements",
+      "users": "{{n}} utilisateur(s)",
+      "history": "Historique : {{n}}"
+    },
+    "feat": {
+      "whatsapp": "Relances WhatsApp automatiques",
+      "sms": "Relances SMS",
+      "allReminderStages": "Toutes les étapes de relance (J-3, J0, J+5, J+15, Fin d'avance)",
+      "penaltiesAuto": "Pénalités de retard automatiques",
+      "advancedReports": "Rapports avancés + export comptable",
+      "noWatermark": "Reçus sans filigrane (logo du bailleur)",
+      "multiAccount": "Multi-bailleurs (bascule entre comptes)",
+      "apiAccess": "API / webhooks",
+      "whiteLabel": "Marque blanche"
+    },
+    "plan": {
+      "DISCOVERY": "Découverte",
+      "CITE": "Cité",
+      "CITE_PRO": "Cité Pro",
+      "MANAGER": "Gérant"
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -165,10 +522,18 @@
     "role": "Rôle",
     "deactivate": "Désactiver",
     "activate": "Activer",
+    "editUser": "Modifier",
+    "deleteUser": "Supprimer",
+    "deleteConfirm": "Supprimer définitivement {{name}} ?",
     "logo": "Logo",
     "accountName": "Nom affiché sur les reçus",
     "receiptFooter": "Mentions en pied de reçu (adresse, conditions…)",
-    "profileSaved": "Profil enregistré"
+    "profileSaved": "Profil enregistré",
+    "dangerZone": "Zone de danger",
+    "deleteMyAccount": "Supprimer mon compte",
+    "deleteAccountOwnerWarn": "Cette action supprime définitivement le compte et TOUTES ses données (sites, locataires, paiements…). Irréversible.",
+    "deleteAccountSelfWarn": "Cette action supprime définitivement votre accès. Les paiements que vous avez enregistrés sont conservés.",
+    "deleteAccountConfirm": "Confirmer la suppression définitive ?"
   },
   "file": {
     "choose": "Choisir un fichier",
@@ -181,7 +546,11 @@
     "variables": "Variables disponibles",
     "placeholder": "Saisissez le message avec les variables entre accolades…",
     "saved": "Modèle enregistré",
-    "kind": { "REMINDER": "Relance", "CONTRACT": "Contrat", "RECEIPT": "Reçu" },
+    "kind": {
+      "REMINDER": "Relance",
+      "CONTRACT": "Contrat",
+      "RECEIPT": "Reçu"
+    },
     "stage": {
       "J_MINUS_3": "J-3 (rappel)",
       "J_0": "J0 (échéance)",
@@ -197,6 +566,11 @@
     "retry": "Réessayer",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "close": "Fermer",
     "add": "Ajouter"
+  },
+  "errors": {
+    "TENANT_HAS_ACTIVE_OCCUPANCY": "Ce locataire occupe encore un logement avec des paiements : enregistrez d'abord sa sortie.",
+    "TENANT_NOT_FOUND": "Locataire introuvable."
   }
 }

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import type { CashQuery, CreateHandoverDto } from '@citegest/shared';
+import type { CashQuery, CreateHandoverDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { toDate } from '../../common/time/to-date';
@@ -28,7 +28,11 @@ export class CashService {
     const payments = await this.prisma.payment.findMany({
       where,
       orderBy: { paidAt: 'desc' },
-      include: { occupancy: { include: { unit: { select: { code: true } } } } },
+      include: {
+        occupancy: {
+          include: { unit: { select: { code: true } }, tenant: { select: { name: true } } },
+        },
+      },
     });
     const expectedTotal = payments.reduce((s, p) => s + p.amount, 0);
 
@@ -49,6 +53,7 @@ export class CashService {
         paidAt: p.paidAt,
         receiptNumber: p.receiptNumber,
         unitCode: p.occupancy.unit.code,
+        tenantName: p.occupancy.tenant.name,
       })),
       handovers,
     };

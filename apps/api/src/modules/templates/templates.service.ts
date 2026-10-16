@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { ReminderStage } from '@prisma/client';
-import type { ListTemplatesQuery, UpsertTemplateDto } from '@citegest/shared';
+import type { ListTemplatesQuery, UpsertTemplateDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { requireContext } from '../../common/tenancy/request-context';
 import { DEFAULT_REMINDER_MESSAGES } from './default-templates';

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import type { FilePurpose, UploadUrlResult, DownloadUrlResult } from '@citegest/shared';
+import type { FilePurpose, UploadUrlResult, DownloadUrlResult } from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { requireContext } from '../../common/tenancy/request-context';
 import { presignS3Url, type PresignConfig } from './sigv4';

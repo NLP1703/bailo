@@ -7,7 +7,7 @@ import {
   type MarkReminderSentDto,
   type RemindersHistoryQuery,
   type RemindersTodayQuery,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { toDate } from '../../common/time/to-date';
 import type { RequestContext } from '../../common/tenancy/request-context';
@@ -60,7 +60,63 @@ export class RemindersService {
         dueDate: r.charge.dueDate,
       });
     }
-    return { date: today, total: reminders.length, byStage };
+
+    // Alertes de réservation (non persistées, calculées à la volée).
+    const reservationAlerts = await this.reservationAlerts(today, query.siteId);
+
+    return {
+      date: today,
+      total: reminders.length + reservationAlerts.length,
+      byStage,
+      reservationAlerts,
+    };
+  }
+
+  /**
+   * Alertes « réservation » (chantier B) — générées à la volée, pas stockées.
+   * Deux types :
+   *   - ARRIVAL_SOON : arrivée dans 0..3 jours → préparer la chambre
+   *   - EXPIRED     : date d'arrivée passée depuis 1..7 jours sans occupation créée
+   */
+  async reservationAlerts(today: Date, siteId?: string) {
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
+    const in3Days = new Date(start.getTime() + 3 * 86_400_000);
+    const minus7 = new Date(start.getTime() - 7 * 86_400_000);
+
+    const units = await this.prisma.unit.findMany({
+      where: {
+        manualStatus: 'RESERVED',
+        reservedUntil: { gte: minus7, lte: in3Days },
+        ...(siteId ? { siteId } : {}),
+      },
+      include: { site: { select: { name: true } } },
+      orderBy: { reservedUntil: 'asc' },
+    });
+
+    return units.map((u) => {
+      const arrival = u.reservedUntil!;
+      const daysUntil = Math.floor((arrival.getTime() - start.getTime()) / 86_400_000);
+      const kind: 'ARRIVAL_SOON' | 'EXPIRED' = daysUntil < 0 ? 'EXPIRED' : 'ARRIVAL_SOON';
+      const label =
+        kind === 'EXPIRED'
+          ? `Réservation expirée depuis ${Math.abs(daysUntil)} j`
+          : daysUntil === 0
+            ? "Arrive aujourd'hui"
+            : daysUntil === 1
+              ? 'Arrive demain'
+              : `Arrive dans ${daysUntil} j`;
+      return {
+        unitId: u.id,
+        unitCode: u.code,
+        siteName: u.site.name,
+        reservedFor: u.reservedFor,
+        reservedUntil: arrival.toISOString(),
+        daysUntil,
+        kind,
+        label,
+      };
+    });
   }
 
   /** Cœur de la génération — réutilisé par le job quotidien (BullMQ). */
@@ -107,7 +163,10 @@ export class RemindersService {
 
       const tenant = charge.occupancy.tenant;
       const primaryPayer = tenant.guarantors.find((g) => g.isPrimaryPayer);
-      const recipient: ReminderRecipient = primaryPayer ? 'BOTH' : 'TENANT';
+      // Si un garant est marqué « payeur principal », c'est LUI qui paie :
+      // on route le rappel sur le garant (le locataire est hors-circuit financier).
+      // Sinon, rappel direct au locataire. (chantier C)
+      const recipient: ReminderRecipient = primaryPayer ? 'GUARANTOR' : 'TENANT';
       const body = await this.templates.reminderBody(stage, locale);
       const message = renderTemplate(body, {
         nom: tenant.name,

@@ -4,6 +4,7 @@ import { createTestApp, resetDb, type TestContext } from './utils/test-app';
 
 // Nécessite une base Postgres joignable (docker compose up postgres).
 const PHONE = '690111222';
+const EMAIL = 'obelix@cite-test.cm';
 const PASSWORD = 'motdepasse1';
 
 describe('Auth (e2e)', () => {
@@ -21,16 +22,14 @@ describe('Auth (e2e)', () => {
   });
 
   async function signup(): Promise<{ accessToken: string; refreshToken: string }> {
-    await api().post('/api/v1/auth/otp').send({ phone: PHONE, purpose: 'SIGNUP' }).expect(204);
-    const otp = ctx.sms.lastCode(PHONE);
     const res = await api()
       .post('/api/v1/auth/signup')
       .send({
         accountName: 'Cité Test',
         ownerName: 'Obelix',
+        email: EMAIL,
         phone: PHONE,
         password: PASSWORD,
-        otp,
       })
       .expect(201);
     expect(res.body.accessToken).toBeTruthy();
@@ -46,18 +45,18 @@ describe('Auth (e2e)', () => {
     expect(me.body).toMatchObject({ role: 'OWNER', phone: PHONE, accountName: 'Cité Test' });
   });
 
-  it('refuse un OTP invalide à l’inscription', async () => {
-    await api().post('/api/v1/auth/otp').send({ phone: PHONE, purpose: 'SIGNUP' }).expect(204);
+  it('refuse une inscription avec un numéro déjà utilisé', async () => {
+    await signup();
     await api()
       .post('/api/v1/auth/signup')
       .send({
         accountName: 'Cité X',
         ownerName: 'Propriétaire Y',
+        email: 'proprio-y@cite-x.cm',
         phone: PHONE,
         password: PASSWORD,
-        otp: '000000',
       })
-      .expect(401);
+      .expect(409);
   });
 
   it('connexion correcte / incorrecte', async () => {
@@ -66,6 +65,20 @@ describe('Auth (e2e)', () => {
     await api()
       .post('/api/v1/auth/login')
       .send({ phone: PHONE, password: 'mauvais99' })
+      .expect(401);
+  });
+
+  it('connexion par email', async () => {
+    await signup();
+    await api().post('/api/v1/auth/login').send({ email: EMAIL, password: PASSWORD }).expect(200);
+    // L'email est normalisé (casse / espaces) côté DTO.
+    await api()
+      .post('/api/v1/auth/login')
+      .send({ email: `  ${EMAIL.toUpperCase()} `, password: PASSWORD })
+      .expect(200);
+    await api()
+      .post('/api/v1/auth/login')
+      .send({ email: EMAIL, password: 'mauvais99' })
       .expect(401);
   });
 

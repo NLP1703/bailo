@@ -8,7 +8,7 @@ import {
   type MarkReminderSentDto,
   type RemindersHistoryQuery,
   type RemindersTodayQuery,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';

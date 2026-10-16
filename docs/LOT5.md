@@ -1,4 +1,4 @@
-# CitéGest — Lot 5 · Finitions
+# Bailo — Lot 5 · Finitions
 
 Import des locataires, seed réaliste, **échafaudage front React/PWA**, page publique de
 vérification de reçu, README « une commande », CI, outillage qualité.

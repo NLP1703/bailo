@@ -5,6 +5,8 @@ import { api } from '../lib/api';
 import { db } from '../lib/db';
 import { useAuth } from '../lib/auth';
 import { UNIT_COLOR_CLASS } from '../lib/format';
+import { PageHeader, Select, EmptyState } from '../components/ui';
+import { DoorIcon } from '../components/icons';
 
 interface Site {
   id: string;
@@ -15,6 +17,29 @@ interface Unit {
   code: string;
   color: string;
   activeOccupancyId: string | null;
+  tenantName: string | null;
+  nextDueDate: string | null;
+  nextDueAmount: number | null;
+  reservedFor: string | null;
+  reservedUntil: string | null;
+}
+
+/** Formate un prénom NOM en « Prénom N. » pour tenir dans une case carrée. */
+function shortName(full: string | null | undefined): string {
+  if (!full) return '';
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0] ?? '';
+  if (parts.length <= 1) return first;
+  const last = parts[parts.length - 1] ?? '';
+  const initial = last[0] ?? '';
+  return initial ? `${first} ${initial}.` : first;
+}
+
+/** Date ISO → « 15/10 » pour tenir dans une case carrée. */
+function shortDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export function Rooms() {
@@ -61,35 +86,71 @@ export function Rooms() {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t('rooms.title')}</h1>
-        <select
-          className="rounded border border-slate-300 px-2 py-1 text-sm"
-          value={siteId}
-          onChange={(e) => setSiteId(e.target.value)}
-        >
-          {sites.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title={t('rooms.title')}
+        subtitle={t('pageSub.rooms')}
+        action={
+          sites.length > 0 && (
+            <Select value={siteId} onChange={setSiteId}>
+              {sites.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </Select>
+          )
+        }
+      />
 
-      <div className="grid grid-cols-4 gap-2">
-        {units.map((u) => (
-          <button
-            key={u.id}
-            onClick={() => open(u)}
-            className={`flex aspect-square flex-col items-center justify-center rounded text-xs font-semibold text-white ${UNIT_COLOR_CLASS[u.color] ?? 'bg-slate-300'}`}
-          >
-            {u.code}
-          </button>
-        ))}
-      </div>
+      {units.length === 0 ? (
+        <EmptyState icon={DoorIcon} message={t('rooms.title')} />
+      ) : (
+        <div className="grid grid-cols-4 gap-2.5">
+          {units.map((u) => {
+            // Détermine quoi afficher sous le code selon l'état de la case.
+            const isReserved = u.color === 'BLUE';
+            const isOccupied = u.color === 'GREEN' || u.color === 'ORANGE' || u.color === 'RED';
+            const name = isReserved ? u.reservedFor : u.tenantName;
+            const dateIso = isReserved ? u.reservedUntil : u.nextDueDate;
+            const dateLabel = isReserved && dateIso
+              ? `arrive ${shortDate(dateIso)}`
+              : dateIso
+                ? shortDate(dateIso)
+                : '';
+            const bgClass = UNIT_COLOR_CLASS[u.color] ?? 'bg-slate-300';
+            const textOnDark = isReserved || isOccupied; // fonds colorés → texte blanc
+            return (
+              <button
+                key={u.id}
+                onClick={() => open(u)}
+                aria-label={name ? `${u.code} — ${name}` : u.code}
+                className={`flex aspect-square flex-col items-stretch justify-between rounded-xl p-2 text-left shadow-sm transition active:scale-95 ${bgClass} ${textOnDark ? 'text-white' : 'text-slate-600'}`}
+              >
+                <span className="text-sm font-bold leading-tight">{u.code}</span>
+                {name ? (
+                  <span className="min-w-0 flex-1 pt-1">
+                    <span className="block truncate text-xs font-semibold leading-tight">
+                      {shortName(name)}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="flex-1" />
+                )}
+                {dateLabel && (
+                  <span
+                    className={`inline-block self-start rounded px-1 py-0.5 text-[10px] font-semibold leading-none ${textOnDark ? 'bg-black/20' : 'bg-slate-100'}`}
+                  >
+                    {dateLabel}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-      <div className="flex flex-wrap gap-3 pt-2 text-xs text-slate-600">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-xl bg-white p-3 text-xs font-medium text-slate-600 shadow-sm ring-1 ring-slate-100">
         <Legend color="bg-emerald-500" label={t('rooms.upToDate')} />
         <Legend color="bg-amber-500" label={t('rooms.dueSoon')} />
         <Legend color="bg-red-500" label={t('rooms.late')} />
@@ -102,8 +163,8 @@ export function Rooms() {
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
-    <span className="flex items-center gap-1">
-      <span className={`inline-block h-3 w-3 rounded ${color}`} />
+    <span className="flex items-center gap-1.5">
+      <span className={`inline-block h-3 w-3 rounded-full ${color}`} />
       {label}
     </span>
   );

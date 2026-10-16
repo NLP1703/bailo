@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import type { OtpPurpose } from '@citegest/shared';
+import type { OtpPurpose } from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { SMS_PROVIDER, type SmsProvider } from '../sms/sms.provider';
@@ -32,7 +32,7 @@ export class OtpService {
       this.prisma.otpCode.create({ data: { phone, purpose, codeHash, expiresAt } }),
     ]);
 
-    await this.sms.send(phone, `CitéGest : votre code de vérification est ${code}`);
+    await this.sms.send(phone, `Bailo : votre code de vérification est ${code}`);
   }
 
   /**

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ChargeType } from '@prisma/client';
-import type { CancelChargeDto, CreateChargeDto } from '@citegest/shared';
+import type { CancelChargeDto, CreateChargeDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';

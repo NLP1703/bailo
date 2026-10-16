@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'CitéGest',
-        short_name: 'CitéGest',
+        name: 'Bailo',
+        short_name: 'Bailo',
         description: 'Gestion locative — cités et immeubles',
         theme_color: '#0f766e',
         background_color: '#ffffff',
@@ -21,6 +21,9 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // Police Inter (alphabets latins seulement) préchargée : l'app garde son
+        // apparence hors-ligne au lieu de retomber sur la police système.
+        globPatterns: ['**/*.{js,css,html,svg}', 'assets/inter-latin-*.woff2'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
@@ -31,5 +34,11 @@ export default defineConfig({
       },
     }),
   ],
-  server: { port: 5173 },
+  // En dev, le front appelle /api/v1 en relatif : on relaie vers l'API NestJS (:3000).
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+    },
+  },
 });

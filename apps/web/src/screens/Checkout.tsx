@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { formatFcfa } from '../lib/format';
+import { PageHeader, Card, Input, Label, Button, PageSkeleton } from '../components/ui';
+import { PlusIcon, CheckCircleIcon } from '../components/icons';
 
 interface OccView {
   occupancy: { id: string; deposit: number; unit: { code: string }; tenant: { name: string } };
@@ -53,73 +55,76 @@ export function Checkout() {
   };
 
   if (!occupancyId) return <p className="text-slate-500">—</p>;
-  if (!data) return <p className="text-slate-500">{t('common.loading')}</p>;
+  if (!data) return <PageSkeleton />;
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">
-        {t('checkout.title')} · {data.occupancy.tenant.name} · {data.occupancy.unit.code}
-      </h1>
+      <PageHeader title={t('checkout.title')} />
+      <p className="-mt-2 text-sm text-slate-500">
+        {data.occupancy.tenant.name} · {data.occupancy.unit.code}
+      </p>
 
       {result ? (
-        <div className="space-y-1 rounded-lg bg-white p-4 shadow-sm">
+        <Card className="space-y-1">
           <Row label={t('checkout.deposit')} value={result.depositPaid} />
           <Row label={t('checkout.unpaid')} value={-result.unpaidTotal} />
           <Row label={t('checkout.retenues')} value={-result.retenuesTotal} />
-          <hr className="my-2" />
-          <div className="flex justify-between font-bold">
+          <hr className="my-2 border-slate-100" />
+          <div className="flex justify-between text-base font-bold text-slate-900">
             <span>{result.refund >= 0 ? t('checkout.refund') : t('checkout.owed')}</span>
-            <span>{formatFcfa(Math.abs(result.refund))}</span>
+            <span className={result.refund >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+              {formatFcfa(Math.abs(result.refund))}
+            </span>
           </div>
-          <p className="pt-2 text-sm text-emerald-700">{t('checkout.success')}</p>
-        </div>
+          <p className="flex items-center gap-2 pt-2 text-sm font-medium text-emerald-700">
+            <CheckCircleIcon className="h-5 w-5" />
+            {t('checkout.success')}
+          </p>
+        </Card>
       ) : (
         <>
-          <label className="block text-sm">
-            {t('checkout.actualEndDate')}
-            <input
-              type="date"
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
-              value={actualEndDate}
-              onChange={(e) => setActualEndDate(e.target.value)}
-            />
-          </label>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">{t('checkout.retenues')}</span>
-              <button onClick={addRetenue} className="rounded bg-slate-200 px-2 py-1 text-xs">
-                + {t('checkout.addRetenue')}
-              </button>
+          <Card className="space-y-3">
+            <div>
+              <Label>{t('checkout.actualEndDate')}</Label>
+              <Input
+                type="date"
+                value={actualEndDate}
+                onChange={(e) => setActualEndDate(e.target.value)}
+              />
             </div>
-            {retenues.map((r, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  className="w-28 rounded border border-slate-300 px-2 py-2"
-                  inputMode="numeric"
-                  placeholder={t('checkout.retenues')}
-                  value={r.amount || ''}
-                  onChange={(e) =>
-                    updateRetenue(i, { amount: Number(e.target.value.replace(/\D/g, '')) || 0 })
-                  }
-                />
-                <input
-                  className="flex-1 rounded border border-slate-300 px-2 py-2"
-                  placeholder={t('checkout.reason')}
-                  value={r.reason}
-                  onChange={(e) => updateRetenue(i, { reason: e.target.value })}
-                />
-              </div>
-            ))}
-          </div>
 
-          <button
-            disabled={busy}
-            onClick={submit}
-            className="w-full rounded bg-red-600 py-3 font-semibold text-white disabled:opacity-50"
-          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{t('checkout.retenues')}</Label>
+                <Button variant="secondary" size="sm" onClick={addRetenue}>
+                  <PlusIcon className="h-4 w-4" />
+                  {t('checkout.addRetenue')}
+                </Button>
+              </div>
+              {retenues.map((r, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    className="w-28"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={r.amount || ''}
+                    onChange={(e) =>
+                      updateRetenue(i, { amount: Number(e.target.value.replace(/\D/g, '')) || 0 })
+                    }
+                  />
+                  <Input
+                    placeholder={t('checkout.reason')}
+                    value={r.reason}
+                    onChange={(e) => updateRetenue(i, { reason: e.target.value })}
+                  />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Button variant="danger" block busy={busy} onClick={submit}>
             {t('checkout.submit')}
-          </button>
+          </Button>
         </>
       )}
     </div>
@@ -130,7 +135,7 @@ function Row({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex justify-between text-sm">
       <span className="text-slate-600">{label}</span>
-      <span>{formatFcfa(value)}</span>
+      <span className="font-medium text-slate-900">{formatFcfa(value)}</span>
     </div>
   );
 }

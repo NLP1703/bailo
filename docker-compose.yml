@@ -1,21 +1,21 @@
-# CitéGest — pile de développement / production légère (un seul VPS).
+# Bailo — pile de développement / production légère (un seul VPS).
 # Démarrage : cp .env.example .env && docker compose up --build
 #
 # Le service `web` (front React/PWA) est ajouté au Lot 4, quand apps/web a des sources.
 
-name: citegest
+name: bailo
 
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: citegest
-      POSTGRES_PASSWORD: citegest
-      POSTGRES_DB: citegest
+      POSTGRES_USER: bailo
+      POSTGRES_PASSWORD: bailo
+      POSTGRES_DB: bailo
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U citegest -d citegest']
+      test: ['CMD-SHELL', 'pg_isready -U bailo -d bailo']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -59,7 +59,7 @@ services:
     entrypoint: >
       /bin/sh -c "
       mc alias set local http://minio:9000 ${S3_ACCESS_KEY:-minioadmin} ${S3_SECRET_KEY:-minioadmin} &&
-      mc mb --ignore-existing local/${S3_BUCKET:-citegest} &&
+      mc mb --ignore-existing local/${S3_BUCKET:-bailo} &&
       echo 'Bucket prêt';
       "
     restart: 'no'
@@ -80,7 +80,7 @@ services:
       API_PORT: 3000
       TZ: Africa/Douala
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
-      DATABASE_URL: postgresql://citegest:citegest@postgres:5432/citegest?schema=public
+      DATABASE_URL: postgresql://bailo:bailo@postgres:5432/bailo?schema=public
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?secret requis}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?secret requis}
@@ -97,9 +97,17 @@ services:
       # Endpoint joignable par le CONTENEUR API (logo inliné sur les reçus PDF).
       S3_INTERNAL_ENDPOINT: http://minio:9000
       S3_REGION: ${S3_REGION:-us-east-1}
-      S3_BUCKET: ${S3_BUCKET:-citegest}
+      S3_BUCKET: ${S3_BUCKET:-bailo}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "node -e \"require('http').get('http://localhost:3000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     expose:
       - '3000'
     ports:
@@ -114,6 +122,12 @@ services:
         VITE_PUBLIC_RECEIPT_BASE: /r
     depends_on:
       - api
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     expose:
       - '80'
 

@@ -10,3 +10,4 @@ coverage/
 .DS_Store
 apps/web/dev-dist/
 apps/api/prisma/*.db
+_to_delete/

@@ -14,7 +14,7 @@ import {
   type RefreshDto,
   type RequestOtpDto,
   type SignupDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { Public } from '../../common/auth/public.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { AuthService } from './auth.service';

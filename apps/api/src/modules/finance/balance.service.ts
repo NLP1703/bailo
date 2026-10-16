@@ -5,7 +5,7 @@ import {
   diffDays,
   type ChargeStatus,
   type OpenCharge,
-} from '@citegest/shared';
+} from '@bailo/shared';
 
 export interface ChargeView {
   charge: Charge;

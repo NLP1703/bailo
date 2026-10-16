@@ -1,4 +1,4 @@
-# CitéGest — Lot 6 · Front MVP complet
+# Bailo — Lot 6 · Front MVP complet
 
 Finalisation des écrans front qui restaient en stub après le Lot 5. L'API et les schémas
 partagés existaient déjà ; ce lot est **exclusivement côté `apps/web`** (un seul ajout backend

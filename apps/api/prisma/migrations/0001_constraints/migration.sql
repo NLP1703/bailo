@@ -1,4 +1,4 @@
--- Contraintes CitéGest non exprimables en Prisma (appliquées après le schéma de base).
+-- Contraintes Bailo non exprimables en Prisma (appliquées après le schéma de base).
 -- Versionnées ici pour être posées par `prisma migrate deploy`.
 
 -- ─────────────────────────────────────────────────────────────────────────────

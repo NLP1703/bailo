@@ -1,4 +1,4 @@
-// CitéGest — Schéma Prisma (MVP)
+// Bailo — Schéma Prisma (MVP)
 // Règles transverses :
 //   - Toutes les tables métier portent account_id (cloisonnement NF7), created_at, updated_at, created_by.
 //   - Identifiants UUID, générables côté client (mode hors-ligne, NF3).
@@ -40,10 +40,16 @@ enum ProrataMode {
   PRORATA // au prorata des jours (RG4)
 }
 
+enum PenaltyMode {
+  FIXED // montant fixe en FCFA
+  PERCENT // pourcentage du reste dû
+}
+
 enum UnitType {
   CHAMBRE
   STUDIO
   APPARTEMENT
+  MAISON
 }
 
 // Statut posé manuellement par le bailleur ; la couleur "vivante" (RG18) est calculée par une vue SQL.
@@ -123,16 +129,6 @@ enum SubscriptionPlan {
   MANAGER // Gérant multi-propriétaires
 }
 
-enum ExpenseCategory {
-  EAU
-  ELECTRICITE
-  ENTRETIEN
-  REPARATION
-  SALAIRE
-  TAXE
-  AUTRE
-}
-
 enum OtpPurpose {
   SIGNUP
   LOGIN
@@ -176,7 +172,6 @@ model Account {
   payments         Payment[]
   allocations      Allocation[]
   cashHandovers    CashHandover[]
-  expenses         Expense[]
   reminders        Reminder[]
   auditLogs        AuditLog[]
   templates        Template[]
@@ -189,6 +184,7 @@ model User {
   id           String    @id @default(uuid())
   accountId    String
   name         String
+  email        String?   @unique // identifiant de connexion optionnel, unique globalement
   phone        String
   passwordHash String
   role         UserRole
@@ -262,12 +258,19 @@ model Site {
   city          String?
   district      String? // quartier
   landmark      String? // repère
+  // Pour un immeuble, indique si les logements sont meublés par défaut : sert à
+  // pré-cocher le flag `furnished` lors de la création en lot des chambres.
+  defaultFurnished Boolean  @default(false)
   graceDays     Int         @default(0) // délai de grâce avant "en retard" (RG10)
   prorataMode   ProrataMode @default(FULL) // RG4
   reminderJm3   Boolean     @default(true) // paliers activables par site (RG11)
   reminderJ0    Boolean     @default(true)
   reminderJp5   Boolean     @default(true)
   reminderJp15  Boolean     @default(true)
+  penaltyEnabled   Boolean     @default(false) // pénalité de retard activée (F5.6)
+  penaltyMode      PenaltyMode @default(FIXED)
+  penaltyValue     Int         @default(0) // FCFA (FIXED) ou pourcentage (PERCENT)
+  penaltyGraceDays Int         @default(0) // délai avant application de la pénalité
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   createdBy     String?
@@ -276,7 +279,6 @@ model Site {
   blocks  Block[]
   units   Unit[]
   users   UserSite[]
-  expenses Expense[]
 
   @@index([accountId])
   @@map("site")
@@ -308,10 +310,20 @@ model Unit {
   code           String // ex. "A12"
   type           UnitType         @default(CHAMBRE)
   baseRent       Int // loyer de base FCFA
+  furnished      Boolean          @default(false) // meublé ou non
   chargesIncluded Boolean         @default(false)
   shared         Boolean          @default(false) // chambre à plusieurs lits (RG17)
   capacity       Int              @default(1)
+  bedrooms       Int? // nb de chambres d'une maison / appartement
+  rooms          String[]         @default([]) // pièces : salon, cuisine, douche…
   manualStatus   UnitManualStatus @default(AVAILABLE)
+  // Date d'arrivée prévue du futur locataire (uniquement si RESERVED) — la maintenance
+  // quotidienne (expireReservations) rebascule automatiquement l'unité en AVAILABLE
+  // à partir de cette date, pour que l'UI redevienne grise puis verte à la création
+  // de l'occupation réelle (RG18).
+  reservedUntil  DateTime?
+  reservedFor    String?          // nom du futur locataire, affiché sur la case bleue
+  reservationDepositAmount Int?   // acompte éventuellement versé par le futur locataire (consommé à la création de l'occupation)
   amenities      String[]         @default([])
   photoKeys      String[]         @default([]) // clés objet S3
   createdAt      DateTime         @default(now())
@@ -414,6 +426,9 @@ model Occupancy {
   @@index([unitId])
   @@index([tenantId])
   @@index([status])
+  // Listes d'occupations actives par compte (dashboard, maintenance).
+  @@index([accountId, status])
+  @@index([chargesGeneratedUntil])
   @@map("occupancy")
 }
 
@@ -432,6 +447,7 @@ model Charge {
   dueDate       DateTime
   status        ChargeStatus @default(UPCOMING)
   cancelReason  String? // motif obligatoire d'annulation/remise (F5.5)
+  penaltyForChargeId String? @unique // si PENALITE : échéance de loyer à l'origine (idempotence)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   createdBy     String?
@@ -447,6 +463,10 @@ model Charge {
   @@index([occupancyId])
   @@index([dueDate])
   @@index([status])
+  // Index composites — balayage maintenance quotidienne (status+dueDate) et agrégats dashboard par période.
+  @@index([status, dueDate])
+  @@index([accountId, dueDate])
+  @@index([accountId, status])
   @@map("charge")
 }
 
@@ -483,6 +503,9 @@ model Payment {
   @@index([occupancyId])
   @@index([receivedBy])
   @@index([paidAt])
+  // Agrégats dashboard : total encaissé sur une période.
+  @@index([accountId, paidAt])
+  @@index([accountId, status])
   @@map("payment")
 }
 
@@ -525,33 +548,6 @@ model CashHandover {
   @@index([accountId])
   @@index([collectorId])
   @@map("cash_handover")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Dépenses
-// ─────────────────────────────────────────────────────────────────────────────
-
-model Expense {
-  id          String          @id @default(uuid())
-  accountId   String
-  siteId      String
-  unitId      String? // facultatif
-  category    ExpenseCategory
-  amount      Int
-  spentAt     DateTime
-  description String?
-  attachmentKey String? // clé objet S3
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  createdBy   String?
-
-  account Account @relation(fields: [accountId], references: [id])
-  site    Site    @relation(fields: [siteId], references: [id])
-
-  @@index([accountId])
-  @@index([siteId])
-  @@index([spentAt])
-  @@map("expense")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

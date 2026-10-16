@@ -5,12 +5,14 @@ import {
   bulkCreateUnitsDto,
   createUnitDto,
   listUnitsQuery,
+  reserveUnitDto,
   updateUnitDto,
   uuid,
   type BulkCreateUnitsDto,
   type ListUnitsQuery,
+  type ReserveUnitDto,
   type UpdateUnitDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -34,6 +36,12 @@ export class UnitsController {
     @Query(new ZodValidationPipe(listUnitsQuery)) query: ListUnitsQuery,
   ) {
     return this.units.list(ctx, query);
+  }
+
+  @Get('reservations')
+  @ApiOperation({ summary: 'Liste des chambres réservées (bleues) sur tous les sites' })
+  async reservations(@CurrentUser() ctx: RequestContext) {
+    return this.units.listReservations(ctx);
   }
 
   @Post('units')
@@ -65,6 +73,29 @@ export class UnitsController {
     @Body(new ZodValidationPipe(updateUnitDto)) dto: UpdateUnitDto,
   ) {
     return this.units.update(ctx, id, dto);
+  }
+
+  @Post('units/:id/reserve')
+  @Roles('OWNER', 'MANAGER')
+  @ApiOperation({
+    summary: 'Réserver une unité (RG18 bleu) — expire automatiquement à la date d’arrivée',
+  })
+  async reserve(
+    @CurrentUser() ctx: RequestContext,
+    @Param('id', new ZodValidationPipe(uuid)) id: string,
+    @Body(new ZodValidationPipe(reserveUnitDto)) dto: ReserveUnitDto,
+  ) {
+    return this.units.reserve(ctx, id, dto);
+  }
+
+  @Post('units/:id/unreserve')
+  @Roles('OWNER', 'MANAGER')
+  @ApiOperation({ summary: 'Annuler la réservation d’une unité' })
+  async unreserve(
+    @CurrentUser() ctx: RequestContext,
+    @Param('id', new ZodValidationPipe(uuid)) id: string,
+  ) {
+    return this.units.unreserve(ctx, id);
   }
 
   @Post('sites/:id/units/bulk')

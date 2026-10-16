@@ -80,6 +80,42 @@ describe('Cœur financier (e2e)', () => {
     expect(loyers[6]?.status).not.toBe('PAID');
   });
 
+  it('contrat PDF (F4.3) + lien WhatsApp du reçu (F6.4)', async () => {
+    const { token, unit, tenant } = await baseFixtures();
+    const occ = (
+      await api()
+        .post('/api/v1/occupancies')
+        .set(auth(token))
+        .send({
+          unitId: unit.id,
+          tenantId: tenant.id,
+          startDate: '2026-09-01',
+          monthlyRent: 25000,
+          dueDay: 1,
+          deposit: 25000,
+          advance: { months: 1 },
+          paymentMode: 'ESPECES',
+        })
+        .expect(201)
+    ).body;
+
+    // Contrat : PDF (ou HTML en repli sans Chromium).
+    const contract = await api()
+      .get(`/api/v1/occupancies/${occ.occupancy.id}/contract`)
+      .set(auth(token))
+      .expect(200);
+    expect(String(contract.headers['content-type'])).toMatch(/pdf|html/);
+
+    // Lien WhatsApp du reçu d'ouverture.
+    const payment = occ.openingPayment.payment as { id: string; receiptNumber: string };
+    const wa = await api()
+      .get(`/api/v1/payments/${payment.id}/wa-link`)
+      .set(auth(token))
+      .expect(200);
+    expect(wa.body.message).toContain(payment.receiptNumber);
+    expect(Array.isArray(wa.body.links)).toBe(true);
+  });
+
   async function occupancyNoAdvance(
     token: string,
     unitId: string,

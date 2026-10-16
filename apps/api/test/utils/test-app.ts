@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as argon2 from 'argon2';
-import type { UserRole } from '@citegest/shared';
+import type { UserRole } from '@bailo/shared';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { PrismaExceptionFilter } from '../../src/common/http/prisma-exception.filter';
@@ -35,7 +35,7 @@ function ensureEnv(): void {
   process.env.JWT_ACCESS_TTL ??= '15m';
   process.env.JWT_REFRESH_TTL ??= '30d';
   process.env.DATABASE_URL ??=
-    'postgresql://citegest:citegest@localhost:5432/citegest_test?schema=public';
+    'postgresql://bailo:bailo@localhost:5432/bailo_test?schema=public';
 }
 
 export async function createTestApp(): Promise<TestContext> {
@@ -74,7 +74,15 @@ export async function seedAccount(
   opts: { name: string; phone: string; password: string },
 ): Promise<{ accountId: string; ownerId: string }> {
   const passwordHash = await argon2.hash(opts.password);
-  const account = await prisma.account.create({ data: { name: opts.name, phone: opts.phone } });
+  // Plan non limitant par défaut pour les fixtures (échéance lointaine).
+  const account = await prisma.account.create({
+    data: {
+      name: opts.name,
+      phone: opts.phone,
+      plan: 'CITE_PRO',
+      subscriptionEndAt: new Date(Date.now() + 365 * 86_400_000),
+    },
+  });
   const owner = await prisma.user.create({
     data: {
       accountId: account.id,

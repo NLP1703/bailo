@@ -5,7 +5,7 @@ import {
   type ImportRowResult,
   type ImportTenantRow,
   type ImportTenantsDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';
 import { toDate } from '../../common/time/to-date';

@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { FilePurpose } from '@citegest/shared';
+import type { FilePurpose } from '@bailo/shared';
 import { uploadFile } from '../lib/upload';
+import { CheckIcon } from './icons';
 
 interface Props {
   purpose: FilePurpose;
@@ -62,7 +63,7 @@ export function FileField({ purpose, label, onUploaded, accept = 'image/*' }: Pr
         </button>
         {state === 'done' && (
           <span className="flex items-center gap-1 text-emerald-700">
-            ✓ {name}
+            <CheckIcon className="h-4 w-4" /> {name}
             <button type="button" onClick={clear} className="text-slate-400 underline">
               {t('file.remove')}
             </button>

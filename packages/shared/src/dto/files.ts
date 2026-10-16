@@ -9,7 +9,6 @@ export const FILE_PURPOSES = [
   'tenant-photo', // F3.1 — photo du locataire
   'tenant-id', // F3.1 — pièce d'identité (chiffrée, jamais publique)
   'payment-proof', // F6.2 — preuve (capture MoMo, photo)
-  'expense-attachment', // F8.1 — pièce jointe d'une dépense
   'unit-photo', // F2.4 — photos d'une chambre
   'account-logo', // F1.5 — logo affiché sur les reçus
 ] as const;

@@ -1,10 +1,25 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { PaymentMode } from '@prisma/client';
+import { formatFcfa, renderTemplate } from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { PDF_RENDERER, type PdfRenderer, type RenderedDocument } from '../pdf/pdf.renderer';
 import { StorageService } from '../files/storage.service';
 import { buildReceiptHtml, type ReceiptLine } from './receipt-html';
+import { buildContractHtml } from './contract-html';
+
+/** Contrat par défaut si le bailleur n'a pas encore défini son modèle (F4.3). */
+const DEFAULT_CONTRACT_FR =
+  "Entre le bailleur {bailleur} et le/la locataire {nom}, il est convenu la location de l'unité {chambre} à compter du {date}.\n\n" +
+  'Loyer mensuel : {montant}, payable le {jour} de chaque mois.\n' +
+  'Caution versée : {caution}.\n\n' +
+  "Le/la locataire s'engage à régler le loyer à l'échéance, à entretenir les lieux et à respecter le règlement intérieur. " +
+  "Le présent document vaut fiche d'engagement de location.";
+
+/** Numéro au format international sans « + » ni espaces pour l'URL wa.me. */
+function sanitizePhone(phone: string): string {
+  return phone.replace(/[^\d]/g, '');
+}
 
 const MODE_LABELS: Record<PaymentMode, string> = {
   ESPECES: 'Espèces',
@@ -73,7 +88,7 @@ export class ReceiptsService {
     });
 
     const html = buildReceiptHtml({
-      accountName: account?.name ?? 'CitéGest',
+      accountName: account?.name ?? 'Bailo',
       receiptNumber: payment.receiptNumber,
       paidAtLabel: formatDate(payment.paidAt),
       amount: payment.amount,
@@ -92,6 +107,72 @@ export class ReceiptsService {
     const doc = await this.pdf.render(html);
     const ext = doc.contentType === 'application/pdf' ? 'pdf' : 'html';
     return { doc, filename: `recu-${payment.receiptNumber}.${ext}` };
+  }
+
+  /** Contrat / fiche d'engagement d'une occupation (F4.3) — PDF, repli HTML. */
+  async renderContract(occupancyId: string): Promise<{ doc: RenderedDocument; filename: string }> {
+    const occ = await this.prisma.occupancy.findUnique({
+      where: { id: occupancyId },
+      include: { unit: true, tenant: true },
+    });
+    if (!occ) throw new NotFoundException('Occupation introuvable');
+    const account = await this.prisma.account.findUnique({ where: { id: occ.accountId } });
+
+    const template = await this.prisma.template.findFirst({
+      where: { accountId: occ.accountId, kind: 'CONTRACT', locale: 'fr' },
+      orderBy: { isDefault: 'desc' },
+    });
+    const body = renderTemplate(template?.bodyHtml ?? DEFAULT_CONTRACT_FR, {
+      bailleur: account?.name ?? 'Bailo',
+      nom: occ.tenant.name,
+      chambre: occ.unit.code,
+      montant: formatFcfa(occ.monthlyRent),
+      caution: formatFcfa(occ.deposit),
+      date: formatDate(occ.startDate),
+      jour: String(occ.dueDay),
+    });
+
+    const html = buildContractHtml({
+      accountName: account?.name ?? 'Bailo',
+      logoDataUrl: account?.logoKey
+        ? await this.storage.fetchAsDataUri(account.logoKey)
+        : undefined,
+      title: `Contrat de location — ${occ.unit.code}`,
+      bodyHtml: body,
+      mentions: account?.receiptFooter ?? undefined,
+      signatureLandlord: 'Le bailleur',
+      signatureTenant: 'Le/la locataire',
+    });
+
+    const doc = await this.pdf.render(html);
+    const ext = doc.contentType === 'application/pdf' ? 'pdf' : 'html';
+    return { doc, filename: `contrat-${occ.unit.code}.${ext}` };
+  }
+
+  /** Lien wa.me pré-rempli pour envoyer le reçu d'un paiement (F6.4). */
+  async paymentWaLink(paymentId: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { occupancy: { include: { tenant: { include: { guarantors: true } } } } },
+    });
+    if (!payment) throw new NotFoundException('Paiement introuvable');
+
+    const verifyUrl = `${this.env.PUBLIC_RECEIPT_BASE}/${payment.id}`;
+    const message =
+      `Reçu N° ${payment.receiptNumber} — ${formatFcfa(payment.amount)} ` +
+      `le ${formatDate(payment.paidAt)}. Vérifiez l'authenticité : ${verifyUrl}`;
+    const text = encodeURIComponent(message);
+
+    const tenant = payment.occupancy.tenant;
+    const primaryPayer = tenant.guarantors.find((g) => g.isPrimaryPayer);
+    const links: { to: string; phone: string; url: string }[] = [];
+    const push = (to: string, phone?: string | null) => {
+      if (phone) links.push({ to, phone, url: `https://wa.me/${sanitizePhone(phone)}?text=${text}` });
+    };
+    push('locataire', tenant.whatsapp ?? tenant.phone);
+    push('parent', primaryPayer?.whatsapp ?? primaryPayer?.phone);
+
+    return { paymentId, message, links };
   }
 
   /**

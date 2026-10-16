@@ -18,7 +18,6 @@ export const ACCOUNT_SCOPED_MODELS: ReadonlySet<string> = new Set([
   'Payment',
   'Allocation',
   'CashHandover',
-  'Expense',
   'Reminder',
   'Template',
   'ReceiptSequence',

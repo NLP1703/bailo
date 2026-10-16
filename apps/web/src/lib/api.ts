@@ -24,6 +24,9 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    readonly code?: string,
+    readonly details?: unknown,
+    readonly retryAfterSeconds?: number,
   ) {
     super(message);
   }
@@ -63,13 +66,24 @@ async function raw(method: string, path: string, body?: unknown, retry = true): 
 async function parse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let message = `Erreur ${res.status}`;
+    let code: string | undefined;
+    let details: unknown;
+    let retryAfterSeconds: number | undefined;
     try {
-      const data = (await res.json()) as { message?: string };
+      const data = (await res.json()) as {
+        message?: string;
+        code?: string;
+        details?: unknown;
+        retryAfterSeconds?: number;
+      };
       if (data?.message) message = data.message;
+      code = data?.code;
+      details = data?.details;
+      retryAfterSeconds = data?.retryAfterSeconds;
     } catch {
-      /* ignore */
+      /* body non-JSON — on garde le message par défaut */
     }
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, code, details, retryAfterSeconds);
   }
   return (await res.json()) as T;
 }
@@ -82,6 +96,12 @@ export const api = {
     parse<T>(await raw('PATCH', path, body)),
   put: async <T>(path: string, body?: unknown): Promise<T> =>
     parse<T>(await raw('PUT', path, body)),
+  del: async (path: string): Promise<void> => {
+    const res = await raw('DELETE', path);
+    if (!res.ok) await parse(res); // lève une ApiError avec le message serveur
+  },
+  /** DELETE dont on exploite la réponse JSON (ex. `{ mode: 'deleted' | 'archived' }`). */
+  delete: async <T>(path: string): Promise<T> => parse<T>(await raw('DELETE', path)),
 };
 
 export { API };

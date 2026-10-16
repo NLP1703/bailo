@@ -3,7 +3,7 @@ import type { ZodSchema } from 'zod';
 
 /**
  * Valide et transforme une entrée (body/query/param) avec un schéma Zod
- * partagé (`@citegest/shared`). Rejette en 400 avec le détail des erreurs.
+ * partagé (`@bailo/shared`). Rejette en 400 avec le détail des erreurs.
  *
  * Usage : `@Body(new ZodValidationPipe(createSiteDto)) dto: CreateSiteDto`.
  */

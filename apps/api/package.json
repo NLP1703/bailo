@@ -1,5 +1,5 @@
 {
-  "name": "@citegest/api",
+  "name": "@bailo/api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,7 +16,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@citegest/shared": "workspace:*",
+    "@bailo/shared": "workspace:*",
     "@nestjs/common": "^10.4.4",
     "@nestjs/core": "^10.4.4",
     "@nestjs/jwt": "^10.2.0",
@@ -27,6 +27,9 @@
     "bullmq": "^5.13.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.7",
+    "ioredis": "^5.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^3.23.8"
@@ -39,6 +42,7 @@
     "@nestjs/cli": "^10.4.5",
     "@nestjs/testing": "^10.4.4",
     "@swc/core": "^1.7.28",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.4",
     "@types/supertest": "^6.0.2",

@@ -1,4 +1,10 @@
 import 'reflect-metadata';
+// Charge le .env du monorepo (racine) AVANT tout import qui lit process.env.
+// En prod, les variables sont injectées par Docker — dotenv.config() ne fait rien si .env absent.
+import { config as loadDotenv } from 'dotenv';
+import { resolve } from 'path';
+loadDotenv({ path: resolve(__dirname, '../../../.env') });
+
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,7 +16,8 @@ async function bootstrap(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
 
-  app.setGlobalPrefix('api/v1');
+  // Les routes /health et /ready restent hors du préfixe /api/v1 (sondes k8s/Docker standards).
+  app.setGlobalPrefix('api/v1', { exclude: ['health', 'ready'] });
   app.enableCors({ origin: env.CORS_ORIGIN, credentials: true });
   app.useGlobalFilters(new PrismaExceptionFilter());
   // La validation métier passe par Zod (ZodValidationPipe) ; ce pipe ne sert
@@ -18,7 +25,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(new ValidationPipe({ transform: false, whitelist: false }));
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('CitéGest API')
+    .setTitle('Bailo API')
     .setDescription('Gestion locative — cités et immeubles (MVP)')
     .setVersion('0.1.0')
     .addBearerAuth()

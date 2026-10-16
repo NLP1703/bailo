@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import {
   closeOccupancyDto,
   createOccupancyDto,
@@ -8,18 +9,22 @@ import {
   type CloseOccupancyDto,
   type CreateOccupancyDto,
   type NoticeOccupancyDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { OccupanciesService } from './occupancies.service';
+import { ReceiptsService } from '../receipts/receipts.service';
 
 @ApiTags('occupancies')
 @ApiBearerAuth()
 @Controller('occupancies')
 export class OccupanciesController {
-  constructor(private readonly occupancies: OccupanciesService) {}
+  constructor(
+    private readonly occupancies: OccupanciesService,
+    private readonly receipts: ReceiptsService,
+  ) {}
 
   @Post()
   @Roles('OWNER', 'MANAGER')
@@ -35,6 +40,19 @@ export class OccupanciesController {
   @ApiOperation({ summary: 'Détail d’une occupation + soldes' })
   async get(@Param('id', new ZodValidationPipe(uuid)) id: string) {
     return this.occupancies.get(id);
+  }
+
+  @Get(':id/contract')
+  @Roles('OWNER', 'MANAGER')
+  @ApiOperation({ summary: 'Contrat / fiche d’engagement PDF (F4.3)' })
+  async contract(
+    @Param('id', new ZodValidationPipe(uuid)) id: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const { doc, filename } = await this.receipts.renderContract(id);
+    res.setHeader('Content-Type', doc.contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.send(doc.buffer);
   }
 
   @Post(':id/notice')

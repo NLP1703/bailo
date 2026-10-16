@@ -9,7 +9,7 @@ import {
   type CreatePaymentDto,
   type PreviewAllocationQuery,
   type VoidPaymentDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -71,5 +71,11 @@ export class PaymentsController {
     res.setHeader('Content-Type', doc.contentType);
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.send(doc.buffer);
+  }
+
+  @Get(':id/wa-link')
+  @ApiOperation({ summary: 'Lien WhatsApp pré-rempli pour envoyer le reçu (F6.4)' })
+  async waLink(@Param('id', new ZodValidationPipe(uuid)) id: string) {
+    return this.receipts.paymentWaLink(id);
   }
 }

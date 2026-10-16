@@ -1,4 +1,4 @@
-# CitéGest — Lot 7 · Fichiers (liens signés) & édition des modèles
+# Bailo — Lot 7 · Fichiers (liens signés) & édition des modèles
 
 Finalisation des deux points MVP restés « API à faire / sans UI » après le Lot 6
 (cf. section « Reste » de `LOT6.md`) :
@@ -102,7 +102,7 @@ jamais tourné, faute de base) :
   statut `PARTIAL` de `OVERDUE`, dont la précédence est intentionnelle — RG7/RG10).
 
 > Les identifiants et la base locale sont dans `.env` (non versionné). Base de test dédiée
-> `citegest_test` (les e2e la vident à chaque test — la base `citegest` de démo reste intacte).
+> `bailo_test` (les e2e la vident à chaque test — la base `bailo` de démo reste intacte).
 
 ## Reste (hors MVP)
 

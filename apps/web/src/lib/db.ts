@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { CreatePaymentDto } from '@citegest/shared';
+import type { CreatePaymentDto } from '@bailo/shared';
 
 /** Paiement saisi hors-ligne, en attente d'envoi (NF3). */
 export interface OutboxPayment {
@@ -20,14 +20,14 @@ export interface CachedTenant {
   [k: string]: unknown;
 }
 
-class CiteGestDb extends Dexie {
+class BailoDb extends Dexie {
   units!: Table<CachedUnit, string>;
   tenants!: Table<CachedTenant, string>;
   outbox!: Table<OutboxPayment, string>;
   meta!: Table<{ key: string; value: string }, string>;
 
   constructor() {
-    super('citegest');
+    super('bailo');
     this.version(1).stores({
       units: 'id, siteId',
       tenants: 'id',
@@ -37,4 +37,4 @@ class CiteGestDb extends Dexie {
   }
 }
 
-export const db = new CiteGestDb();
+export const db = new BailoDb();

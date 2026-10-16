@@ -1,13 +1,13 @@
 /**
- * Seed réaliste CitéGest.
+ * Seed réaliste Bailo.
  *   1 compte · 2 sites · 60 chambres · 45 locataires · ~6 mois d'historique
  *   (paiements à jour, partiels, avances, retards).
  *
- * Exécution : `pnpm --filter @citegest/api seed` (base migrée au préalable).
+ * Exécution : `pnpm --filter @bailo/api seed` (base migrée au préalable).
  * Le seed écrit hors contexte de requête : tous les `accountId` sont explicites.
  */
 import { randomUUID } from 'node:crypto';
-import { PrismaClient, type Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 import {
   addMonths,
@@ -16,7 +16,7 @@ import {
   generateRentSchedule,
   utcDate,
   yearMonthOf,
-} from '@citegest/shared';
+} from '@bailo/shared';
 
 const prisma = new PrismaClient();
 
@@ -65,7 +65,7 @@ function pick<T>(arr: T[], i: number): T {
 }
 
 async function main(): Promise<void> {
-  console.log('Seed CitéGest…');
+  console.log('Seed Bailo…');
   const passwordHash = await argon2.hash(PASSWORD);
 
   const account = await prisma.account.create({
@@ -289,27 +289,6 @@ async function main(): Promise<void> {
       data: { accountId: account.id, year, lastValue: value },
     });
   }
-
-  // Quelques dépenses.
-  await prisma.expense.createMany({
-    data: [
-      {
-        accountId: account.id,
-        siteId: site1.id,
-        category: 'ELECTRICITE',
-        amount: 45000,
-        spentAt: TODAY,
-      },
-      {
-        accountId: account.id,
-        siteId: site1.id,
-        category: 'ENTRETIEN',
-        amount: 20000,
-        spentAt: TODAY,
-      },
-      { accountId: account.id, siteId: site2.id, category: 'EAU', amount: 30000, spentAt: TODAY },
-    ] satisfies Prisma.ExpenseCreateManyInput[],
-  });
 
   console.log('Seed terminé.');
   console.log(`Comptes de test (mot de passe « ${PASSWORD} ») :`);

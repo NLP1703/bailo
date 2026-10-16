@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   createGuarantorDto,
@@ -14,7 +14,7 @@ import {
   type ListTenantsQuery,
   type UpdateGuarantorDto,
   type UpdateTenantDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -66,6 +66,26 @@ export class TenantsController {
     @Body(new ZodValidationPipe(updateTenantDto)) dto: UpdateTenantDto,
   ) {
     return this.tenants.update(id, dto);
+  }
+
+  @Get('tenants/:id/deletion-check')
+  @ApiOperation({ summary: 'Pré-contrôle : suppression définitive, archivage ou blocage' })
+  async deletionCheck(@Param('id', new ZodValidationPipe(uuid)) id: string) {
+    return this.tenants.deletionCheck(id);
+  }
+
+  @Delete('tenants/:id')
+  @ApiOperation({
+    summary: 'Supprimer un locataire (définitif sans paiement, sinon archivage)',
+  })
+  async remove(@Param('id', new ZodValidationPipe(uuid)) id: string) {
+    return this.tenants.remove(id);
+  }
+
+  @Post('tenants/:id/restore')
+  @ApiOperation({ summary: 'Restaurer un locataire archivé' })
+  async restore(@Param('id', new ZodValidationPipe(uuid)) id: string) {
+    return this.tenants.restore(id);
   }
 
   @Post('tenants/:id/guarantors')

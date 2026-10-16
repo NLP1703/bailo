@@ -12,12 +12,12 @@ RUN pnpm install --frozen-lockfile
 # Sources
 COPY packages/shared packages/shared
 COPY apps/api apps/api
-RUN pnpm --filter @citegest/shared build \
- && pnpm --filter @citegest/api exec prisma generate \
- && pnpm --filter @citegest/api build
+RUN pnpm --filter @bailo/shared build \
+ && pnpm --filter @bailo/api exec prisma generate \
+ && pnpm --filter @bailo/api build
 
 # Élague vers les dépendances de production
-RUN pnpm --filter @citegest/api --prod deploy /out
+RUN pnpm --filter @bailo/api --prod deploy /out
 
 # ─── Étape 2 : image d'exécution ──────────────────────────────────────────────
 FROM node:20-bookworm-slim AS runtime

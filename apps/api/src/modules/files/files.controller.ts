@@ -5,7 +5,7 @@ import {
   downloadUrlDto,
   type UploadUrlDto,
   type DownloadUrlDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { StorageService } from './storage.service';
 

@@ -1,4 +1,4 @@
-# CitéGest — Lot 1 · Cadrage
+# Bailo — Lot 1 · Cadrage
 
 Document de cadrage du MVP. Fait référence au cahier des charges v1.0 (`@obelix`).
 Il contient : l'arborescence du monorepo, le schéma de données, la liste des routes API,
@@ -12,7 +12,7 @@ Monorepo pnpm, 3 packages : `apps/api` (NestJS), `apps/web` (React/Vite PWA),
 `packages/shared` (types + schémas Zod partagés front/back).
 
 ```
-citegest/
+bailo/
 ├─ package.json                 # racine, scripts pnpm -r
 ├─ pnpm-workspace.yaml
 ├─ tsconfig.base.json           # config TS stricte héritée
@@ -221,7 +221,7 @@ Le gardien ne voit que `Chambres · Encaisser · Caisse (sa caisse) · Plus` (pa
 ### 1) Accueil — tableau de bord · `[O][G]`
 
 ```
-┌ CitéGest              🔔  [Site ▾] ┐
+┌ Bailo              🔔  [Site ▾] ┐
 │ Septembre 2026                     │
 │ ┌───────────┬───────────┐          │
 │ │ Attendu   │ Encaissé  │          │
@@ -406,7 +406,7 @@ Paramètres
 ### Écran public (hors barre) — Vérification de reçu
 
 ```
-citegest.app/r/CG-2026-000123
+bailo.app/r/CG-2026-000123
 ✅ Reçu authentique
 N° CG-2026-000123
 Montant 10 000 FCFA · 12/09/2026

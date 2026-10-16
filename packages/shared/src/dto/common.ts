@@ -12,6 +12,9 @@ export const phone = z
   .trim()
   .regex(/^\+?\d{8,15}$/, 'Numéro de téléphone invalide');
 
+/** Adresse email, normalisée (trim + minuscules) pour garantir l'unicité. */
+export const email = z.string().trim().toLowerCase().email('Adresse email invalide');
+
 /** Mot de passe : au moins 8 caractères. */
 export const password = z.string().min(8, 'Au moins 8 caractères');
 

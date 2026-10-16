@@ -7,7 +7,7 @@ import {
   type CreatePaymentDto,
   type PreviewAllocationQuery,
   type VoidPaymentDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';

@@ -1,4 +1,4 @@
-# CitéGest — Lot 2 · Socle
+# Bailo — Lot 2 · Socle
 
 Authentification OTP, utilisateurs & rôles, multi-tenant, sites, chambres,
 locataires, garants — avec tests d'isolation. (Le README complet arrive au Lot 5.)
@@ -13,7 +13,7 @@ locataires, garants — avec tests d'isolation. (Le README complet arrive au Lot
   contexte depuis le JWT), `SiteAccessService` (restriction gérant/gardien aux sites assignés).
 - `auth/` — `JwtAuthGuard` (global), `RolesGuard` (global, matrice §2.1), décorateurs
   `@Public()`, `@Roles()`, `@CurrentUser()`.
-- `validation/ZodValidationPipe` (schémas partagés `@citegest/shared`), `http/PrismaExceptionFilter`
+- `validation/ZodValidationPipe` (schémas partagés `@bailo/shared`), `http/PrismaExceptionFilter`
   (P2002→409, P2025→404 — un accès inter-comptes échoue en 404).
 
 **Modules métier (`apps/api/src/modules/`)**
@@ -53,11 +53,11 @@ docker compose up -d postgres redis minio minio-init
 
 # Dépendances + client Prisma + build du package partagé
 corepack pnpm install
-corepack pnpm --filter @citegest/shared build
-corepack pnpm --filter @citegest/api prisma:generate
-corepack pnpm --filter @citegest/api exec prisma migrate deploy   # applique 0000 + 0001
+corepack pnpm --filter @bailo/shared build
+corepack pnpm --filter @bailo/api prisma:generate
+corepack pnpm --filter @bailo/api exec prisma migrate deploy   # applique 0000 + 0001
 
-corepack pnpm --filter @citegest/api dev      # API sur http://localhost:3000/api/v1
+corepack pnpm --filter @bailo/api dev      # API sur http://localhost:3000/api/v1
 ```
 
 Doc OpenAPI : `http://localhost:3000/api/docs`.
@@ -68,8 +68,8 @@ Ou tout en conteneurs : `docker compose up --build`.
 ## Tests
 
 ```bash
-corepack pnpm --filter @citegest/api test        # unitaires (13, sans DB)
-corepack pnpm --filter @citegest/api test:e2e    # e2e — nécessite Postgres joignable
+corepack pnpm --filter @bailo/api test        # unitaires (13, sans DB)
+corepack pnpm --filter @bailo/api test:e2e    # e2e — nécessite Postgres joignable
 ```
 
 Tests unitaires : middleware de cloisonnement, durée des tokens, couleur d'unité (RG18).

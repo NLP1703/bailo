@@ -34,9 +34,9 @@ Chaque critère du cahier des charges, son implémentation et le test qui le cou
 ## Lancer la vérification complète
 
 ```bash
-corepack pnpm --filter @citegest/shared test     # RG1–RG18 (unit)
-corepack pnpm --filter @citegest/api test          # unit API
+corepack pnpm --filter @bailo/shared test     # RG1–RG18 (unit)
+corepack pnpm --filter @bailo/api test          # unit API
 docker compose up -d postgres
-corepack pnpm --filter @citegest/api exec prisma migrate deploy
-corepack pnpm --filter @citegest/api test:e2e      # parcours complets
+corepack pnpm --filter @bailo/api exec prisma migrate deploy
+corepack pnpm --filter @bailo/api test:e2e      # parcours complets
 ```

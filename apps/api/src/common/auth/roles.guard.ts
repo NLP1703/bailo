@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import type { UserRole } from '@citegest/shared';
+import type { UserRole } from '@bailo/shared';
 import type { RequestContext } from '../tenancy/request-context';
 import { ROLES_KEY } from './roles.decorator';
 

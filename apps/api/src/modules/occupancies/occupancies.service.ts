@@ -7,7 +7,7 @@ import {
   type CloseOccupancyDto,
   type CreateOccupancyDto,
   type NoticeOccupancyDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';
@@ -71,6 +71,22 @@ export class OccupanciesService {
         },
       });
 
+      // Si l'unité était marquée UNAVAILABLE ou RESERVED à la main, elle est à présent
+      // occupée pour de bon → on la remet AVAILABLE pour éviter l'incohérence
+      // (couleur RG18 et parcours « unité libre » cohérents).
+      // On en profite pour consommer les champs de réservation (acompte, nom, date).
+      if (unit.manualStatus !== 'AVAILABLE' || unit.reservationDepositAmount) {
+        await tx.unit.update({
+          where: { id: unit.id },
+          data: {
+            manualStatus: 'AVAILABLE',
+            reservedUntil: null,
+            reservedFor: null,
+            reservationDepositAmount: null,
+          },
+        });
+      }
+
       // Caution en premier (échéance à part, RG14) pour qu'elle soit réglée avant les loyers.
       if (dto.deposit > 0) {
         await tx.charge.create({
@@ -120,6 +136,8 @@ export class OccupanciesService {
           clientId: dto.clientId ?? randomUUID(),
           amount: openingAmount,
           mode: dto.paymentMode,
+          ...(dto.paymentReference ? { reference: dto.paymentReference } : {}),
+          ...(dto.paymentProofKey ? { proofKey: dto.paymentProofKey } : {}),
           paidAt: startDate,
           receiptPrefix: account?.receiptPrefix ?? 'CG',
         });

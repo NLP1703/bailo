@@ -1,4 +1,4 @@
-import type { FilePurpose, UploadUrlResult, DownloadUrlResult } from '@citegest/shared';
+import type { FilePurpose, UploadUrlResult, DownloadUrlResult } from '@bailo/shared';
 import { api } from './api';
 
 /**

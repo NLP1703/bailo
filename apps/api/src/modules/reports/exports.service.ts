@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { formatFcfa, type ExportQuery, type ExportType } from '@citegest/shared';
+import { formatFcfa, type ExportQuery, type ExportType } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';
 import { toDate } from '../../common/time/to-date';

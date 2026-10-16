@@ -5,8 +5,9 @@ import {
   TEMPLATE_KINDS,
   type ReminderStage,
   type TemplateKind,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { api } from '../lib/api';
+import { PageHeader, NativeSelect, TextArea, Button } from '../components/ui';
 
 interface Template {
   id: string;
@@ -69,14 +70,17 @@ export function Templates() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">{t('templates.title')}</h1>
-      <p className="text-sm text-slate-600">
-        {t('templates.variables')} : {'{nom} {chambre} {montant} {date}'}
+      <PageHeader title={t('templates.title')} />
+      <p className="-mt-2 text-sm text-slate-500">
+        {t('templates.variables')} :{' '}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">
+          {'{nom} {chambre} {montant} {date}'}
+        </code>
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <select
-          className="rounded border border-slate-300 px-2 py-2 text-sm"
+        <NativeSelect
+          className="!w-auto"
           value={kind}
           onChange={(e) => setKind(e.target.value as TemplateKind)}
         >
@@ -85,18 +89,14 @@ export function Templates() {
               {t(`templates.kind.${k}`)}
             </option>
           ))}
-        </select>
-        <select
-          className="rounded border border-slate-300 px-2 py-2 text-sm"
-          value={locale}
-          onChange={(e) => setLocale(e.target.value)}
-        >
+        </NativeSelect>
+        <NativeSelect className="!w-auto" value={locale} onChange={(e) => setLocale(e.target.value)}>
           <option value="fr">FR</option>
           <option value="en">EN</option>
-        </select>
+        </NativeSelect>
         {kind === 'REMINDER' && (
-          <select
-            className="rounded border border-slate-300 px-2 py-2 text-sm"
+          <NativeSelect
+            className="!w-auto"
             value={stage}
             onChange={(e) => setStage(e.target.value as ReminderStage)}
           >
@@ -105,12 +105,12 @@ export function Templates() {
                 {t(`templates.stage.${s}`)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         )}
       </div>
 
-      <textarea
-        className="h-48 w-full rounded border border-slate-300 p-3 font-mono text-sm"
+      <TextArea
+        className="h-48 font-mono"
         value={body}
         onChange={(e) => {
           setBody(e.target.value);
@@ -120,16 +120,14 @@ export function Templates() {
       />
 
       {saved && (
-        <p className="rounded bg-emerald-50 p-2 text-sm text-emerald-700">{t('templates.saved')}</p>
+        <p className="rounded-lg bg-emerald-50 p-3 text-sm font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
+          {t('templates.saved')}
+        </p>
       )}
 
-      <button
-        onClick={save}
-        disabled={body.trim().length === 0}
-        className="w-full rounded bg-brand py-2 font-semibold text-white disabled:opacity-50"
-      >
+      <Button block onClick={save} disabled={body.trim().length === 0}>
         {t('common.save')}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { syncPullQuery, syncPushDto, type SyncPullQuery, type SyncPushDto } from '@citegest/shared';
+import { syncPullQuery, syncPushDto, type SyncPullQuery, type SyncPushDto } from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import type { RequestContext } from '../../common/tenancy/request-context';

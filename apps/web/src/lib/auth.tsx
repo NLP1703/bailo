@@ -1,12 +1,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { AuthTokens, MeView } from '@citegest/shared';
+import type { AuthTokens, LoginDto, MeView, SignupDto } from '@bailo/shared';
 import { api, clearTokens, hasSession, setTokens } from './api';
 
 interface AuthContextValue {
   user: MeView | null;
   loading: boolean;
-  login: (phone: string, password: string) => Promise<void>;
+  login: (credentials: LoginDto) => Promise<void>;
+  signup: (dto: SignupDto) => Promise<void>;
   logout: () => Promise<void>;
+  /** Recharge /me (offre, lecture seule…) sans recharger la page. */
+  refreshMe: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -27,8 +30,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (phone: string, password: string): Promise<void> => {
-    const tokens = await api.post<AuthTokens>('/auth/login', { phone, password });
+  const login = async (credentials: LoginDto): Promise<void> => {
+    const tokens = await api.post<AuthTokens>('/auth/login', credentials);
+    setTokens(tokens.accessToken, tokens.refreshToken);
+    setUser(await api.get<MeView>('/me'));
+  };
+
+  // Inscription d'un bailleur : création directe du compte + propriétaire,
+  // qui ouvre immédiatement la session (sans code de vérification).
+  const signup = async (dto: SignupDto): Promise<void> => {
+    const tokens = await api.post<AuthTokens>('/auth/signup', dto);
     setTokens(tokens.accessToken, tokens.refreshToken);
     setUser(await api.get<MeView>('/me'));
   };
@@ -43,8 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshMe = async (): Promise<void> => {
+    setUser(await api.get<MeView>('/me'));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, refreshMe }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

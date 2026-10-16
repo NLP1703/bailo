@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { SyncPullQuery, SyncPushDto } from '@citegest/shared';
+import type { SyncPullQuery, SyncPushDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { toDate } from '../../common/time/to-date';
 import type { RequestContext } from '../../common/tenancy/request-context';

@@ -10,7 +10,10 @@ export type SiteType = (typeof SITE_TYPES)[number];
 export const PRORATA_MODES = ['FULL', 'PRORATA'] as const;
 export type ProrataMode = (typeof PRORATA_MODES)[number];
 
-export const UNIT_TYPES = ['CHAMBRE', 'STUDIO', 'APPARTEMENT'] as const;
+export const PENALTY_MODES = ['FIXED', 'PERCENT'] as const;
+export type PenaltyMode = (typeof PENALTY_MODES)[number];
+
+export const UNIT_TYPES = ['CHAMBRE', 'STUDIO', 'APPARTEMENT', 'MAISON'] as const;
 export type UnitType = (typeof UNIT_TYPES)[number];
 
 export const UNIT_MANUAL_STATUSES = ['AVAILABLE', 'UNAVAILABLE', 'RESERVED'] as const;
@@ -70,17 +73,6 @@ export type ReminderStatus = (typeof REMINDER_STATUSES)[number];
 
 export const SUBSCRIPTION_PLANS = ['DISCOVERY', 'CITE', 'CITE_PRO', 'MANAGER'] as const;
 export type SubscriptionPlan = (typeof SUBSCRIPTION_PLANS)[number];
-
-export const EXPENSE_CATEGORIES = [
-  'EAU',
-  'ELECTRICITE',
-  'ENTRETIEN',
-  'REPARATION',
-  'SALAIRE',
-  'TAXE',
-  'AUTRE',
-] as const;
-export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
 export const OTP_PURPOSES = ['SIGNUP', 'LOGIN', 'PASSWORD_RESET'] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];

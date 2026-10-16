@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { formatReceiptNumber } from '@citegest/shared';
+import { formatReceiptNumber } from '@bailo/shared';
 
 /**
  * Numéro de reçu continu par compte (RG9). L'incrément est atomique (upsert avec

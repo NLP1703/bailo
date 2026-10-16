@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { uuid } from '@citegest/shared';
+import { uuid } from '@bailo/shared';
 import { Public } from '../../common/auth/public.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { ReceiptsService, type ReceiptVerification } from './receipts.service';

@@ -28,6 +28,10 @@ export const createOccupancyDto = z.object({
   paymentMode: z
     .enum(['ESPECES', 'MTN_MOMO', 'ORANGE_MONEY', 'VIREMENT', 'AUTRE'])
     .default('ESPECES'),
+  /** Référence du paiement d'ouverture (ID transaction MoMo, n° virement…). */
+  paymentReference: z.string().max(120).optional(),
+  /** Clé S3 d'une preuve de paiement d'ouverture (capture MoMo, scan virement). */
+  paymentProofKey: z.string().max(500).optional(),
   clientId: uuid.optional(), // idempotence du paiement d'ouverture (hors-ligne)
 });
 export type CreateOccupancyDto = z.infer<typeof createOccupancyDto>;

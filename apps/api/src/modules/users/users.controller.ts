@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   inviteUserDto,
@@ -8,9 +8,10 @@ import {
   type MeView,
   type UpdateUserDto,
   type UserView,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
+import { AllowWhenReadOnly } from '../../common/auth/allow-read-only.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { UsersService } from './users.service';
@@ -25,6 +26,14 @@ export class UsersController {
   @ApiOperation({ summary: 'Profil courant (rôle, sites)' })
   async me(@CurrentUser() ctx: RequestContext): Promise<MeView> {
     return this.users.me(ctx);
+  }
+
+  @Delete('me')
+  @AllowWhenReadOnly()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Supprimer son propre compte (gérant / gardien)' })
+  async removeSelf(@CurrentUser() ctx: RequestContext): Promise<void> {
+    await this.users.removeSelf(ctx);
   }
 
   @Post('users/invite')
@@ -43,11 +52,22 @@ export class UsersController {
 
   @Patch('users/:id')
   @Roles('OWNER')
-  @ApiOperation({ summary: 'Modifier rôle / sites / activation' })
+  @ApiOperation({ summary: 'Modifier nom / email / rôle / sites / activation' })
   async update(
     @Param('id', new ZodValidationPipe(uuid)) id: string,
     @Body(new ZodValidationPipe(updateUserDto)) dto: UpdateUserDto,
   ): Promise<UserView> {
     return this.users.update(id, dto);
+  }
+
+  @Delete('users/:id')
+  @Roles('OWNER')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Supprimer un utilisateur (hors propriétaire, sans historique)' })
+  async remove(
+    @Param('id', new ZodValidationPipe(uuid)) id: string,
+    @CurrentUser() ctx: RequestContext,
+  ): Promise<void> {
+    await this.users.remove(id, ctx);
   }
 }

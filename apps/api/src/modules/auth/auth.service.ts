@@ -1,11 +1,4 @@
-import {
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import type {
   AuthTokens,
@@ -13,54 +6,57 @@ import type {
   PasswordResetDto,
   RequestOtpDto,
   SignupDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
+import { AppException } from '../../common/http/app.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { BillingService } from '../../common/billing/billing.service';
+import { RateLimiterService } from '../../common/redis/rate-limiter.service';
 import { OtpService } from './otp.service';
 import { TokenService } from './token.service';
 
-/** Fenêtre glissante d'anti-force-brute sur la connexion (par téléphone). */
-const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+/** Fenêtre glissante d'anti-force-brute sur la connexion (par téléphone/email). */
+const LOGIN_WINDOW_SEC = 15 * 60;
 
 @Injectable()
 export class AuthService {
-  private readonly loginAttempts = new Map<string, { count: number; firstAt: number }>();
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly otp: OtpService,
     private readonly tokens: TokenService,
+    private readonly billing: BillingService,
+    private readonly rateLimiter: RateLimiterService,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
 
   async requestOtp(dto: RequestOtpDto): Promise<void> {
-    // Pour SIGNUP, on refuse un téléphone déjà titulaire d'un compte.
     if (dto.purpose === 'SIGNUP') {
       const existing = await this.prisma.account.findUnique({ where: { phone: dto.phone } });
       if (existing) {
-        throw new ConflictException('Ce numéro est déjà associé à un compte');
+        throw AppException.conflict('AUTH_PHONE_ALREADY_USED');
       }
     }
     await this.otp.request(dto.phone, dto.purpose);
   }
 
-  /** Crée le compte + son propriétaire après validation de l'OTP. */
+  /** Crée le compte + son propriétaire (inscription directe, sans OTP). */
   async signup(dto: SignupDto): Promise<AuthTokens> {
-    const ok = await this.otp.verifyAndConsume(dto.phone, 'SIGNUP', dto.otp);
-    if (!ok) {
-      throw new UnauthorizedException('Code de vérification invalide ou expiré');
-    }
-
     const passwordHash = await argon2.hash(dto.password);
     const user = await this.prisma
       .$transaction(async (tx) => {
         const account = await tx.account.create({
-          data: { name: dto.accountName, phone: dto.phone },
+          data: {
+            name: dto.accountName,
+            phone: dto.phone,
+            plan: 'CITE_PRO',
+            subscriptionEndAt: this.billing.trialEnd(),
+          },
         });
         return tx.user.create({
           data: {
             accountId: account.id,
             name: dto.ownerName,
+            email: dto.email,
             phone: dto.phone,
             passwordHash,
             role: 'OWNER',
@@ -69,7 +65,10 @@ export class AuthService {
       })
       .catch((error: unknown) => {
         if (error instanceof Object && 'code' in error && error.code === 'P2002') {
-          throw new ConflictException('Ce numéro est déjà associé à un compte');
+          const target = String((error as { meta?: { target?: unknown } }).meta?.target ?? '');
+          throw AppException.conflict(
+            target.includes('email') ? 'AUTH_EMAIL_ALREADY_USED' : 'AUTH_PHONE_ALREADY_USED',
+          );
         }
         throw error;
       });
@@ -78,17 +77,21 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthTokens> {
-    this.assertNotRateLimited(dto.phone);
+    const key = `login:${dto.email ?? dto.phone!}`;
+    const result = await this.rateLimiter.hit(key, this.env.LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SEC);
+    if (!result.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((result.resetAtMs - Date.now()) / 1000));
+      throw AppException.tooMany('LOGIN_RATE_LIMITED', retryAfter);
+    }
 
-    // Un même numéro peut exister dans plusieurs comptes (ex. gardien) : on
-    // authentifie contre chaque candidat actif, le premier dont le mot de passe
-    // correspond l'emporte (résolution mono-compte au MVP).
     const candidates = await this.prisma.user.findMany({
-      where: { phone: dto.phone, active: true },
+      where: dto.email
+        ? { email: dto.email, active: true }
+        : { phone: dto.phone!, active: true },
     });
     for (const candidate of candidates) {
       if (await argon2.verify(candidate.passwordHash, dto.password)) {
-        this.loginAttempts.delete(dto.phone);
+        await this.rateLimiter.reset(key);
         return this.tokens.issue({
           id: candidate.id,
           accountId: candidate.accountId,
@@ -97,8 +100,7 @@ export class AuthService {
       }
     }
 
-    this.registerFailedAttempt(dto.phone);
-    throw new UnauthorizedException('Téléphone ou mot de passe incorrect');
+    throw new AppException('AUTH_INVALID_CREDENTIALS', 401);
   }
 
   async refresh(rawRefresh: string): Promise<AuthTokens> {
@@ -108,7 +110,7 @@ export class AuthService {
   async resetPassword(dto: PasswordResetDto): Promise<void> {
     const ok = await this.otp.verifyAndConsume(dto.phone, 'PASSWORD_RESET', dto.otp);
     if (!ok) {
-      throw new UnauthorizedException('Code de vérification invalide ou expiré');
+      throw new AppException('AUTH_OTP_INVALID', 401);
     }
     const passwordHash = await argon2.hash(dto.newPassword);
     const users = await this.prisma.user.findMany({ where: { phone: dto.phone } });
@@ -120,31 +122,5 @@ export class AuthService {
 
   async logout(rawRefresh: string): Promise<void> {
     await this.tokens.revoke(rawRefresh);
-  }
-
-  // ─── Anti-force-brute (NF6) ────────────────────────────────────────────────
-
-  private assertNotRateLimited(phone: string): void {
-    const entry = this.loginAttempts.get(phone);
-    if (!entry) return;
-    if (Date.now() - entry.firstAt > LOGIN_WINDOW_MS) {
-      this.loginAttempts.delete(phone);
-      return;
-    }
-    if (entry.count >= this.env.LOGIN_MAX_ATTEMPTS) {
-      throw new HttpException(
-        'Trop de tentatives, réessayez plus tard',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-  }
-
-  private registerFailedAttempt(phone: string): void {
-    const entry = this.loginAttempts.get(phone);
-    if (!entry || Date.now() - entry.firstAt > LOGIN_WINDOW_MS) {
-      this.loginAttempts.set(phone, { count: 1, firstAt: Date.now() });
-    } else {
-      entry.count += 1;
-    }
   }
 }

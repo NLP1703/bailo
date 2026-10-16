@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { UserRole } from '@citegest/shared';
+import type { UserRole } from '@bailo/shared';
 
 /** Contexte propagé sur toute la durée d'une requête (via AsyncLocalStorage). */
 export interface RequestContext {

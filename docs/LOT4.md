@@ -1,4 +1,4 @@
-# CitéGest — Lot 4 · Relances et suivi
+# Bailo — Lot 4 · Relances et suivi
 
 Relances du jour (RG11–RG13), modèles FR/EN, tableau de bord, impayés, exports,
 endpoints de synchronisation hors-ligne, et jobs planifiés (BullMQ).
@@ -49,9 +49,9 @@ endpoints de synchronisation hors-ligne, et jobs planifiés (BullMQ).
 ## Tests
 
 ```bash
-corepack pnpm --filter @citegest/shared test   # 35 tests de domaine (RG1–RG18)
-corepack pnpm --filter @citegest/api test       # 12 tests unitaires
-corepack pnpm --filter @citegest/api test:e2e   # nécessite Postgres
+corepack pnpm --filter @bailo/shared test   # 35 tests de domaine (RG1–RG18)
+corepack pnpm --filter @bailo/api test       # 12 tests unitaires
+corepack pnpm --filter @bailo/api test:e2e   # nécessite Postgres
 ```
 
 `test/suivi.e2e.spec.ts` valide : **relances du jour** (J-3, wa-link, envoi, plus de

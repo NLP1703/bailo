@@ -3,12 +3,14 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   createBlockDto,
   createSiteDto,
+  onboardingDto,
   updateSiteDto,
   uuid,
   type CreateBlockDto,
   type CreateSiteDto,
+  type OnboardingDto,
   type UpdateSiteDto,
-} from '@citegest/shared';
+} from '@bailo/shared';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { Roles } from '../../common/auth/roles.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
@@ -35,6 +37,15 @@ export class SitesController {
     @Body(new ZodValidationPipe(createSiteDto)) dto: CreateSiteDto,
   ) {
     return this.sites.create(ctx, dto);
+  }
+
+  @Post('onboarding')
+  @ApiOperation({ summary: 'Mise en service : bâtiment + unités (après inscription)' })
+  async onboarding(
+    @CurrentUser() ctx: RequestContext,
+    @Body(new ZodValidationPipe(onboardingDto)) dto: OnboardingDto,
+  ) {
+    return this.sites.onboarding(ctx, dto);
   }
 
   @Patch(':id')

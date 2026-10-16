@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phone, password, otpCode } from './common';
+import { phone, email, password, otpCode } from './common';
 import { OTP_PURPOSES } from '../enums';
 
 export const requestOtpDto = z.object({
@@ -11,16 +11,23 @@ export type RequestOtpDto = z.infer<typeof requestOtpDto>;
 export const signupDto = z.object({
   accountName: z.string().min(2),
   ownerName: z.string().min(2),
+  email,
   phone,
   password,
-  otp: otpCode,
 });
 export type SignupDto = z.infer<typeof signupDto>;
 
-export const loginDto = z.object({
-  phone,
-  password,
-});
+// Connexion par email OU téléphone : au moins un identifiant est requis.
+export const loginDto = z
+  .object({
+    email: email.optional(),
+    phone: phone.optional(),
+    password,
+  })
+  .refine((dto) => Boolean(dto.email) || Boolean(dto.phone), {
+    message: 'Email ou téléphone requis',
+    path: ['phone'],
+  });
 export type LoginDto = z.infer<typeof loginDto>;
 
 export const refreshDto = z.object({

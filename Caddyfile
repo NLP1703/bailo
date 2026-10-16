@@ -1,7 +1,7 @@
-# Reverse proxy CitéGest — HTTPS automatique en production.
+# Reverse proxy Bailo — HTTPS automatique en production.
 #
 # En local, on écoute en HTTP sur :80. Pour un vrai domaine, remplacer `:80`
-# par le nom de domaine (ex. `app.citegest.cm`) : Caddy obtient un certificat
+# par le nom de domaine (ex. `app.bailo.cm`) : Caddy obtient un certificat
 # Let's Encrypt automatiquement (NF6 — HTTPS obligatoire).
 
 :80 {

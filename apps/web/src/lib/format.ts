@@ -1,4 +1,4 @@
-import { formatFcfa } from '@citegest/shared';
+import { formatFcfa } from '@bailo/shared';
 
 export { formatFcfa };
 

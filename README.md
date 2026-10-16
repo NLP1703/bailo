@@ -1,4 +1,4 @@
-# CitéGest
+# Bailo
 
 Gestion locative pour **cités étudiantes et immeubles** au Cameroun : chambres, locataires,
 loyers, **avances et paiements partiels**, reçus PDF, relances WhatsApp, caisse du gardien,
@@ -22,7 +22,7 @@ L'API applique les migrations (`prisma migrate deploy`) au démarrage. Pour des 
 
 ```bash
 docker compose exec api node node_modules/.bin/tsx prisma/seed.ts
-# ou en local : corepack pnpm --filter @citegest/api seed
+# ou en local : corepack pnpm --filter @bailo/api seed
 ```
 
 **Comptes de test** (après seed, mot de passe `demo1234`) :
@@ -33,11 +33,11 @@ Propriétaire `690000000` · Gérant `690000001` · Gardien `690000002`.
 ```bash
 corepack pnpm install
 docker compose up -d postgres redis minio minio-init   # dépendances uniquement
-corepack pnpm --filter @citegest/shared build
-corepack pnpm --filter @citegest/api prisma:generate
-corepack pnpm --filter @citegest/api exec prisma migrate deploy
-corepack pnpm --filter @citegest/api dev    # API  → http://localhost:3000
-corepack pnpm --filter @citegest/web dev    # Front → http://localhost:5173
+corepack pnpm --filter @bailo/shared build
+corepack pnpm --filter @bailo/api prisma:generate
+corepack pnpm --filter @bailo/api exec prisma migrate deploy
+corepack pnpm --filter @bailo/api dev    # API  → http://localhost:3000
+corepack pnpm --filter @bailo/web dev    # Front → http://localhost:5173
 ```
 
 ## Architecture
@@ -64,9 +64,9 @@ critères d'acceptation [`docs/ACCEPTATION.md`](docs/ACCEPTATION.md).
 ## Tests
 
 ```bash
-corepack pnpm --filter @citegest/shared test   # règles de gestion (RG1–RG18)
-corepack pnpm --filter @citegest/api test        # unitaires API
-corepack pnpm --filter @citegest/api test:e2e    # e2e (nécessite Postgres)
+corepack pnpm --filter @bailo/shared test   # règles de gestion (RG1–RG18)
+corepack pnpm --filter @bailo/api test        # unitaires API
+corepack pnpm --filter @bailo/api test:e2e    # e2e (nécessite Postgres)
 ```
 
 ## Variables d'environnement
@@ -77,5 +77,5 @@ un vrai fournisseur SMS (`SMS_PROVIDER`).
 
 ## Contraintes réglementaires
 
-CitéGest **ne détient ni ne reverse jamais** l'argent des loyers (hors champ BEAC/COBAC) :
+Bailo **ne détient ni ne reverse jamais** l'argent des loyers (hors champ BEAC/COBAC) :
 l'argent va directement au bailleur ; la plateforme ne fait que tracer.

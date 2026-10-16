@@ -1,4 +1,4 @@
-import type { ReminderStage } from '@citegest/shared';
+import type { ReminderStage } from '@bailo/shared';
 
 /**
  * Messages de relance par défaut (FR/EN), utilisés tant qu'aucun modèle personnalisé

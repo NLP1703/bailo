@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import type { UserRole } from '@citegest/shared';
+import type { UserRole } from '@bailo/shared';
 
 export const ROLES_KEY = 'roles';
 

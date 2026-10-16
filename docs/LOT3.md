@@ -1,4 +1,4 @@
-# CitéGest — Lot 3 · Cœur financier
+# Bailo — Lot 3 · Cœur financier
 
 Occupations, échéances, affectation des paiements, reçus PDF, caisse, sortie,
 journal d'audit — avec les règles de gestion RG1–RG18 en module de domaine pur testé.
@@ -55,9 +55,9 @@ Le plan des chambres (`GET /units`) calcule désormais la **couleur RG18 complè
 ## Tests
 
 ```bash
-corepack pnpm --filter @citegest/shared test   # 28 tests de domaine (RG1–RG18)
-corepack pnpm --filter @citegest/api test       # 12 tests unitaires (dont reçu HTML)
-corepack pnpm --filter @citegest/api test:e2e   # nécessite Postgres
+corepack pnpm --filter @bailo/shared test   # 28 tests de domaine (RG1–RG18)
+corepack pnpm --filter @bailo/api test       # 12 tests unitaires (dont reçu HTML)
+corepack pnpm --filter @bailo/api test:e2e   # nécessite Postgres
 ```
 
 `test/payments.e2e.spec.ts` valide sur la vraie base : P2 (175 000), partiel (reste 15 000),

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { CreatePaymentDto } from '@citegest/shared';
+import type { CreatePaymentDto } from '@bailo/shared';
 import { api } from './api';
 import { db, type CachedTenant, type CachedUnit } from './db';
 
