@@ -6,6 +6,14 @@
     "online": "Online",
     "synced": "All data is synced"
   },
+  "bottomNav": {
+    "aria": "Main navigation",
+    "home": "Home",
+    "rooms": "Rooms",
+    "collect": "Collect",
+    "arrears": "Arrears",
+    "more": "More"
+  },
   "nav": {
     "home": "Home",
     "rooms": "Rooms",

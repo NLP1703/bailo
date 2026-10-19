@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/auth';
 import { SidebarContent } from './Sidebar';
 import { Topbar } from './Topbar';
+import { BottomNav } from './BottomNav';
 import { CommandPalette } from './CommandPalette';
 import { PrintLetterhead } from '../components/PrintLetterhead';
 
@@ -111,13 +112,15 @@ export function Layout() {
           </div>
         )}
 
-        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8 print:!p-0">
+        <main className="flex-1 px-4 py-5 pb-bottom-nav sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:!pb-8 print:!p-0">
           <div className="mx-auto w-full max-w-7xl print:max-w-none">
             <PrintLetterhead />
             <Outlet />
           </div>
         </main>
       </div>
+
+      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
 
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

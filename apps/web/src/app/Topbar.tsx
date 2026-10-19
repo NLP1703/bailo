@@ -11,32 +11,33 @@ import {
   ChevronRightIcon,
   GlobeIcon,
   LogOutIcon,
-  MenuIcon,
   SearchIcon,
   SettingsIcon,
   TagIcon,
   UserIcon,
 } from '../components/icons';
 
-/** Barre supérieure : fil d'Ariane, recherche, synchro, compte. */
-export function Topbar({ onOpenMenu, onOpenSearch }: { onOpenMenu: () => void; onOpenSearch: () => void }) {
+/** Barre supérieure : fil d'Ariane, recherche, synchro, compte.
+ *  Sur mobile, le menu complet est atteint via « Plus » de la bottom-nav —
+ *  on ne garde ici que la marque, le titre de page et la recherche. */
+export function Topbar({
+  onOpenMenu: _onOpenMenu,
+  onOpenSearch,
+}: {
+  onOpenMenu: () => void;
+  onOpenSearch: () => void;
+}) {
+  void _onOpenMenu;
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const crumbs = breadcrumbFor(pathname);
   const current = crumbs[crumbs.length - 1];
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 print:hidden">
-      <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        {/* Mobile : menu + marque */}
-        <button
-          onClick={onOpenMenu}
-          aria-label={t('nav.menu')}
-          className="-ml-1.5 flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 lg:hidden"
-        >
-          <MenuIcon className="h-5 w-5" />
-        </button>
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white lg:hidden">
+    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 pt-safe backdrop-blur supports-[backdrop-filter]:bg-white/75 print:hidden">
+      <div className="flex h-14 items-center gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
+        {/* Mobile : marque compacte (le menu complet est dans la bottom-nav → « Plus ») */}
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-white shadow-sm lg:hidden">
           <BuildingIcon className="h-4 w-4" />
         </span>
 

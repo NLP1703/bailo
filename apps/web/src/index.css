@@ -6,6 +6,15 @@
 
 :root {
   color-scheme: light;
+  /* Insets de l'appareil (encoche iPhone, barre de gestes Android) — repris
+     par les utilitaires `pb-safe`, `pt-safe`, etc. définis plus bas. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Hauteur de la barre d'onglets mobile (BottomNav) + inset bas, utilisée
+     comme padding sous le contenu pour qu'aucun texte ne soit masqué. */
+  --bottom-nav-h: 72px;
 }
 html,
 body,
@@ -30,7 +39,45 @@ body {
   font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Mobile : scroll fluide iOS, pas de reflet orange au tap, double-tap zoom
+     désactivé (gêne la saisie rapide d'un montant par le gardien). */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
 }
+
+/* Les champs de saisie, eux, gardent le callout iOS (sélection, copier/coller). */
+input,
+textarea,
+[contenteditable='true'] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* iOS : empêche le zoom automatique quand on tape dans un champ < 16px.
+   On force la taille minimale sur mobile uniquement — le design visuel reste
+   en 14px sur l'écran via la classe `text-sm`, mais la valeur réelle au focus
+   est 16px, ce qui n'est pas détectable à l'œil nu. */
+@media (max-width: 640px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Utilitaires safe-area (encoche iPhone, barre de gestes). */
+.pt-safe { padding-top: var(--safe-top); }
+.pb-safe { padding-bottom: var(--safe-bottom); }
+.pl-safe { padding-left: var(--safe-left); }
+.pr-safe { padding-right: var(--safe-right); }
+.min-h-screen-safe { min-height: calc(100vh - var(--safe-top) - var(--safe-bottom)); }
+/* Padding bas qui additionne la hauteur de la bottom-nav + inset de l'appareil. */
+.pb-bottom-nav { padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom)); }
 
 /* Barre de défilement discrète pour la navigation latérale. */
 .scrollbar-thin {
@@ -43,6 +90,28 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
+}
+
+/* Boutons/liens : tap targets 44×44 min sur touch (Apple/Google guideline),
+   sans toucher au rendu desktop. */
+@media (hover: none) and (pointer: coarse) {
+  button:not(.h-6):not(.h-7):not(.h-8):not([role='tab']),
+  [role='button']:not(.h-6):not(.h-7):not(.h-8),
+  a.rounded-lg,
+  a.rounded-md,
+  a.rounded-full {
+    min-height: 44px;
+  }
+}
+
+/* Animation du bouton central de la bottom-nav (micro-rebond au tap). */
+@keyframes pop-tap {
+  0% { transform: translate(-50%, -1.25rem) scale(1); }
+  40% { transform: translate(-50%, -1.25rem) scale(0.92); }
+  100% { transform: translate(-50%, -1.25rem) scale(1); }
+}
+.animate-pop-tap:active {
+  animation: pop-tap 180ms ease-out;
 }
 
 /* ─── Impression A4 des états (impayés, caisse…) ──────────────────────────── */

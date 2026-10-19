@@ -6,6 +6,14 @@
     "online": "En ligne",
     "synced": "Toutes les données sont synchronisées"
   },
+  "bottomNav": {
+    "aria": "Navigation principale",
+    "home": "Accueil",
+    "rooms": "Chambres",
+    "collect": "Encaisser",
+    "arrears": "Impayés",
+    "more": "Plus"
+  },
   "nav": {
     "home": "Accueil",
     "rooms": "Chambres",
