@@ -30,6 +30,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.7",
     "ioredis": "^5.11.1",
+    "prisma": "^5.20.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^3.23.8"
@@ -46,7 +47,6 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.4",
     "@types/supertest": "^6.0.2",
-    "prisma": "^5.20.0",
     "supertest": "^7.0.0",
     "tsx": "^4.19.1",
     "unplugin-swc": "^1.5.1",
