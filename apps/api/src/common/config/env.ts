@@ -54,7 +54,14 @@ const jwtSecret = (field: string) =>
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    // Railway (et la plupart des PaaS) injectent `PORT` dynamiquement ; on l'accepte
+    // en priorité. En dev local on reste sur API_PORT (3000) si rien n'est fourni.
     API_PORT: z.coerce.number().int().default(3000),
+    PORT: z.coerce.number().int().optional(),
+    /**
+     * Origines CORS autorisées. Chaîne (une seule origine) ou valeurs séparées
+     * par des virgules (plusieurs domaines : Railway + domaine personnalisé).
+     */
     CORS_ORIGIN: z.string().default('http://localhost:5173'),
     TZ: z.string().default('Africa/Douala'),
 
@@ -106,11 +113,13 @@ const envSchema = z
             'Identifiants MinIO par défaut (minioadmin) interdits en production — générer des clés fortes',
         });
       }
-      if (!env.CORS_ORIGIN.startsWith('https://')) {
+      // Chaque origine listée doit être HTTPS en production.
+      const origins = env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+      if (origins.some((o) => !o.startsWith('https://'))) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['CORS_ORIGIN'],
-          message: 'CORS_ORIGIN doit utiliser HTTPS en production',
+          message: 'CORS_ORIGIN doit utiliser HTTPS en production (toutes les origines listées)',
         });
       }
     }

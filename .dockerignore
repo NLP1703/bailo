@@ -1,0 +1,37 @@
+# Dépendances & builds — reconstruits dans l'image
+node_modules
+**/node_modules
+dist
+**/dist
+build
+**/build
+.turbo
+coverage
+**/*.log
+
+# Git / éditeur
+.git
+.github
+.vscode
+.idea
+
+# Secrets locaux
+.env
+.env.*
+!.env.example
+
+# Fichiers de dev / jetables
+_to_delete
+docs
+*.md
+!README.md
+Caddyfile
+docker-compose.yml
+scripts
+
+# Prisma — ne pas copier les artefacts générés / caches
+apps/api/prisma/*.db
+apps/api/prisma/dev.db*
+
+# Front — artefacts PWA de dev
+apps/web/dev-dist

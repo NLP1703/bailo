@@ -16,9 +16,22 @@ async function bootstrap(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
 
+  // Derrière un reverse-proxy (Railway, Render, Caddy…), on fait confiance au premier
+  // hop pour X-Forwarded-* : indispensable pour les cookies Secure, les redirections,
+  // la limite de taux par IP réelle et les webhooks momo/OM qui s'appuient sur l'URL.
+  const expressApp = app.getHttpAdapter().getInstance();
+  if (typeof expressApp.set === 'function') {
+    expressApp.set('trust proxy', 1);
+  }
+
   // Les routes /health et /ready restent hors du préfixe /api/v1 (sondes k8s/Docker standards).
   app.setGlobalPrefix('api/v1', { exclude: ['health', 'ready'] });
-  app.enableCors({ origin: env.CORS_ORIGIN, credentials: true });
+  // CORS : accepte une ou plusieurs origines séparées par des virgules.
+  const corsOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+  app.enableCors({
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
+    credentials: true,
+  });
   app.useGlobalFilters(new PrismaExceptionFilter());
   // La validation métier passe par Zod (ZodValidationPipe) ; ce pipe ne sert
   // qu'à rejeter les charges utiles non conformes au typage de base.
@@ -33,9 +46,11 @@ async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(env.API_PORT);
+  const port = env.PORT ?? env.API_PORT;
+  // 0.0.0.0 : indispensable en conteneur (localhost ne reçoit que du trafic interne).
+  await app.listen(port, '0.0.0.0');
   Logger.log(
-    `API prête sur http://localhost:${env.API_PORT}/api/v1 (docs: /api/docs)`,
+    `API prête sur le port ${port} (préfixe /api/v1, docs: /api/docs)`,
     'Bootstrap',
   );
 }
