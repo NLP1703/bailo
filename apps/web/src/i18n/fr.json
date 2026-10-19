@@ -20,6 +20,12 @@
     "arrears": "Impayés",
     "tenants": "Locataires",
     "newEntry": "Nouvelle entrée",
+    "contracts": "Contrats",
+    "inspections": "États des lieux",
+    "maintenance": "Maintenance",
+    "expenses": "Dépenses",
+    "accounting": "Comptabilité",
+    "meters": "Compteurs",
     "cash": "Caisse",
     "templates": "Modèles",
     "settings": "Paramètres",
@@ -31,12 +37,17 @@
       "pilotage": "Pilotage",
       "rental": "Gestion locative",
       "finance": "Finances",
+      "ops": "Opérationnel",
       "admin": "Administration"
     },
     "crumb": {
       "unit": "Fiche chambre",
       "tenant": "Fiche locataire",
       "checkout": "Sortie du locataire",
+      "contract": "Contrat",
+      "contractNew": "Nouveau contrat",
+      "inspections": "États des lieux",
+      "meters": "Compteurs",
       "site": "Réglages de la cité"
     }
   },

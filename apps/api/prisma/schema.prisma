@@ -133,6 +133,87 @@ enum OtpPurpose {
   SIGNUP
   LOGIN
   PASSWORD_RESET
+  CONTRACT_SIGN
+}
+
+enum PaymentIntentStatus {
+  PENDING
+  INITIATED
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  MTN_MOMO
+  ORANGE_MONEY
+  MOCK
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURE
+  SIGNED
+  TERMINATED
+}
+
+enum InspectionKind {
+  ENTRY
+  EXIT
+}
+
+enum InspectionCondition {
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+enum MaintenanceStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum MaintenancePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum MeterType {
+  WATER
+  ELECTRICITY
+}
+
+enum ExpenseCategory {
+  MAINTENANCE
+  UTILITIES
+  TAX
+  SALARY
+  INSURANCE
+  SUPPLIES
+  MARKETING
+  OTHER
+}
+
+enum Currency {
+  XAF
+  EUR
+  USD
+  CAD
+  GBP
+}
+
+enum AnomalyKind {
+  LATE_PAYER
+  VACANCY_LONG
+  PRICE_OUTLIER
+  CONSUMPTION_SPIKE
+  MISSING_RECEIPT
 }
 
 enum TemplateKind {
@@ -146,6 +227,9 @@ enum AuditAction {
   UPDATE
   VOID
   CLOSE
+  DELETE
+  ARCHIVE
+  RESTORE
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -159,38 +243,53 @@ model Account {
   logoKey           String? // clé objet S3
   plan              SubscriptionPlan @default(DISCOVERY)
   subscriptionEndAt DateTime?
-  receiptPrefix     String           @default("CG") // préfixe des numéros de reçu (RG9)
+  receiptPrefix     String           @default("BL") // préfixe des numéros de reçu (RG9) — « BL » = Bailo
   receiptFooter     String? // mentions libres affichées en pied de reçu (F1.5)
+  // ─── Préférences v2 ────────────────────────────────────────────────────────
+  displayCurrency   Currency         @default(XAF) // devise d'affichage (diaspora)
+  diasporaMode      Boolean          @default(false) // envoi d'un récap WhatsApp mensuel au propriétaire
+  momoProvider      PaymentProvider? // provider actif pour les Collect
+  momoMerchantId    String? // identifiant marchand MoMo/OM (chiffré en prod)
+  momoApiKeyRef     String? // référence vers un secret stocké hors-DB
+  verifyBaseUrl     String? // base de l'URL de vérification des reçus (pour les QR)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
-  users            User[]
-  sites            Site[]
-  tenants          Tenant[]
-  occupancies      Occupancy[]
-  charges          Charge[]
-  payments         Payment[]
-  allocations      Allocation[]
-  cashHandovers    CashHandover[]
-  reminders        Reminder[]
-  auditLogs        AuditLog[]
-  templates        Template[]
-  receiptSequences ReceiptSequence[]
+  users              User[]
+  sites              Site[]
+  tenants            Tenant[]
+  occupancies        Occupancy[]
+  charges            Charge[]
+  payments           Payment[]
+  allocations        Allocation[]
+  cashHandovers      CashHandover[]
+  reminders          Reminder[]
+  auditLogs          AuditLog[]
+  templates          Template[]
+  receiptSequences   ReceiptSequence[]
+  contracts          Contract[]
+  inspections        Inspection[]
+  maintenanceTickets MaintenanceTicket[]
+  meters             Meter[]
+  expenses           Expense[]
+  paymentIntents     PaymentIntent[]
+  exchangeRates      ExchangeRate[]
+  anomalies          Anomaly[]
 
   @@map("account")
 }
 
 model User {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   accountId    String
   name         String
-  email        String?   @unique // identifiant de connexion optionnel, unique globalement
+  email        String?  @unique // identifiant de connexion optionnel, unique globalement
   phone        String
   passwordHash String
   role         UserRole
-  active       Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   createdBy    String?
 
   account       Account        @relation(fields: [accountId], references: [id])
@@ -251,34 +350,40 @@ model OtpCode {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Site {
-  id            String      @id @default(uuid())
-  accountId    String
-  name          String
-  type          SiteType
-  city          String?
-  district      String? // quartier
-  landmark      String? // repère
+  id               String      @id @default(uuid())
+  accountId        String
+  name             String
+  type             SiteType
+  city             String?
+  district         String? // quartier
+  landmark         String? // repère
   // Pour un immeuble, indique si les logements sont meublés par défaut : sert à
   // pré-cocher le flag `furnished` lors de la création en lot des chambres.
-  defaultFurnished Boolean  @default(false)
-  graceDays     Int         @default(0) // délai de grâce avant "en retard" (RG10)
-  prorataMode   ProrataMode @default(FULL) // RG4
-  reminderJm3   Boolean     @default(true) // paliers activables par site (RG11)
-  reminderJ0    Boolean     @default(true)
-  reminderJp5   Boolean     @default(true)
-  reminderJp15  Boolean     @default(true)
+  defaultFurnished Boolean     @default(false)
+  graceDays        Int         @default(0) // délai de grâce avant "en retard" (RG10)
+  prorataMode      ProrataMode @default(FULL) // RG4
+  reminderJm3      Boolean     @default(true) // paliers activables par site (RG11)
+  reminderJ0       Boolean     @default(true)
+  reminderJp5      Boolean     @default(true)
+  reminderJp15     Boolean     @default(true)
   penaltyEnabled   Boolean     @default(false) // pénalité de retard activée (F5.6)
   penaltyMode      PenaltyMode @default(FIXED)
   penaltyValue     Int         @default(0) // FCFA (FIXED) ou pourcentage (PERCENT)
   penaltyGraceDays Int         @default(0) // délai avant application de la pénalité
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  createdBy     String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  createdBy        String?
 
-  account Account    @relation(fields: [accountId], references: [id])
-  blocks  Block[]
-  units   Unit[]
-  users   UserSite[]
+  // Loyer de référence du quartier (XAF/mois) — pour détecter les PRICE_OUTLIER (NF13).
+  marketReferenceRent Int?
+
+  account            Account             @relation(fields: [accountId], references: [id])
+  blocks             Block[]
+  units              Unit[]
+  users              UserSite[]
+  maintenanceTickets MaintenanceTicket[]
+  expenses           Expense[]
+  anomalies          Anomaly[]
 
   @@index([accountId])
   @@map("site")
@@ -303,36 +408,38 @@ model Block {
 }
 
 model Unit {
-  id             String           @id @default(uuid())
-  accountId      String
-  siteId         String
-  blockId        String?
-  code           String // ex. "A12"
-  type           UnitType         @default(CHAMBRE)
-  baseRent       Int // loyer de base FCFA
-  furnished      Boolean          @default(false) // meublé ou non
-  chargesIncluded Boolean         @default(false)
-  shared         Boolean          @default(false) // chambre à plusieurs lits (RG17)
-  capacity       Int              @default(1)
-  bedrooms       Int? // nb de chambres d'une maison / appartement
-  rooms          String[]         @default([]) // pièces : salon, cuisine, douche…
-  manualStatus   UnitManualStatus @default(AVAILABLE)
+  id                       String           @id @default(uuid())
+  accountId                String
+  siteId                   String
+  blockId                  String?
+  code                     String // ex. "A12"
+  type                     UnitType         @default(CHAMBRE)
+  baseRent                 Int // loyer de base FCFA
+  furnished                Boolean          @default(false) // meublé ou non
+  chargesIncluded          Boolean          @default(false)
+  shared                   Boolean          @default(false) // chambre à plusieurs lits (RG17)
+  capacity                 Int              @default(1)
+  bedrooms                 Int? // nb de chambres d'une maison / appartement
+  rooms                    String[]         @default([]) // pièces : salon, cuisine, douche…
+  manualStatus             UnitManualStatus @default(AVAILABLE)
   // Date d'arrivée prévue du futur locataire (uniquement si RESERVED) — la maintenance
   // quotidienne (expireReservations) rebascule automatiquement l'unité en AVAILABLE
   // à partir de cette date, pour que l'UI redevienne grise puis verte à la création
   // de l'occupation réelle (RG18).
-  reservedUntil  DateTime?
-  reservedFor    String?          // nom du futur locataire, affiché sur la case bleue
-  reservationDepositAmount Int?   // acompte éventuellement versé par le futur locataire (consommé à la création de l'occupation)
-  amenities      String[]         @default([])
-  photoKeys      String[]         @default([]) // clés objet S3
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  createdBy      String?
+  reservedUntil            DateTime?
+  reservedFor              String? // nom du futur locataire, affiché sur la case bleue
+  reservationDepositAmount Int? // acompte éventuellement versé par le futur locataire (consommé à la création de l'occupation)
+  amenities                String[]         @default([])
+  photoKeys                String[]         @default([]) // clés objet S3
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  createdBy                String?
 
-  site        Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  block       Block?      @relation(fields: [blockId], references: [id], onDelete: SetNull)
-  occupancies Occupancy[]
+  site               Site                @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  block              Block?              @relation(fields: [blockId], references: [id], onDelete: SetNull)
+  occupancies        Occupancy[]
+  maintenanceTickets MaintenanceTicket[]
+  meters             Meter[]
 
   @@unique([siteId, code])
   @@index([accountId])
@@ -345,27 +452,30 @@ model Unit {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Tenant {
-  id            String   @id @default(uuid())
-  accountId     String
-  name          String
-  phone         String?
-  whatsapp      String?
-  idDocType     String? // type de pièce d'identité
-  idDocNumber   String?
-  idDocKey      String? // clé objet S3 (chiffrée), jamais publique
-  photoKey      String?
-  occupation    String? // école ou profession
+  id             String   @id @default(uuid())
+  accountId      String
+  name           String
+  phone          String?
+  whatsapp       String?
+  idDocType      String? // type de pièce d'identité
+  idDocNumber    String?
+  idDocKey       String? // clé objet S3 (chiffrée), jamais publique
+  photoKey       String?
+  occupation     String? // école ou profession
   emergencyName  String?
   emergencyPhone String?
-  notes         String?
-  archived      Boolean  @default(false) // ancien locataire
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
+  notes          String?
+  archived       Boolean  @default(false) // ancien locataire
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
 
-  account     Account     @relation(fields: [accountId], references: [id])
-  guarantors  Guarantor[]
-  occupancies Occupancy[]
+  account          Account     @relation(fields: [accountId], references: [id])
+  guarantors       Guarantor[]
+  occupancies      Occupancy[]
+  contracts        Contract[]
+  // Score de bon payeur (0..100), recalculé périodiquement, nul si pas assez d'historique.
+  reliabilityScore Int?
 
   @@index([accountId])
   @@index([accountId, name])
@@ -374,17 +484,17 @@ model Tenant {
 }
 
 model Guarantor {
-  id           String   @id @default(uuid())
-  accountId    String
-  tenantId     String
-  name         String
-  phone        String?
-  whatsapp     String?
-  relationship String? // lien de parenté
-  isPrimaryPayer Boolean @default(false) // payeur principal
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  createdBy    String?
+  id             String   @id @default(uuid())
+  accountId      String
+  tenantId       String
+  name           String
+  phone          String?
+  whatsapp       String?
+  relationship   String? // lien de parenté
+  isPrimaryPayer Boolean  @default(false) // payeur principal
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -398,29 +508,31 @@ model Guarantor {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Occupancy {
-  id            String          @id @default(uuid())
-  accountId     String
-  unitId        String
-  tenantId      String
-  startDate     DateTime // date d'entrée
-  plannedEndDate DateTime? // fin prévue (null = reconduction auto)
-  actualEndDate DateTime? // sortie effective (RG16)
-  noticeDate    DateTime? // préavis (RG16)
-  monthlyRent   Int // loyer négocié (fige les échéances, RG2)
-  dueDay        Int // jour d'échéance 1..28 (RG3)
-  deposit       Int             @default(0) // caution
-  status        OccupancyStatus @default(ACTIVE)
+  id                    String          @id @default(uuid())
+  accountId             String
+  unitId                String
+  tenantId              String
+  startDate             DateTime // date d'entrée
+  plannedEndDate        DateTime? // fin prévue (null = reconduction auto)
+  actualEndDate         DateTime? // sortie effective (RG16)
+  noticeDate            DateTime? // préavis (RG16)
+  monthlyRent           Int // loyer négocié (fige les échéances, RG2)
+  dueDay                Int // jour d'échéance 1..28 (RG3)
+  deposit               Int             @default(0) // caution
+  status                OccupancyStatus @default(ACTIVE)
   chargesGeneratedUntil DateTime? // borne de génération auto des échéances (RG1)
-  closeSummary  Json? // instantané de clôture (caution, impayés, retenues, à rembourser) RG15
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  createdBy     String?
+  closeSummary          Json? // instantané de clôture (caution, impayés, retenues, à rembourser) RG15
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  createdBy             String?
 
-  account  Account   @relation(fields: [accountId], references: [id])
-  unit     Unit      @relation(fields: [unitId], references: [id])
-  tenant   Tenant    @relation(fields: [tenantId], references: [id])
-  charges  Charge[]
-  payments Payment[]
+  account     Account      @relation(fields: [accountId], references: [id])
+  unit        Unit         @relation(fields: [unitId], references: [id])
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  charges     Charge[]
+  payments    Payment[]
+  contracts   Contract[]
+  inspections Inspection[]
 
   @@index([accountId])
   @@index([unitId])
@@ -437,20 +549,20 @@ model Occupancy {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Charge {
-  id            String       @id @default(uuid())
-  accountId     String
-  occupancyId   String
-  type          ChargeType
-  periodMonth   Int? // pour les loyers : mois concerné, 1..12
-  periodYear    Int? // pour les loyers : année
-  amount        Int // figé à la création (RG2)
-  dueDate       DateTime
-  status        ChargeStatus @default(UPCOMING)
-  cancelReason  String? // motif obligatoire d'annulation/remise (F5.5)
-  penaltyForChargeId String? @unique // si PENALITE : échéance de loyer à l'origine (idempotence)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  createdBy     String?
+  id                 String       @id @default(uuid())
+  accountId          String
+  occupancyId        String
+  type               ChargeType
+  periodMonth        Int? // pour les loyers : mois concerné, 1..12
+  periodYear         Int? // pour les loyers : année
+  amount             Int // figé à la création (RG2)
+  dueDate            DateTime
+  status             ChargeStatus @default(UPCOMING)
+  cancelReason       String? // motif obligatoire d'annulation/remise (F5.5)
+  penaltyForChargeId String?      @unique // si PENALITE : échéance de loyer à l'origine (idempotence)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  createdBy          String?
 
   account     Account      @relation(fields: [accountId], references: [id])
   occupancy   Occupancy    @relation(fields: [occupancyId], references: [id])
@@ -494,9 +606,13 @@ model Payment {
   updatedAt     DateTime      @updatedAt
   createdBy     String?
 
-  account     Account      @relation(fields: [accountId], references: [id])
-  occupancy   Occupancy    @relation(fields: [occupancyId], references: [id])
-  allocations Allocation[]
+  // Intent de paiement à l'origine (MoMo/OM) — null pour un encaissement manuel.
+  paymentIntentId String? @unique
+
+  account       Account        @relation(fields: [accountId], references: [id])
+  occupancy     Occupancy      @relation(fields: [occupancyId], references: [id])
+  allocations   Allocation[]
+  paymentIntent PaymentIntent? @relation(fields: [paymentIntentId], references: [id])
 
   @@unique([accountId, receiptNumber])
   @@index([accountId])
@@ -529,19 +645,19 @@ model Allocation {
 
 // Journal de caisse par encaisseur + remise au propriétaire (F6.6).
 model CashHandover {
-  id           String    @id @default(uuid())
-  accountId    String
-  collectorId  String // user.id de l'encaisseur
-  periodStart  DateTime
-  periodEnd    DateTime
+  id             String    @id @default(uuid())
+  accountId      String
+  collectorId    String // user.id de l'encaisseur
+  periodStart    DateTime
+  periodEnd      DateTime
   expectedAmount Int // total espèces valides sur la période
-  handedAmount Int // montant réellement remis
-  variance     Int // écart = handed - expected
-  note         String?
-  settledAt    DateTime? // null tant que non remis
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdBy    String?
+  handedAmount   Int // montant réellement remis
+  variance       Int // écart = handed - expected
+  note           String?
+  settledAt      DateTime? // null tant que non remis
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
 
   account Account @relation(fields: [accountId], references: [id])
 
@@ -555,19 +671,19 @@ model CashHandover {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Reminder {
-  id         String            @id @default(uuid())
-  accountId  String
-  chargeId   String
-  stage      ReminderStage
-  recipient  ReminderRecipient
-  channel    ReminderChannel
-  message    String // message rendu (FR/EN) au moment de l'envoi
-  status     ReminderStatus    @default(PENDING)
+  id           String            @id @default(uuid())
+  accountId    String
+  chargeId     String
+  stage        ReminderStage
+  recipient    ReminderRecipient
+  channel      ReminderChannel
+  message      String // message rendu (FR/EN) au moment de l'envoi
+  status       ReminderStatus    @default(PENDING)
   scheduledFor DateTime // date à laquelle la relance doit apparaître
-  sentAt     DateTime?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  createdBy  String?
+  sentAt       DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  createdBy    String?
 
   account Account @relation(fields: [accountId], references: [id])
   charge  Charge  @relation(fields: [chargeId], references: [id])
@@ -584,16 +700,16 @@ model Reminder {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Template {
-  id        String       @id @default(uuid())
+  id        String         @id @default(uuid())
   accountId String
   kind      TemplateKind
   name      String
-  locale    String       @default("fr") // "fr" | "en"
+  locale    String         @default("fr") // "fr" | "en"
   stage     ReminderStage? // pour les modèles de relance
   bodyHtml  String // contient les variables {nom} {chambre} {montant} {date}
-  isDefault Boolean      @default(false)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  isDefault Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
   createdBy String?
 
   account Account @relation(fields: [accountId], references: [id])
@@ -622,20 +738,302 @@ model ReceiptSequence {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model AuditLog {
-  id         String      @id @default(uuid())
-  accountId  String
-  entity     String // nom de table, ex. "payment"
-  entityId   String
-  action     AuditAction
-  before     Json?
-  after      Json?
-  reason     String?
-  actorId    String // user.id
-  createdAt  DateTime    @default(now())
+  id        String      @id @default(uuid())
+  accountId String
+  entity    String // nom de table, ex. "payment"
+  entityId  String
+  action    AuditAction
+  before    Json?
+  after     Json?
+  reason    String?
+  actorId   String // user.id
+  createdAt DateTime    @default(now())
 
   account Account @relation(fields: [accountId], references: [id])
 
   @@index([accountId, entity, entityId])
   @@index([accountId, createdAt])
   @@map("audit_log")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Paiements intégrés (MoMo / Orange Money Collect)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentIntent {
+  id             String              @id @default(uuid())
+  accountId      String
+  occupancyId    String
+  provider       PaymentProvider
+  providerRef    String? // référence côté opérateur (externalId)
+  phone          String // numéro débité (MSISDN avec indicatif)
+  amount         Int
+  currency       Currency            @default(XAF)
+  status         PaymentIntentStatus @default(PENDING)
+  statusMessage  String? // message opérateur (succès ou erreur)
+  requestedBy    String // user.id qui a déclenché la demande
+  requestedAt    DateTime            @default(now())
+  completedAt    DateTime?
+  // Instructions de rapprochement — [{chargeId, amount}] (ventilation prévue).
+  allocationPlan Json?
+  // Webhook / signature stockée pour audit.
+  webhookPayload Json?
+  idempotencyKey String              @unique // généré client, anti-doublon hors-ligne
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  account Account  @relation(fields: [accountId], references: [id])
+  payment Payment?
+
+  @@index([accountId])
+  @@index([occupancyId])
+  @@index([status])
+  @@index([providerRef])
+  @@map("payment_intent")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Contrats de bail + signature électronique
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Contract {
+  id                String         @id @default(uuid())
+  accountId         String
+  occupancyId       String
+  tenantId          String
+  reference         String // ex. BAILO-CT-2026-000012
+  status            ContractStatus @default(DRAFT)
+  // Clauses principales (figées à la signature).
+  monthlyRent       Int
+  deposit           Int
+  startDate         DateTime
+  durationMonths    Int? // null = indéterminée (tacite reconduction)
+  noticeDays        Int            @default(30)
+  bodyHtml          String // HTML rendu à partir du template
+  pdfKey            String? // clé objet S3 du PDF signé
+  signedByTenant    Boolean        @default(false)
+  signedAt          DateTime?
+  signatureOtpId    String? // OtpCode utilisé pour la signature (traçabilité)
+  terminatedAt      DateTime?
+  terminationReason String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  createdBy         String?
+
+  account   Account   @relation(fields: [accountId], references: [id])
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  occupancy Occupancy @relation(fields: [occupancyId], references: [id])
+
+  @@unique([accountId, reference])
+  @@index([accountId])
+  @@index([tenantId])
+  @@index([occupancyId])
+  @@map("contract")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// État des lieux (entrée / sortie)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Inspection {
+  id                  String         @id @default(uuid())
+  accountId           String
+  occupancyId         String
+  kind                InspectionKind
+  performedAt         DateTime       @default(now())
+  performedBy         String // user.id
+  summary             String?
+  photoKeys           String[]       @default([])
+  // Montant total des retenues à imputer sur la caution (sortie uniquement).
+  withholding         Int            @default(0)
+  withholdingNote     String?
+  signedByTenantAt    DateTime?
+  tenantSignatureName String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  account   Account          @relation(fields: [accountId], references: [id])
+  occupancy Occupancy        @relation(fields: [occupancyId], references: [id])
+  items     InspectionItem[]
+
+  @@index([accountId])
+  @@index([occupancyId, kind])
+  @@map("inspection")
+}
+
+model InspectionItem {
+  id            String              @id @default(uuid())
+  inspectionId  String
+  room          String // salon, cuisine, chambre, douche, …
+  element       String // mur, sol, plafond, prise, robinet…
+  condition     InspectionCondition
+  note          String?
+  photoKeys     String[]            @default([])
+  // Si DAMAGED : coût estimé en FCFA (alimente le withholding).
+  estimatedCost Int?
+  createdAt     DateTime            @default(now())
+
+  inspection Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@map("inspection_item")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tickets de maintenance
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MaintenanceTicket {
+  id            String              @id @default(uuid())
+  accountId     String
+  siteId        String
+  unitId        String? // null = commun au site
+  title         String
+  description   String?
+  priority      MaintenancePriority @default(NORMAL)
+  status        MaintenanceStatus   @default(OPEN)
+  reportedBy    String // user.id (ou locataire via lien signé — plus tard)
+  reportedAt    DateTime            @default(now())
+  assignedTo    String? // nom libre du prestataire
+  assignedPhone String?
+  photoKeys     String[]            @default([])
+  resolvedAt    DateTime?
+  cost          Int? // coût final (FCFA)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     String?
+
+  account Account @relation(fields: [accountId], references: [id])
+  site    Site    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  unit    Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([siteId])
+  @@index([status])
+  @@index([accountId, status])
+  @@map("maintenance_ticket")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Compteurs eau / électricité + relevés
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Meter {
+  id         String    @id @default(uuid())
+  accountId  String
+  unitId     String // compteur rattaché à une unité (ou unité "commune")
+  type       MeterType
+  identifier String? // n° compteur ENEO / Camwater
+  // Prix unitaire pour la refacturation locataire (FCFA / unité).
+  unitPrice  Int       @default(0)
+  // Nom affiché pour l'unité de mesure.
+  unitLabel  String    @default("")
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+
+  account  Account        @relation(fields: [accountId], references: [id])
+  unit     Unit           @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  readings MeterReading[]
+
+  @@unique([unitId, type])
+  @@index([accountId])
+  @@map("meter")
+}
+
+model MeterReading {
+  id          String   @id @default(uuid())
+  accountId   String
+  meterId     String
+  readAt      DateTime
+  value       Int // relevé cumulé
+  consumption Int // différence vs relevé précédent (positif, 0 si premier)
+  chargeId    String?  @unique // charge générée pour refacturation (EAU/ELECTRICITE)
+  photoKey    String? // photo du compteur
+  note        String?
+  createdAt   DateTime @default(now())
+  createdBy   String?
+
+  meter Meter @relation(fields: [meterId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([meterId, readAt])
+  @@map("meter_reading")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dépenses du bailleur
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Expense {
+  id        String          @id @default(uuid())
+  accountId String
+  siteId    String? // null = commun à tout le portefeuille
+  category  ExpenseCategory
+  label     String
+  amount    Int // FCFA
+  spentAt   DateTime
+  payee     String? // bénéficiaire (nom libre)
+  proofKey  String? // justificatif S3
+  recurring Boolean         @default(false)
+  note      String?
+  // Lien optionnel vers un ticket de maintenance (quand c'est le résultat d'un ticket).
+  ticketId  String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  createdBy String?
+
+  account Account @relation(fields: [accountId], references: [id])
+  site    Site?   @relation(fields: [siteId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([accountId, spentAt])
+  @@index([category])
+  @@map("expense")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Taux de change (diaspora)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ExchangeRate {
+  id        String   @id @default(uuid())
+  accountId String // par compte (le bailleur fige son taux ou le laisse par défaut)
+  base      Currency
+  quote     Currency
+  rate      Float // 1 base = rate quote
+  asOf      DateTime @default(now())
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@unique([accountId, base, quote])
+  @@index([accountId])
+  @@map("exchange_rate")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Anomalies détectées (règles heuristiques)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Anomaly {
+  id         String      @id @default(uuid())
+  accountId  String
+  siteId     String?
+  kind       AnomalyKind
+  severity   Int         @default(1) // 1..3
+  message    String // description lisible
+  context    Json? // paramètres (chargeId, unitId, loyer, moyenne, …)
+  resolvedAt DateTime?
+  resolvedBy String?
+  createdAt  DateTime    @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+  site    Site?   @relation(fields: [siteId], references: [id], onDelete: SetNull)
+
+  @@index([accountId, resolvedAt])
+  @@index([kind])
+  @@map("anomaly")
 }

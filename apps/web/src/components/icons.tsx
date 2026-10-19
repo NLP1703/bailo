@@ -323,3 +323,33 @@ export const RotateCcwIcon = (p: IconProps) => (
     <path d="M3 3v5h5" />
   </Svg>
 );
+
+export const WrenchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14.7 6.3a4 4 0 0 0 5.3 5.3L22 14l-8 8-2.4-2a4 4 0 0 0-5.3-5.3L3 11l8-8 3.7 3.3Z" />
+  </Svg>
+);
+
+export const GaugeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 14 8 10" />
+    <path d="M3.5 15a9 9 0 1 1 17 0" />
+    <circle cx="12" cy="14" r="1.5" />
+  </Svg>
+);
+
+export const BookIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 4h11a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4V4Z" />
+    <path d="M4 16a4 4 0 0 1 4-4h11" />
+  </Svg>
+);
+
+export const DownloadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 4v12" />
+    <path d="m7 11 5 5 5-5" />
+    <path d="M4 20h16" />
+  </Svg>
+);
+

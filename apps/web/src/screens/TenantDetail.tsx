@@ -9,6 +9,7 @@ import { SignedImage } from '../components/SignedImage';
 import { Card, Badge, Button, StatTile, ProgressBar, type Tone, PageSkeleton } from '../components/ui';
 import { useConfirm } from '../components/Confirm';
 import { useToast } from '../components/Toast';
+import { TenantInsightsCard } from '../components/TenantInsightsCard';
 import {
   ArchiveIcon,
   BanknoteIcon,
@@ -224,6 +225,7 @@ export function TenantDetail() {
   const depositExpected = timeline.reduce((s, o) => s + o.depositExpected, 0);
   const depositPaid = timeline.reduce((s, o) => s + o.depositPaid, 0);
   const depositPct = depositExpected > 0 ? Math.round((depositPaid / depositExpected) * 100) : 0;
+  const activeOcc = timeline.find((o) => o.status === 'ACTIVE' || o.status === 'NOTICE');
 
   return (
     <div className="space-y-4">
@@ -240,6 +242,9 @@ export function TenantDetail() {
           </Button>
         </div>
       )}
+
+      {/* Score de fiabilité + résumé caution (si données suffisantes) */}
+      <TenantInsightsCard tenantId={tenant.id} activeOccupancyId={activeOcc?.occupancyId ?? null} />
 
       {/* Bandeau identité */}
       <Card className="flex flex-wrap items-start gap-3">

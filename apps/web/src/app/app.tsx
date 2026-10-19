@@ -26,6 +26,14 @@ import { SiteSettings } from '../screens/SiteSettings';
 import { AddSite } from '../screens/AddSite';
 import { Plans } from '../screens/Plans';
 import { Verify } from '../screens/Verify';
+import { Contracts } from '../screens/Contracts';
+import { ContractNew } from '../screens/ContractNew';
+import { ContractDetail } from '../screens/ContractDetail';
+import { Inspections } from '../screens/Inspections';
+import { Maintenance } from '../screens/Maintenance';
+import { Expenses } from '../screens/Expenses';
+import { Meters } from '../screens/Meters';
+import { Accounting } from '../screens/Accounting';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -104,6 +112,14 @@ function AuthedApp() {
         <Route path="settings" element={<Settings />} />
         <Route path="templates" element={<Templates />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="contracts" element={<Contracts />} />
+        <Route path="contracts/new" element={<ContractNew />} />
+        <Route path="contracts/:id" element={<ContractDetail />} />
+        <Route path="inspections" element={<Inspections />} />
+        <Route path="maintenance" element={<Maintenance />} />
+        <Route path="expenses" element={<Expenses />} />
+        <Route path="meters" element={<Meters />} />
+        <Route path="accounting" element={<Accounting />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

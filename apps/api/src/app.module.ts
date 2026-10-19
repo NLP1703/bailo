@@ -33,6 +33,15 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { FilesModule } from './modules/files/files.module';
 import { AccountModule } from './modules/account/account.module';
 import { HealthModule } from './modules/health/health.module';
+import { PaymentIntentsModule } from './modules/payment-intents/payment-intents.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
+import { InspectionsModule } from './modules/inspections/inspections.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { MetersModule } from './modules/meters/meters.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
+import { CurrencyModule } from './modules/currency/currency.module';
+import { InsightsModule } from './modules/insights/insights.module';
+import { AccountingModule } from './modules/accounting/accounting.module';
 
 @Module({
   imports: [
@@ -63,6 +72,15 @@ import { HealthModule } from './modules/health/health.module';
     FilesModule,
     AccountModule,
     HealthModule,
+    PaymentIntentsModule,
+    ContractsModule,
+    InspectionsModule,
+    MaintenanceModule,
+    MetersModule,
+    ExpensesModule,
+    CurrencyModule,
+    InsightsModule,
+    AccountingModule,
   ],
   providers: [
     // Ordre significatif : authentification, rôles, puis état d'abonnement.

@@ -86,6 +86,8 @@ const envSchema = z
 
     // Base publique des liens de vérification de reçu (QR code) — F6.4.
     PUBLIC_RECEIPT_BASE: z.string().default('http://localhost:5173/r'),
+    // URL publique de l'API — utilisée par les callbacks webhooks (MoMo/OM).
+    PUBLIC_API_URL: z.string().default('http://localhost:3000'),
     PDF_ENGINE: z.string().default('puppeteer'),
 
     // Cookies & auth-browser — passage des tokens de localStorage à des cookies HttpOnly (sécurité 1.2).

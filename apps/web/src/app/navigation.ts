@@ -13,6 +13,9 @@ import {
   FileTextIcon,
   TagIcon,
   SettingsIcon,
+  WrenchIcon,
+  ReceiptIcon,
+  BookIcon,
   type IconProps,
 } from '../components/icons';
 
@@ -39,7 +42,7 @@ export interface NavEntry {
 }
 
 export interface NavSection {
-  key: 'pilotage' | 'rental' | 'finance' | 'admin';
+  key: 'pilotage' | 'rental' | 'finance' | 'ops' | 'admin';
   labelKey: string;
   items: NavEntry[];
 }
@@ -62,6 +65,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/rooms', labelKey: 'nav.rooms', Icon: DoorIcon, keywords: 'logements appartements plan' },
       { to: '/tenants', labelKey: 'nav.tenants', Icon: UsersIcon, roles: MGMT, keywords: 'occupants réservations' },
       { to: '/new-entry', labelKey: 'nav.newEntry', Icon: UserPlusIcon, roles: MGMT, write: true, keywords: 'bail contrat arrivée' },
+      { to: '/contracts', labelKey: 'nav.contracts', Icon: FileTextIcon, roles: MGMT, keywords: 'bail signature caution' },
     ],
   },
   {
@@ -70,7 +74,16 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/collect', labelKey: 'nav.collect', Icon: BanknoteIcon, write: true, keywords: 'paiement loyer momo orange' },
       { to: '/cash', labelKey: 'nav.cash', Icon: WalletIcon, keywords: 'caisse journal encaissements' },
+      { to: '/expenses', labelKey: 'nav.expenses', Icon: ReceiptIcon, roles: MGMT, keywords: 'depenses charges travaux taxes' },
+      { to: '/accounting', labelKey: 'nav.accounting', Icon: BookIcon, roles: MGMT, keywords: 'ohada syscohada comptabilite export csv journal' },
       { to: '/reminders', labelKey: 'nav.reminders', Icon: BellIcon, keywords: 'whatsapp sms rappel' },
+    ],
+  },
+  {
+    key: 'ops',
+    labelKey: 'nav.section.ops',
+    items: [
+      { to: '/maintenance', labelKey: 'nav.maintenance', Icon: WrenchIcon, keywords: 'ticket reparation fuite plombier electricien' },
     ],
   },
   {
@@ -111,6 +124,10 @@ const DETAIL_ROUTES: { pattern: RegExp; section: NavSection['key']; parent?: str
   { pattern: /^\/units\/[^/]+$/, section: 'rental', parent: '/rooms', labelKey: 'nav.crumb.unit' },
   { pattern: /^\/tenants\/[^/]+$/, section: 'rental', parent: '/tenants', labelKey: 'nav.crumb.tenant' },
   { pattern: /^\/checkout/, section: 'rental', parent: '/tenants', labelKey: 'nav.crumb.checkout' },
+  { pattern: /^\/contracts\/new$/, section: 'rental', parent: '/contracts', labelKey: 'nav.crumb.contractNew' },
+  { pattern: /^\/contracts\/[^/]+$/, section: 'rental', parent: '/contracts', labelKey: 'nav.crumb.contract' },
+  { pattern: /^\/inspections$/, section: 'rental', parent: '/tenants', labelKey: 'nav.crumb.inspections' },
+  { pattern: /^\/meters$/, section: 'ops', parent: '/rooms', labelKey: 'nav.crumb.meters' },
   { pattern: /^\/sites\/(?!new$)[^/]+$/, section: 'admin', parent: '/settings', labelKey: 'nav.crumb.site' },
   { pattern: /^\/profile$/, section: 'admin', labelKey: 'nav.profile' },
   { pattern: /^\/more$/, section: 'admin', labelKey: 'nav.more' },
