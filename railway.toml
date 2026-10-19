@@ -1,0 +1,15 @@
+# Config Railway pour le service bailo-api (NestJS).
+# Ce fichier force l'usage du Dockerfile dédié de l'API, pour que Railway
+# n'essaie pas de deviner le build avec Railpack (qui ne comprend pas un
+# monorepo pnpm avec plusieurs apps).
+#
+# Pour le futur service bailo-web (front React), on pointera son
+# « Config as Code Path » (Settings → Build) sur apps/web/railway.toml.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/api/Dockerfile"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

@@ -1,0 +1,11 @@
+# Config Railway pour le service bailo-web (React/Vite servi par nginx).
+# À utiliser en pointant « Config as Code Path » sur apps/web/railway.toml
+# dans Settings → Build du service web.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/web/Dockerfile"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
