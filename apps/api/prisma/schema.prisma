@@ -256,6 +256,7 @@ model Account {
   updatedAt         DateTime         @updatedAt
 
   users              User[]
+  invitations        Invitation[]
   sites              Site[]
   tenants            Tenant[]
   occupancies        Occupancy[]
@@ -289,6 +290,7 @@ model User {
   role         UserRole
   active       Boolean  @default(true)
   lastLoginAt  DateTime? // Admin Lot 1 -- derniere connexion reussie (null = jamais)
+  invitedAt    DateTime? // Admin Lot 2 -- date d'invitation (null si cree directement ou au signup)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   createdBy    String?
@@ -303,6 +305,31 @@ model User {
   @@index([accountId])
   @@index([accountId, lastLoginAt(sort: Desc)])
   @@map("user")
+}
+
+// -----------------------------------------------------------------------------
+// Admin Lot 2 : invitations d'equipe (jetons haches)
+// -----------------------------------------------------------------------------
+model Invitation {
+  id         String    @id @default(uuid())
+  accountId  String
+  name       String
+  email      String?
+  phone      String
+  role       UserRole
+  siteIds    Json      @default("[]") // tableau des site ids assignes (shape ephemere)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  revokedAt  DateTime?
+  createdBy  String
+  createdAt  DateTime  @default(now())
+
+  account    Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([accountId, usedAt, revokedAt])
+  @@map("invitation")
 }
 
 // Sites assignés à un gérant / gardien (le propriétaire voit tout : pas d'entrée nécessaire).

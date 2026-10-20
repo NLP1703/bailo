@@ -604,6 +604,7 @@
       "integrations": "Intégrations",
       "data": "Données"
     },
+
     "overview": {
       "users": "Utilisateurs actifs",
       "usersHint": "{{inactive}} désactivé(s)",
@@ -629,6 +630,53 @@
       "noAnomalies": "Aucune anomalie ouverte.",
       "now": "à l'instant",
       "next": "Les sous-onglets ci-dessus seront enrichis dans les prochains lots : équipe, journal d'audit, paramètres, abonnement, intégrations, données."
+    }
+  },
+  "adminTeam": {
+    "search": "Rechercher",
+    "searchPlaceholder": "Nom, téléphone ou email…",
+    "role": "Rôle",
+    "status": "Statut",
+    "allRoles": "Tous les rôles",
+    "allStatus": "Tous les statuts",
+    "active": "Actif",
+    "inactive": "Désactivé",
+    "invite": "Inviter",
+    "empty": "Aucun utilisateur ne correspond à ces filtres.",
+    "pendingInvitations": "Invitations en attente ({{n}})",
+    "expiresOn": "expire le {{date}}",
+    "revokeBtn": "Révoquer",
+    "editBtn": "Modifier",
+    "you": "vous",
+    "lastLogin": "connecté le {{date}}",
+    "pagerSummary": "{{from}}–{{to}} sur {{total}}",
+    "editTitle": "Modifier {{name}}",
+    "name": "Nom",
+    "sites": "Sites assignés",
+    "activeLabel": "Compte actif (peut se connecter)",
+    "cantChangeSelfRole": "Vous ne pouvez pas modifier votre propre rôle.",
+    "resetBtn": "Réinitialiser le mot de passe",
+    "revokeAllBtn": "Révoquer toutes les sessions",
+    "saved": "Modifications enregistrées.",
+    "resetSent": "Un code OTP a été envoyé à {{phone}}.",
+    "revokeOk": "{{n}} session(s) révoquée(s).",
+    "invRevoked": "Invitation révoquée.",
+    "inviteShareToken": "Jeton copié : partagez-le avec le nouvel utilisateur.",
+    "phoneLabel": "Téléphone",
+    "emailLabel": "Email (facultatif)",
+    "sendInvite": "Envoyer l'invitation",
+    "confirm": {
+      "resetTitle": "Réinitialiser le mot de passe de {{name}} ?",
+      "resetMsg": "Un code OTP à 6 chiffres sera envoyé au {{phone}}. L'utilisateur l'utilisera à la connexion pour choisir un nouveau mot de passe.",
+      "revokeTitle": "Révoquer les sessions de {{name}} ?",
+      "revokeMsg": "Toutes les sessions actives seront immédiatement coupées. L'utilisateur devra se reconnecter.",
+      "revokeInvTitle": "Révoquer l'invitation de {{name}} ?",
+      "revokeInvMsg": "Le lien d'activation ne fonctionnera plus."
+    },
+    "err": {
+      "lastOwner": "Il doit toujours rester au moins un propriétaire actif.",
+      "selfRole": "Vous ne pouvez pas modifier votre propre rôle.",
+      "selfDeactivate": "Vous ne pouvez pas vous désactiver vous-même."
     }
   },
   "errors": {

@@ -626,6 +626,53 @@
       "next": "The tabs above will be filled in later batches: team, audit log, settings, subscription, integrations, data."
     }
   },
+  "adminTeam": {
+    "search": "Search",
+    "searchPlaceholder": "Name, phone or email…",
+    "role": "Role",
+    "status": "Status",
+    "allRoles": "All roles",
+    "allStatus": "All statuses",
+    "active": "Active",
+    "inactive": "Disabled",
+    "invite": "Invite",
+    "empty": "No user matches these filters.",
+    "pendingInvitations": "Pending invitations ({{n}})",
+    "expiresOn": "expires {{date}}",
+    "revokeBtn": "Revoke",
+    "editBtn": "Edit",
+    "you": "you",
+    "lastLogin": "last sign-in {{date}}",
+    "pagerSummary": "{{from}}–{{to}} of {{total}}",
+    "editTitle": "Edit {{name}}",
+    "name": "Name",
+    "sites": "Assigned sites",
+    "activeLabel": "Active account (can sign in)",
+    "cantChangeSelfRole": "You cannot change your own role.",
+    "resetBtn": "Reset password",
+    "revokeAllBtn": "Revoke all sessions",
+    "saved": "Changes saved.",
+    "resetSent": "An OTP code was sent to {{phone}}.",
+    "revokeOk": "{{n}} session(s) revoked.",
+    "invRevoked": "Invitation revoked.",
+    "inviteShareToken": "Token copied: share it with the new user.",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email (optional)",
+    "sendInvite": "Send invitation",
+    "confirm": {
+      "resetTitle": "Reset password for {{name}}?",
+      "resetMsg": "A 6-digit OTP code will be sent to {{phone}}. The user will use it at sign-in to choose a new password.",
+      "revokeTitle": "Revoke sessions for {{name}}?",
+      "revokeMsg": "All active sessions will be cut immediately. The user will have to sign in again.",
+      "revokeInvTitle": "Revoke invitation for {{name}}?",
+      "revokeInvMsg": "The activation link will no longer work."
+    },
+    "err": {
+      "lastOwner": "There must always be at least one active owner.",
+      "selfRole": "You cannot change your own role.",
+      "selfDeactivate": "You cannot deactivate yourself."
+    }
+  },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
     "TENANT_NOT_FOUND": "Tenant not found."

@@ -36,6 +36,7 @@ import { Meters } from '../screens/Meters';
 import { Accounting } from '../screens/Accounting';
 import { AdminLayout, AdminPlaceholder } from '../screens/admin/AdminLayout';
 import { AdminOverview } from '../screens/admin/AdminOverview';
+import { AdminTeam } from '../screens/admin/AdminTeam';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -124,7 +125,7 @@ function AuthedApp() {
         <Route path="accounting" element={<Accounting />} />
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
-          <Route path="team" element={<AdminPlaceholder sectionKey="team" />} />
+          <Route path="team" element={<AdminTeam />} />
           <Route path="audit" element={<AdminPlaceholder sectionKey="audit" />} />
           <Route path="settings" element={<AdminPlaceholder sectionKey="settings" />} />
           <Route path="subscription" element={<AdminPlaceholder sectionKey="subscription" />} />

@@ -10,6 +10,7 @@ import { TokenService } from './token.service';
   controllers: [AuthController],
   providers: [AuthService, OtpService, TokenService],
   // TokenService est réutilisé par le TenancyMiddleware (vérif. du JWT d'accès).
-  exports: [TokenService],
+  // OtpService est réutilisé par AdminUsersService (reset de mot de passe).
+  exports: [TokenService, OtpService],
 })
 export class AuthModule {}

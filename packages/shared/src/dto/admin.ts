@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { uuid } from './common';
+import { email, password, phone, uuid } from './common';
 import { AUDIT_ACTIONS, USER_ROLES, type AuditAction, type UserRole } from '../enums';
 
 /**
@@ -160,6 +160,72 @@ export interface AdminOverview {
   /** 5 anomalies ouvertes les plus critiques. */
   openAnomalies: AdminOpenAnomaly[];
 }
+
+// ─── Création / mise à jour / invitation d'utilisateur (LOT 2) ───────────────
+// Un OWNER peut créer directement un MANAGER ou CARETAKER, ou envoyer une
+// invitation par OTP. Un OWNER supplémentaire ne peut être ajouté qu'en
+// promotion depuis MANAGER (updateAdminUserDto), jamais à la création —
+// garde-fou pour éviter des OWNER « surprises ».
+
+const invitableRole = z.enum(['MANAGER', 'CARETAKER']);
+
+export const createAdminUserDto = z.object({
+  name: z.string().trim().min(2).max(80),
+  email: email.optional(),
+  phone,
+  role: invitableRole,
+  password,
+  siteIds: z.array(uuid).default([]),
+});
+export type CreateAdminUserDto = z.infer<typeof createAdminUserDto>;
+
+export const updateAdminUserDto = z
+  .object({
+    name: z.string().trim().min(2).max(80).optional(),
+    email: email.optional().nullable(),
+    role: z.enum(USER_ROLES).optional(),
+    active: z.boolean().optional(),
+    siteIds: z.array(uuid).optional(),
+  })
+  .strict();
+export type UpdateAdminUserDto = z.infer<typeof updateAdminUserDto>;
+
+export const createInvitationDto = z.object({
+  name: z.string().trim().min(2).max(80),
+  email: email.optional(),
+  phone,
+  role: invitableRole,
+  siteIds: z.array(uuid).default([]),
+  /** Durée de validité en heures (1..168). Par défaut 72 h. */
+  ttlHours: z.coerce.number().int().min(1).max(168).default(72),
+});
+export type CreateInvitationDto = z.infer<typeof createInvitationDto>;
+
+export interface InvitationView {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string;
+  role: UserRole;
+  siteIds: string[];
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
+  revokedAt: string | null;
+  /** Jeton en clair, servi UNIQUEMENT à la création (jamais relu depuis la base). */
+  token?: string;
+  /** URL d'activation prête à partager, servie uniquement à la création. */
+  acceptUrl?: string;
+}
+
+/** Codes d'erreur applicatifs pour les règles d'intégrité de l'équipe. */
+export const ADMIN_USER_ERRORS = {
+  LAST_OWNER: 'ADMIN_USER_LAST_OWNER',
+  SELF_ROLE_CHANGE: 'ADMIN_USER_SELF_ROLE_CHANGE',
+  SELF_DEACTIVATE: 'ADMIN_USER_SELF_DEACTIVATE',
+  USER_NOT_FOUND: 'ADMIN_USER_NOT_FOUND',
+  INVITATION_NOT_FOUND: 'ADMIN_INVITATION_NOT_FOUND',
+} as const;
 
 // ─── Section d'onglets Admin (interface web) ──────────────────────────────────
 
