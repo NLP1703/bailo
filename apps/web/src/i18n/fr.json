@@ -250,7 +250,10 @@
     "submit": "Créer le compte",
     "haveAccount": "Déjà un compte ?",
     "invalid": "Veuillez vérifier les informations saisies",
-    "error": "Échec de l'inscription, réessayez"
+    "error": "Échec de l'inscription, réessayez",
+    "privacyAccept": "En créant mon compte, j'accepte la",
+    "privacyLink": "politique de confidentialité",
+    "mustAcceptPrivacy": "Veuillez accepter la politique de confidentialité pour continuer."
   },
   "onboarding": {
     "title": "Votre premier bâtiment",
@@ -708,6 +711,204 @@
     "whatsapp": "WhatsApp",
     "phone": "Appeler le support",
     "email": "Écrire au support"
+  },
+  "public": {
+    "tagline": "GESTION LOCATIVE",
+    "nav": {
+      "home": "Accueil",
+      "features": "Fonctionnalités",
+      "pricing": "Offres",
+      "faq": "FAQ"
+    },
+    "cta": {
+      "login": "Se connecter",
+      "signup": "Créer un compte"
+    },
+    "hero": {
+      "badge": "Pensé pour le Cameroun",
+      "title1": "Gérez vos cités",
+      "title2": "sans cahier, sans Excel.",
+      "subtitle": "Bailo centralise encaissements, reçus, impayés et comptabilité OHADA pour les propriétaires et gérants de cités, cités étudiantes et immeubles. Du téléphone au PC, hors ligne compris.",
+      "ctaPrimary": "Commencer gratuitement",
+      "ctaSecondary": "Découvrir les fonctions",
+      "proof": {
+        "free": "Gratuit à ouvrir",
+        "nocard": "Sans carte bancaire",
+        "ohada": "Conforme OHADA"
+      }
+    },
+    "feat": {
+      "overline": "FONCTIONNALITÉS",
+      "title": "Tout ce qu'il faut pour tenir une cité",
+      "subtitle": "Six modules intégrés — pensés pour un bailleur ou un gérant qui veut arrêter de courir après ses locataires.",
+      "collect": {
+        "title": "Encaissement en 1 tap",
+        "body": "Montant, mode de paiement, reçu numéroté généré automatiquement. Marche hors ligne, se synchronise au retour du réseau."
+      },
+      "arrears": {
+        "title": "Impayés sous contrôle",
+        "body": "Liste triée par ancienneté, alertes de relance (SMS/WhatsApp), paliers configurables par cité."
+      },
+      "receipt": {
+        "title": "Reçus avec QR vérifiable",
+        "body": "Numérotation séquentielle inviolable, PDF à télécharger ou à partager. Le locataire vérifie l'authenticité en un scan."
+      },
+      "ohada": {
+        "title": "Comptabilité OHADA",
+        "body": "Journal, grand livre, écritures 571/585/706/4194 — export CSV UTF-8 BOM prêt à ouvrir dans Excel ou à transmettre à votre comptable."
+      },
+      "rooms": {
+        "title": "Plan des chambres",
+        "body": "Vue d'ensemble en couleurs : libre, à jour, en retard, réservée. Un coup d'œil remplace dix cahiers."
+      },
+      "team": {
+        "title": "Équipe & permissions",
+        "body": "Invitez vos gérants et gardiens, assignez-leur des sites, révoquez un accès en un clic. Chaque action est tracée."
+      }
+    },
+    "ba": {
+      "overline": "AVANT / APRÈS",
+      "title": "Ce que Bailo change au quotidien",
+      "subtitle": "Trois situations courantes dans une cité au Cameroun.",
+      "before": "Avant",
+      "after": "Avec Bailo",
+      "b1": {
+        "badge": "Encaissement du matin",
+        "before": "Le gardien note sur un cahier, écrit un reçu manuscrit, oublie la caisse chez lui le soir.",
+        "after": "Un tap, reçu numéroté généré, synchro automatique au bureau — zéro perte de trace."
+      },
+      "b2": {
+        "badge": "Fin de mois",
+        "before": "Vous recopiez 30 lignes dans Excel pour savoir qui a payé et combien manque.",
+        "after": "Tableau de bord à jour en temps réel : encaissé, reste, locataires en retard, répartition par mode."
+      },
+      "b3": {
+        "badge": "Comptable",
+        "before": "Vous passez une journée à préparer les pièces, extraire les paiements, calculer les totaux par site.",
+        "after": "Export OHADA en un clic : journal, grand livre, écritures prêtes à transmettre."
+      }
+    },
+    "step": {
+      "overline": "COMMENT ÇA MARCHE",
+      "title": "Opérationnel en 10 minutes",
+      "subtitle": "Pas de formation, pas d'installation. Vous ouvrez un compte, vous ajoutez vos chambres, vous encaissez.",
+      "s1": {
+        "title": "Créez votre compte",
+        "body": "Nom, téléphone, mot de passe. Pas de carte, pas d'engagement."
+      },
+      "s2": {
+        "title": "Déclarez votre bâtiment",
+        "body": "Nombre de chambres, loyer de base. Vous pouvez importer vos locataires existants."
+      },
+      "s3": {
+        "title": "Encaissez & suivez",
+        "body": "Chaque paiement génère un reçu, met à jour les impayés, enrichit votre comptabilité."
+      }
+    },
+    "pricing": {
+      "overline": "OFFRES",
+      "title": "Commencez gratuitement, payez quand vous grandissez",
+      "subtitle": "Pas de carte à sortir, pas d'engagement. L'offre Découverte est entièrement fonctionnelle.",
+      "freeBadge": "Découverte",
+      "freeTitle": "Gratuit",
+      "freeDesc": "Pour tester en situation réelle avec une petite cité.",
+      "freeList": {
+        "f1": "Jusqu'à 5 chambres",
+        "f2": "Encaissements illimités",
+        "f3": "Reçus avec QR",
+        "f4": "Comptabilité OHADA complète"
+      },
+      "freeCta": "Ouvrir mon compte",
+      "paidBadge": "Cité, Cité Pro, Gérant",
+      "paidTitle": "Offres payantes",
+      "paidDesc": "Pour les bailleurs qui gèrent plusieurs cités ou qui veulent les relances WhatsApp automatiques, les pénalités, les rapports avancés.",
+      "paidList": {
+        "p1": "Chambres illimitées",
+        "p2": "Relances SMS / WhatsApp automatisées",
+        "p3": "Pénalités de retard automatiques",
+        "p4": "Multi-bailleurs (profil Gérant)"
+      },
+      "paidHint": "Grille tarifaire bientôt communiquée. Vous êtes prévenu·e·s avant toute facturation."
+    },
+    "faq": {
+      "overline": "QUESTIONS FRÉQUENTES",
+      "title": "Les réponses aux questions courantes",
+      "subtitle": "Vous n'avez pas trouvé votre réponse ? Écrivez-nous via le bouton d'aide en bas à droite.",
+      "q1": {
+        "q": "Est-ce vraiment gratuit ?",
+        "a": "Oui. L'offre Découverte couvre jusqu'à 5 chambres, sans limite de temps ni de paiements. Aucune carte bancaire n'est demandée à l'inscription."
+      },
+      "q2": {
+        "q": "Ça marche sans internet ?",
+        "a": "Oui, en partie. L'application est installable comme une appli (PWA) et conserve vos écrans en cache. Les paiements saisis hors ligne sont mis en file d'attente et envoyés dès que le réseau revient."
+      },
+      "q3": {
+        "q": "Mes données sont-elles en sécurité ?",
+        "a": "Oui. Les données sont hébergées en Europe (Railway EU West), chiffrées en transit (HTTPS) et au repos. Chaque compte est strictement isolé des autres — un bailleur ne voit jamais les données d'un autre."
+      },
+      "q4": {
+        "q": "Puis-je exporter mes données ?",
+        "a": "Oui. Vous pouvez exporter votre comptabilité OHADA au format CSV à tout moment. L'export complet (tous vos locataires et paiements) est également prévu depuis l'onglet Administration."
+      },
+      "q5": {
+        "q": "Qui a accès à ma cité ?",
+        "a": "Vous décidez. En tant que propriétaire, vous invitez vos gérants et gardiens, vous leur assignez des sites précis, vous révoquez les accès à tout moment. Chaque action est tracée dans le journal d'audit."
+      }
+    },
+    "final": {
+      "title": "Prêt à arrêter de courir après les loyers ?",
+      "subtitle": "Ouvrez un compte en 2 minutes et encaissez votre premier loyer dès aujourd'hui.",
+      "cta": "Commencer gratuitement"
+    },
+    "footer": {
+      "tagline": "La gestion locative des cités et immeubles au Cameroun, enfin aussi simple qu'un cahier — mais sans les erreurs.",
+      "rights": "Tous droits réservés.",
+      "product": "Produit",
+      "legal": "Mentions"
+    },
+    "mockup": {
+      "collected": "Encaissé",
+      "arrears": "Impayés",
+      "occupancy": "Occupation"
+    }
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "updated": "Mise à jour le {{date}}",
+    "intro": "Cette page explique en langage simple quelles données Bailo collecte, pourquoi, combien de temps nous les conservons, avec qui elles sont partagées, et quels sont vos droits. Elle s'applique à l'application web Bailo et à ses dérivés mobiles.",
+    "data": {
+      "title": "1. Données que nous collectons",
+      "body": "— Compte et équipe : nom, téléphone, email (facultatif), rôle, mot de passe haché.\n— Activité de gestion : cités, chambres, locataires, paiements, charges, reçus. Ces données vous appartiennent.\n— Journaux techniques : adresse IP, type d'appareil, pages visitées. Utilisés uniquement pour la sécurité et le dépannage.\n— Cookies : un cookie technique de session, nécessaire au maintien de votre connexion. Aucun traceur publicitaire."
+    },
+    "purposes": {
+      "title": "2. Pourquoi nous utilisons ces données",
+      "body": "— Fournir le service (ouvrir, utiliser, sauvegarder votre compte).\n— Sécuriser les accès (connexions, rotation des jetons, détection d'anomalies).\n— Vous assister techniquement si vous nous contactez.\n— Satisfaire nos obligations légales (comptabilité, demandes d'autorité compétente)."
+    },
+    "legal": {
+      "title": "3. Bases légales",
+      "body": "L'exécution du contrat qui nous lie à vous (fourniture du service), votre consentement (lorsqu'un traitement optionnel est proposé), et nos obligations légales (comptabilité OHADA, demandes judiciaires)."
+    },
+    "sharing": {
+      "title": "4. Partage avec des tiers",
+      "body": "Nous ne vendons jamais vos données. Elles sont confiées uniquement aux prestataires strictement nécessaires au fonctionnement du service : hébergeur (Railway, Europe), fournisseur SMS (le jour où vous l'activerez), fournisseur Mobile Money (MTN ou Orange, uniquement pour les paiements que vous initiez). Chaque prestataire est tenu à des engagements de confidentialité et de sécurité."
+    },
+    "retention": {
+      "title": "5. Durée de conservation",
+      "body": "— Compte actif : tant que votre compte existe.\n— Après suppression du compte : les écritures comptables sont conservées 10 ans comme l'exige la législation OHADA. Les autres données personnelles sont supprimées sous 30 jours.\n— Journaux techniques : 90 jours maximum."
+    },
+    "rights": {
+      "title": "6. Vos droits",
+      "body": "Vous pouvez à tout moment : accéder à vos données, les corriger, les exporter, demander leur suppression (dans la limite des obligations comptables), limiter leur traitement, retirer votre consentement. Pour exercer ces droits, écrivez-nous — nous répondons sous 30 jours."
+    },
+    "security": {
+      "title": "7. Sécurité",
+      "body": "Les connexions sont chiffrées en HTTPS. Les mots de passe sont hachés avec argon2 (jamais stockés en clair). Les jetons de session sont tournés régulièrement et révocables depuis l'onglet Administration. Chaque action administrative est enregistrée dans un journal d'audit immuable."
+    },
+    "contact": {
+      "title": "8. Nous contacter",
+      "body": "Toute question relative à cette politique peut être adressée à l'éditeur de Bailo : NDONGO Louis Pharel, Yaoundé — Douala, Cameroun. Email : pharelndongo2005@gmail.com. Nous répondons sous 30 jours."
+    },
+    "footer": "Dès que ces conditions vous conviennent, vous pouvez"
   },
   "adminAudit": {
     "from": "Du",

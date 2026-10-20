@@ -38,6 +38,8 @@ import { AdminLayout, AdminPlaceholder } from '../screens/admin/AdminLayout';
 import { AdminOverview } from '../screens/admin/AdminOverview';
 import { AdminTeam } from '../screens/admin/AdminTeam';
 import { AdminAudit } from '../screens/admin/AdminAudit';
+import { Landing } from '../screens/public/Landing';
+import { Privacy } from '../screens/public/Privacy';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -57,10 +59,16 @@ export function App() {
     return <div className="p-6 text-center text-slate-500">{t('common.loading')}</div>;
   }
   if (!user) {
+    // Zone publique : la racine est la page d'accueil marketing ; connexion
+    // et inscription ont leurs propres URL dédiées ; la politique de
+    // confidentialité est accessible sans compte.
     return (
       <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="*" element={<Login />} />
+        <Route path="*" element={<Landing />} />
       </Routes>
     );
   }

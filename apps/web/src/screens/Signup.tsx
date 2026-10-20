@@ -25,6 +25,7 @@ export function Signup() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [pwd, setPwd] = useState('');
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -32,6 +33,10 @@ export function Signup() {
   const create = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!acceptedPrivacy) {
+      setError(t('signup.mustAcceptPrivacy'));
+      return;
+    }
     const dto = signupDto.safeParse({
       accountName,
       ownerName,
@@ -60,7 +65,7 @@ export function Signup() {
       footer={
         <>
           {t('signup.haveAccount')}{' '}
-          <Link to="/" className="font-semibold text-white underline-offset-2 hover:underline">
+          <Link to="/login" className="font-semibold text-white underline-offset-2 hover:underline">
             {t('login.submit')}
           </Link>
         </>
@@ -114,8 +119,32 @@ export function Signup() {
           value={pwd}
           onChange={(e) => setPwd(e.target.value)}
         />
+        {/* Consentement explicite — l'inscription vaut acceptation et le libellé
+            renvoie vers la politique de confidentialité, obligatoire pour avancer. */}
+        <label className="flex items-start gap-2.5 rounded-lg bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-inset ring-slate-200">
+          <input
+            type="checkbox"
+            checked={acceptedPrivacy}
+            onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0"
+          />
+          <span className="leading-snug">
+            {t('signup.privacyAccept')}{' '}
+            <Link
+              to="/privacy"
+              target="_blank"
+              rel="noopener"
+              className="font-semibold text-brand underline-offset-2 hover:underline"
+            >
+              {t('signup.privacyLink')}
+            </Link>
+            .
+          </span>
+        </label>
         <ErrorBanner message={error} />
-        <PrimaryButton busy={busy}>{t('signup.submit')}</PrimaryButton>
+        <PrimaryButton busy={busy} disabled={!acceptedPrivacy}>
+          {t('signup.submit')}
+        </PrimaryButton>
       </form>
     </AuthShell>
   );

@@ -245,7 +245,10 @@
     "submit": "Create account",
     "haveAccount": "Already have an account?",
     "invalid": "Please check the details you entered",
-    "error": "Sign-up failed, please try again"
+    "error": "Sign-up failed, please try again",
+    "privacyAccept": "By creating my account I accept the",
+    "privacyLink": "privacy policy",
+    "mustAcceptPrivacy": "Please accept the privacy policy to continue."
   },
   "onboarding": {
     "title": "Your first building",
@@ -702,6 +705,176 @@
     "whatsapp": "WhatsApp",
     "phone": "Call support",
     "email": "Email support"
+  },
+  "public": {
+    "tagline": "RENTAL MANAGEMENT",
+    "nav": {
+      "home": "Home",
+      "features": "Features",
+      "pricing": "Plans",
+      "faq": "FAQ"
+    },
+    "cta": {
+      "login": "Sign in",
+      "signup": "Create account"
+    },
+    "hero": {
+      "badge": "Built for Cameroon",
+      "title1": "Run your residences",
+      "title2": "without notebooks or Excel.",
+      "subtitle": "Bailo centralises collections, receipts, arrears and OHADA accounting for owners and managers of residences, student housing and buildings. From phone to desktop, offline included.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "See the features",
+      "proof": {
+        "free": "Free to open",
+        "nocard": "No card needed",
+        "ohada": "OHADA-compliant"
+      }
+    },
+    "feat": {
+      "overline": "FEATURES",
+      "title": "Everything you need to run a residence",
+      "subtitle": "Six integrated modules — built for landlords and managers who want to stop chasing tenants.",
+      "collect": {
+        "title": "1-tap collections",
+        "body": "Amount, payment mode, numbered receipt generated automatically. Works offline, syncs when the network is back."
+      },
+      "arrears": {
+        "title": "Arrears under control",
+        "body": "List sorted by age, reminder alerts (SMS/WhatsApp), stages configurable per residence."
+      },
+      "receipt": {
+        "title": "Receipts with verifiable QR",
+        "body": "Tamper-proof sequential numbering, PDF to download or share. Tenant verifies authenticity with one scan."
+      },
+      "ohada": {
+        "title": "OHADA accounting",
+        "body": "Journal, ledger, standard accounts (571/585/706/4194) — UTF-8 BOM CSV export ready for Excel or your accountant."
+      },
+      "rooms": {
+        "title": "Rooms map",
+        "body": "Colour overview: vacant, up to date, overdue, reserved. One glance replaces ten notebooks."
+      },
+      "team": {
+        "title": "Team & permissions",
+        "body": "Invite your managers and caretakers, assign them to sites, revoke access in one click. Every action is logged."
+      }
+    },
+    "ba": {
+      "overline": "BEFORE / AFTER",
+      "title": "What Bailo changes day to day",
+      "subtitle": "Three common situations in a residence in Cameroon.",
+      "before": "Before",
+      "after": "With Bailo",
+      "b1": {
+        "badge": "Morning collection",
+        "before": "The caretaker writes in a notebook, hand-writes a receipt, forgets the cash box at home that evening.",
+        "after": "One tap, numbered receipt generated, auto-sync at the office — zero paper trail lost."
+      },
+      "b2": {
+        "badge": "End of month",
+        "before": "You copy 30 lines into Excel to know who paid and how much is missing.",
+        "after": "Dashboard up to date in real time: collected, remaining, late tenants, split by payment mode."
+      },
+      "b3": {
+        "badge": "Accountant",
+        "before": "You spend a day preparing documents, extracting payments, computing site totals.",
+        "after": "OHADA export in one click: journal, ledger, entries ready to hand over."
+      }
+    },
+    "step": {
+      "overline": "HOW IT WORKS",
+      "title": "Operational in 10 minutes",
+      "subtitle": "No training, no install. You open an account, add your rooms, start collecting.",
+      "s1": { "title": "Create your account", "body": "Name, phone, password. No card, no commitment." },
+      "s2": { "title": "Declare your building", "body": "Room count, base rent. You can import existing tenants." },
+      "s3": { "title": "Collect & track", "body": "Every payment generates a receipt, updates arrears, feeds your accounting." }
+    },
+    "pricing": {
+      "overline": "PLANS",
+      "title": "Start free, pay as you grow",
+      "subtitle": "No card to enter, no commitment. The Discovery plan is fully functional.",
+      "freeBadge": "Discovery",
+      "freeTitle": "Free",
+      "freeDesc": "To test in real conditions on a small residence.",
+      "freeList": {
+        "f1": "Up to 5 rooms",
+        "f2": "Unlimited collections",
+        "f3": "Receipts with QR",
+        "f4": "Full OHADA accounting"
+      },
+      "freeCta": "Open my account",
+      "paidBadge": "Cité, Cité Pro, Manager",
+      "paidTitle": "Paid plans",
+      "paidDesc": "For landlords managing several residences or who want automatic WhatsApp reminders, late fees, advanced reports.",
+      "paidList": {
+        "p1": "Unlimited rooms",
+        "p2": "Automated SMS / WhatsApp reminders",
+        "p3": "Automatic late fees",
+        "p4": "Multi-landlord (Manager profile)"
+      },
+      "paidHint": "Pricing to be communicated soon. You'll be notified before any billing."
+    },
+    "faq": {
+      "overline": "FREQUENT QUESTIONS",
+      "title": "Answers to common questions",
+      "subtitle": "Can't find your answer? Reach out via the help button at the bottom right.",
+      "q1": { "q": "Is it really free?", "a": "Yes. The Discovery plan covers up to 5 rooms, with no time or payment limit. No card is required at sign-up." },
+      "q2": { "q": "Does it work offline?", "a": "Partly. The app is installable (PWA) and caches your screens. Payments entered offline are queued and sent when the network returns." },
+      "q3": { "q": "Is my data safe?", "a": "Yes. Data is hosted in Europe (Railway EU West), encrypted in transit (HTTPS) and at rest. Each account is strictly isolated — one landlord never sees another's data." },
+      "q4": { "q": "Can I export my data?", "a": "Yes. You can export your OHADA accounting as CSV at any time. A full export (all tenants and payments) is also planned from the Administration tab." },
+      "q5": { "q": "Who has access to my residence?", "a": "You decide. As an owner, you invite your managers and caretakers, assign them specific sites, revoke access anytime. Every action is logged in the audit journal." }
+    },
+    "final": {
+      "title": "Ready to stop chasing rent?",
+      "subtitle": "Open an account in 2 minutes and collect your first rent today.",
+      "cta": "Start for free"
+    },
+    "footer": {
+      "tagline": "Rental management for Cameroonian residences and buildings — finally as simple as a notebook, without the mistakes.",
+      "rights": "All rights reserved.",
+      "product": "Product",
+      "legal": "Legal"
+    },
+    "mockup": { "collected": "Collected", "arrears": "Arrears", "occupancy": "Occupancy" }
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "updated": "Updated {{date}}",
+    "intro": "This page explains in plain language what data Bailo collects, why, how long we keep it, whom we share it with, and your rights. It applies to the Bailo web application and its mobile derivatives.",
+    "data": {
+      "title": "1. Data we collect",
+      "body": "— Account and team: name, phone, email (optional), role, hashed password.\n— Management activity: residences, rooms, tenants, payments, charges, receipts. This data belongs to you.\n— Technical logs: IP, device type, pages visited. Used only for security and troubleshooting.\n— Cookies: one technical session cookie, needed to keep you signed in. No advertising trackers."
+    },
+    "purposes": {
+      "title": "2. Why we use this data",
+      "body": "— Provide the service (open, use, back up your account).\n— Secure access (sign-ins, token rotation, anomaly detection).\n— Support you if you contact us.\n— Meet legal obligations (accounting, lawful authority requests)."
+    },
+    "legal": {
+      "title": "3. Legal bases",
+      "body": "Performance of the contract between us (service delivery), your consent (where an optional treatment is offered), and our legal obligations (OHADA accounting, judicial requests)."
+    },
+    "sharing": {
+      "title": "4. Sharing with third parties",
+      "body": "We never sell your data. It is entrusted only to providers strictly necessary to run the service: hosting (Railway, Europe), SMS provider (when you activate it), Mobile Money provider (MTN or Orange, only for payments you initiate). Each provider is bound by confidentiality and security commitments."
+    },
+    "retention": {
+      "title": "5. Retention",
+      "body": "— Active account: as long as your account exists.\n— After account deletion: accounting entries are kept 10 years as required by OHADA law. Other personal data is deleted within 30 days.\n— Technical logs: 90 days maximum."
+    },
+    "rights": {
+      "title": "6. Your rights",
+      "body": "At any time you can access your data, correct it, export it, request deletion (within accounting obligations), limit processing, withdraw consent. To exercise these rights, write to us — we respond within 30 days."
+    },
+    "security": {
+      "title": "7. Security",
+      "body": "Connections are HTTPS-encrypted. Passwords are hashed with argon2 (never stored in plain text). Session tokens are rotated regularly and revocable from the Administration tab. Every administrative action is recorded in an immutable audit log."
+    },
+    "contact": {
+      "title": "8. Contact us",
+      "body": "Any question about this policy can be sent to the Bailo publisher: NDONGO Louis Pharel, Yaoundé — Douala, Cameroon. Email: pharelndongo2005@gmail.com. We respond within 30 days."
+    },
+    "footer": "Once these terms suit you, you can"
   },
   "adminAudit": {
     "from": "From",
