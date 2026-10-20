@@ -15,6 +15,16 @@
   /* Hauteur de la barre d'onglets mobile (BottomNav) + inset bas, utilisée
      comme padding sous le contenu pour qu'aucun texte ne soit masqué. */
   --bottom-nav-h: 72px;
+  /* Jetons de couleur de la coquille — redéfinis sous `.dark` pour le mode
+     sombre. Les composants Tailwind restent prioritaires via `dark:` quand
+     une couleur précise est voulue. */
+  --bg-page: #f6f7f9;
+  --fg-page: #0f172a;
+}
+.dark {
+  color-scheme: dark;
+  --bg-page: #0b1220;
+  --fg-page: #e5e7eb;
 }
 html,
 body,
@@ -23,8 +33,8 @@ body,
 }
 body {
   margin: 0;
-  background: #f6f7f9;
-  color: #0f172a;
+  background: var(--bg-page);
+  color: var(--fg-page);
   font-family:
     'Inter Variable',
     system-ui,

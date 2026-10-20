@@ -1,5 +1,6 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
-import { BuildingIcon } from '../../components/icons';
+import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BuildingIcon, EyeIcon, EyeOffIcon } from '../../components/icons';
 
 // Icônes de formulaire réexportées pour les écrans d'auth (source unique : components/icons).
 export {
@@ -70,6 +71,49 @@ export function Field({ label, icon, id, className = '', ...props }: FieldProps)
           className={`w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/30 ${className}`}
           {...props}
         />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Variante « mot de passe » du Field : œil pour afficher/masquer les
+ * caractères saisis. Utile sur mobile où une faute de frappe est courante.
+ */
+export function PasswordField({
+  label,
+  icon,
+  id,
+  className = '',
+  ...props
+}: Omit<FieldProps, 'type'>) {
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState(false);
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <div className="relative">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          {icon}
+        </span>
+        <input
+          id={id}
+          type={visible ? 'text' : 'password'}
+          className={`w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-11 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/30 ${className}`}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? t('a11y.hidePassword') : t('a11y.showPassword')}
+          aria-pressed={visible}
+          tabIndex={-1}
+          className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-slate-400 transition hover:text-slate-700 focus:text-slate-700"
+        >
+          {visible ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+        </button>
       </div>
     </div>
   );

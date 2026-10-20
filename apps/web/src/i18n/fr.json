@@ -679,6 +679,36 @@
       "selfDeactivate": "Vous ne pouvez pas vous désactiver vous-même."
     }
   },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "auto": "Auto"
+  },
+  "a11y": {
+    "skipToContent": "Aller au contenu",
+    "scrollProgress": "Progression de la page",
+    "backToTop": "Retour en haut",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
+  },
+  "copy": {
+    "title": "Copier",
+    "done": "Copié",
+    "aria": "Copier {{value}}"
+  },
+  "cookies": {
+    "title": "Cookies techniques",
+    "body": "Bailo utilise un cookie de session pour vous garder connecté. Aucun traceur publicitaire, aucune analyse comportementale, aucun partage avec un tiers.",
+    "ack": "J'ai compris"
+  },
+  "contact": {
+    "open": "Besoin d'aide ?",
+    "close": "Fermer",
+    "whatsapp": "WhatsApp",
+    "phone": "Appeler le support",
+    "email": "Écrire au support"
+  },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "Ce locataire occupe encore un logement avec des paiements : enregistrez d'abord sa sortie.",
     "TENANT_NOT_FOUND": "Locataire introuvable."

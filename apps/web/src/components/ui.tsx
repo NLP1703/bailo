@@ -34,8 +34,8 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-3 pb-1 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
-        {subtitle && <p className="mt-1 max-w-2xl text-sm text-slate-500">{subtitle}</p>}
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">{title}</h1>
+        {subtitle && <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
       </div>
       {right && <div className="flex shrink-0 flex-wrap items-center gap-2 print:hidden">{right}</div>}
     </div>
@@ -44,7 +44,9 @@ export function PageHeader({
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl bg-white p-4 shadow-card ring-1 ring-slate-200/70 ${className}`}>
+    <div
+      className={`rounded-xl bg-white p-4 shadow-card ring-1 ring-slate-200/70 dark:bg-slate-800 dark:ring-slate-700 ${className}`}
+    >
       {children}
     </div>
   );
@@ -85,18 +87,18 @@ export function StatTile({
 }) {
   const deltaGood = delta ? (delta.good === 'down' ? delta.pct <= 0 : delta.pct >= 0) : true;
   return (
-    <div className="flex flex-col rounded-xl bg-white p-4 shadow-card ring-1 ring-slate-200/70">
+    <div className="flex flex-col rounded-xl bg-white p-4 shadow-card ring-1 ring-slate-200/70 dark:bg-slate-800 dark:ring-slate-700">
       <div className="flex items-center gap-2">
         {Icon && (
           <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${TONES[tone]}`}>
             <Icon className="h-4 w-4" />
           </span>
         )}
-        <div className="text-xs font-medium text-slate-500">{label}</div>
+        <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</div>
       </div>
       {/* Valeur : plus grosse sur mobile pour qu'elle reste lisible à bout de bras
           et compense l'empilement vertical des tuiles. Revient à ~22 px desktop. */}
-      <div className="mt-2 text-[26px] font-semibold leading-tight text-slate-900 tabular-nums sm:text-[22px]">
+      <div className="mt-2 text-[26px] font-semibold leading-tight text-slate-900 tabular-nums dark:text-slate-100 sm:text-[22px]">
         {value}
       </div>
       {meter !== undefined && (
@@ -274,10 +276,10 @@ export function Select({
 
 /** Style commun aux champs de saisie (inputs, selects, textarea natifs). */
 export const fieldCls =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/30';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500';
 
 export function Label({ children }: { children: ReactNode }) {
-  return <span className="mb-1 block text-sm font-medium text-slate-700">{children}</span>;
+  return <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{children}</span>;
 }
 
 /** Message d'erreur inline (vide = rien). */

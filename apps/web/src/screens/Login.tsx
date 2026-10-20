@@ -3,7 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { LoginDto } from '@bailo/shared';
 import { useAuth } from '../lib/auth';
-import { AuthShell, ErrorBanner, Field, MailIcon, PhoneIcon, LockIcon, PrimaryButton } from './auth/AuthUI';
+import {
+  AuthShell,
+  ErrorBanner,
+  Field,
+  LockIcon,
+  MailIcon,
+  PasswordField,
+  PhoneIcon,
+  PrimaryButton,
+} from './auth/AuthUI';
 
 export function Login() {
   const { t } = useTranslation();
@@ -72,9 +81,8 @@ export function Login() {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
-        <Field
+        <PasswordField
           id="password"
-          type="password"
           label={t('login.password')}
           icon={<LockIcon />}
           placeholder="••••••••"

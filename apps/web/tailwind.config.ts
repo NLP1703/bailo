@@ -3,6 +3,8 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  // Mode sombre contrôlé par la classe `dark` sur <html>, posée par lib/theme.ts.
+  darkMode: 'class',
   theme: {
     extend: {
       // Point d'arrêt supplémentaire pour les petits téléphones « plus » (iPhone

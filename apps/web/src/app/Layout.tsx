@@ -7,6 +7,10 @@ import { Topbar } from './Topbar';
 import { BottomNav } from './BottomNav';
 import { CommandPalette } from './CommandPalette';
 import { PrintLetterhead } from '../components/PrintLetterhead';
+import { SkipLink } from '../components/SkipLink';
+import { ScrollProgress } from '../components/ScrollProgress';
+import { CookieBanner } from '../components/CookieBanner';
+import { ContactFab } from '../components/ContactFab';
 
 const COLLAPSE_KEY = 'bailo.sidebarCollapsed';
 
@@ -72,7 +76,9 @@ export function Layout() {
   const contentOffset = collapsed ? 'lg:pl-[76px]' : 'lg:pl-64';
 
   return (
-    <div className="min-h-screen bg-[#f6f7f9] print:min-h-0 print:bg-white">
+    <div className="min-h-screen bg-[#f6f7f9] dark:bg-slate-950 print:min-h-0 print:bg-white">
+      <SkipLink />
+      <ScrollProgress />
       {/* Sidebar fixe — ordinateur */}
       <aside
         className={`fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200/80 bg-white transition-[width] duration-200 lg:block print:!hidden ${sidebarWidth}`}
@@ -112,7 +118,11 @@ export function Layout() {
           </div>
         )}
 
-        <main className="flex-1 px-4 py-5 pb-bottom-nav sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:!pb-8 print:!p-0">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 px-4 py-5 pb-bottom-nav sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:!pb-8 print:!p-0"
+        >
           <div className="mx-auto w-full max-w-7xl print:max-w-none">
             <PrintLetterhead />
             <Outlet />
@@ -121,6 +131,8 @@ export function Layout() {
       </div>
 
       <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
+      <ContactFab />
+      <CookieBanner />
 
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

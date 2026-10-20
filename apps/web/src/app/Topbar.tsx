@@ -11,11 +11,15 @@ import {
   ChevronRightIcon,
   GlobeIcon,
   LogOutIcon,
+  MoonIcon,
   SearchIcon,
   SettingsIcon,
+  SunIcon,
   TagIcon,
   UserIcon,
 } from '../components/icons';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { useTheme } from '../lib/theme';
 
 /** Barre supérieure : fil d'Ariane, recherche, synchro, compte.
  *  Sur mobile, le menu complet est atteint via « Plus » de la bottom-nav —
@@ -119,6 +123,16 @@ function SyncPill() {
         {online ? t('app.pending', { count: pending }) : t('app.offline')}
       </span>
     </span>
+  );
+}
+
+/** Icône Soleil/Lune reflétant le thème effectif courant. */
+function ThemeIcon() {
+  const { isDark } = useTheme();
+  return isDark ? (
+    <MoonIcon className="h-4 w-4 text-slate-400" />
+  ) : (
+    <SunIcon className="h-4 w-4 text-slate-400" />
   );
 }
 
@@ -232,6 +246,13 @@ function AccountMenu() {
                   {lng}
                 </button>
               ))}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700">
+            <ThemeIcon />
+            {t('theme.label')}
+            <span className="ml-auto">
+              <ThemeToggle />
             </span>
           </div>
           <div className="my-1 border-t border-slate-100" />

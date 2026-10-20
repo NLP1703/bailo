@@ -673,6 +673,36 @@
       "selfDeactivate": "You cannot deactivate yourself."
     }
   },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "scrollProgress": "Page progress",
+    "backToTop": "Back to top",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "copy": {
+    "title": "Copy",
+    "done": "Copied",
+    "aria": "Copy {{value}}"
+  },
+  "cookies": {
+    "title": "Technical cookies",
+    "body": "Bailo uses a session cookie to keep you signed in. No advertising trackers, no behavioural analytics, no sharing with any third party.",
+    "ack": "Got it"
+  },
+  "contact": {
+    "open": "Need help?",
+    "close": "Close",
+    "whatsapp": "WhatsApp",
+    "phone": "Call support",
+    "email": "Email support"
+  },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
     "TENANT_NOT_FOUND": "Tenant not found."

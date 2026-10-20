@@ -6,14 +6,15 @@ import { useAuth } from '../lib/auth';
 import { ApiError } from '../lib/api';
 import {
   AuthShell,
+  BuildingIcon,
   ErrorBanner,
   Field,
-  BuildingIcon,
-  UserIcon,
-  MailIcon,
-  PhoneIcon,
   LockIcon,
+  MailIcon,
+  PasswordField,
+  PhoneIcon,
   PrimaryButton,
+  UserIcon,
 } from './auth/AuthUI';
 
 export function Signup() {
@@ -104,9 +105,8 @@ export function Signup() {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
-        <Field
+        <PasswordField
           id="password"
-          type="password"
           label={t('login.password')}
           icon={<LockIcon />}
           placeholder="••••••••"

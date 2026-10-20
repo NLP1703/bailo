@@ -360,3 +360,57 @@ export const ShieldIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const SunIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </Svg>
+);
+
+export const MoonIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+  </Svg>
+);
+
+export const EyeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Svg>
+);
+
+export const EyeOffIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M17.9 17.9A10.4 10.4 0 0 1 12 19C5.5 19 2 12 2 12a19 19 0 0 1 4.2-5.1M9.5 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a19 19 0 0 1-3 3.9" />
+    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" />
+  </Svg>
+);
+
+export const CopyIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </Svg>
+);
+
+export const ArrowUpIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </Svg>
+);
+
+export const HelpIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.5 9.5a2.5 2.5 0 1 1 4 2c-.9.6-1.5 1-1.5 2M12 17h.01" />
+  </Svg>
+);
+
+export const WhatsAppIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20.5 3.5A10 10 0 0 0 3.9 16.4L3 21l4.7-1.2A10 10 0 1 0 20.5 3.5Z" />
+    <path d="M16.5 14.6c-.3-.1-1.6-.8-1.8-.9-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.7-.3-1.5-.9-2.1-1.4-.5-.5-1-1.1-1.4-1.8-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4 0-.2 0-.3-.1-.4-.1-.1-.6-1.5-.9-2-.2-.5-.5-.5-.7-.5h-.5c-.2 0-.5.1-.7.3-.3.3-.9.9-.9 2.1 0 1.2.9 2.4 1 2.6.1.2 1.8 2.9 4.5 4 1.5.6 2.1.7 2.9.6.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.2.2-1.3-.1-.1-.3-.2-.5-.3Z" />
+  </Svg>
+);
+

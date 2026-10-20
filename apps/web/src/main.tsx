@@ -4,10 +4,17 @@ import { BrowserRouter } from 'react-router-dom';
 import './i18n';
 import './index.css';
 import { AuthProvider } from './lib/auth';
+import { initTheme } from './lib/theme';
+import { captureUtm } from './lib/utm';
 import { App } from './app/app';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/Confirm';
+
+// Thème appliqué AVANT le premier render pour éviter le flash blanc en dark mode.
+initTheme();
+// Capture d'éventuels paramètres UTM à l'arrivée (puis nettoyage de l'URL).
+captureUtm();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
