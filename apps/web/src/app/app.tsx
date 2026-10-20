@@ -37,6 +37,7 @@ import { Accounting } from '../screens/Accounting';
 import { AdminLayout, AdminPlaceholder } from '../screens/admin/AdminLayout';
 import { AdminOverview } from '../screens/admin/AdminOverview';
 import { AdminTeam } from '../screens/admin/AdminTeam';
+import { AdminAudit } from '../screens/admin/AdminAudit';
 
 export function App() {
   const { user, loading } = useAuth();
@@ -126,7 +127,7 @@ function AuthedApp() {
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
           <Route path="team" element={<AdminTeam />} />
-          <Route path="audit" element={<AdminPlaceholder sectionKey="audit" />} />
+          <Route path="audit" element={<AdminAudit />} />
           <Route path="settings" element={<AdminPlaceholder sectionKey="settings" />} />
           <Route path="subscription" element={<AdminPlaceholder sectionKey="subscription" />} />
           <Route path="integrations" element={<AdminPlaceholder sectionKey="integrations" />} />

@@ -709,6 +709,25 @@
     "phone": "Appeler le support",
     "email": "Écrire au support"
   },
+  "adminAudit": {
+    "from": "Du",
+    "to": "Au",
+    "entity": "Entité",
+    "entityId": "ID entité",
+    "actorId": "Acteur",
+    "action": "Action",
+    "allActions": "Toutes",
+    "sensitiveOnly": "Actions sensibles uniquement",
+    "export": "Exporter CSV",
+    "exportDone": "Export CSV téléchargé.",
+    "loaded": "{{n}} ligne(s) chargée(s)",
+    "sensitiveN": "{{n}} sensible(s)",
+    "empty": "Aucune entrée pour ces filtres.",
+    "loadMore": "Charger plus",
+    "endOfList": "Fin de la liste",
+    "roleChange": "RÔLE",
+    "noPayload": "Aucun payload (action sans modification de champ)."
+  },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "Ce locataire occupe encore un logement avec des paiements : enregistrez d'abord sa sortie.",
     "TENANT_NOT_FOUND": "Locataire introuvable."

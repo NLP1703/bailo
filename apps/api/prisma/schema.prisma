@@ -413,6 +413,7 @@ model Site {
   maintenanceTickets MaintenanceTicket[]
   expenses           Expense[]
   anomalies          Anomaly[]
+  auditLogs          AuditLog[]
 
   @@index([accountId])
   @@map("site")
@@ -769,6 +770,7 @@ model ReceiptSequence {
 model AuditLog {
   id        String      @id @default(uuid())
   accountId String
+  siteId    String? // Admin Lot 3 -- site concerne (null si l'entite n'a pas de site)
   entity    String // nom de table, ex. "payment"
   entityId  String
   action    AuditAction
@@ -779,9 +781,11 @@ model AuditLog {
   createdAt DateTime    @default(now())
 
   account Account @relation(fields: [accountId], references: [id])
+  site    Site?   @relation(fields: [siteId], references: [id], onDelete: SetNull)
 
   @@index([accountId, entity, entityId])
   @@index([accountId, createdAt])
+  @@index([accountId, siteId, createdAt(sort: Desc)])
   @@map("audit_log")
 }
 

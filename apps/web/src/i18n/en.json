@@ -703,6 +703,25 @@
     "phone": "Call support",
     "email": "Email support"
   },
+  "adminAudit": {
+    "from": "From",
+    "to": "To",
+    "entity": "Entity",
+    "entityId": "Entity ID",
+    "actorId": "Actor",
+    "action": "Action",
+    "allActions": "All",
+    "sensitiveOnly": "Sensitive actions only",
+    "export": "Export CSV",
+    "exportDone": "CSV export downloaded.",
+    "loaded": "{{n}} row(s) loaded",
+    "sensitiveN": "{{n}} sensitive",
+    "empty": "No entry for these filters.",
+    "loadMore": "Load more",
+    "endOfList": "End of list",
+    "roleChange": "ROLE",
+    "noPayload": "No payload (action without field change)."
+  },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
     "TENANT_NOT_FOUND": "Tenant not found."

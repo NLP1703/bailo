@@ -31,18 +31,30 @@ export interface PaginatedResult<T> {
 /** Actions considérées « sensibles » : annulation, suppression, archivage. */
 export const SENSITIVE_AUDIT_ACTIONS: AuditAction[] = ['VOID', 'DELETE', 'ARCHIVE'];
 
-export const auditFiltersQuery = offsetPaginationQuery.extend({
+/**
+ * Filtres de lecture du journal d'audit (Lot 3).
+ *
+ * Pagination par curseur `before` (ISO datetime strict) : on charge les lignes
+ * `createdAt < before`. Le serveur renvoie `nextCursor` = createdAt de la
+ * dernière ligne. Préférée à l'offset pour un journal qui grossit en permanence
+ * (pas de drift entre deux pages).
+ */
+export const auditFiltersQuery = z.object({
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   actorId: uuid.optional(),
   entity: z.string().min(1).max(60).optional(),
   entityId: uuid.optional(),
   action: z.enum(AUDIT_ACTIONS).optional(),
-  /** Vrai pour ne garder que les actions sensibles (VOID / DELETE / ARCHIVE). */
+  /** Vrai pour ne garder que les actions sensibles (VOID / DELETE / ARCHIVE
+   *  + changement de rôle). */
   sensitiveOnly: z
     .union([z.boolean(), z.enum(['true', 'false'])])
     .optional()
     .transform((v) => v === true || v === 'true'),
+  /** Pagination : charge les lignes strictement antérieures à ce timestamp. */
+  before: z.string().datetime().optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(30),
 });
 export type AuditFiltersQuery = z.infer<typeof auditFiltersQuery>;
 
@@ -53,11 +65,19 @@ export interface AuditEntryView {
   actorName: string | null;
   entity: string;
   entityId: string;
+  siteId: string | null;
   action: AuditAction;
   reason: string | null;
   sensitive: boolean;
+  isRoleChange: boolean;
   before: unknown;
   after: unknown;
+}
+
+export interface AuditListResult {
+  items: AuditEntryView[];
+  /** createdAt ISO de la dernière ligne retournée, à repasser en `before`. Null = fin de liste. */
+  nextCursor: string | null;
 }
 
 // ─── Liste des utilisateurs (côté admin) ──────────────────────────────────────

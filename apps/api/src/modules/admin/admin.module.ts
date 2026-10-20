@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminUsersModule } from './users/admin-users.module';
+import { AdminAuditModule } from './audit/admin-audit.module';
 
 /**
  * Module ombrelle du périmètre /admin — regroupe au fil des lots :
@@ -18,7 +19,7 @@ import { AdminUsersModule } from './users/admin-users.module';
  * ré-enregistrer ici.
  */
 @Module({
-  imports: [AdminUsersModule],
+  imports: [AdminUsersModule, AdminAuditModule],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],
