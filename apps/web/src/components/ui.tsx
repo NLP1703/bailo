@@ -350,3 +350,36 @@ export function Button({
     </button>
   );
 }
+
+/**
+ * Bouton d'action flottant mobile — bulle fixe en bas à droite, pour l'action
+ * principale d'un écran (Nouveau locataire, Nouveau contrat…). Masqué sur
+ * ordinateur, où le même CTA est placé dans l'en-tête de l'écran. Décalage
+ * calculé pour passer au-dessus de la bottom-nav et de l'inset bas (encoche).
+ *
+ * Pour un lien de navigation, l'appelant utilise `onClick={() => navigate(...)}`
+ * — garde l'intégration avec react-router sans ajouter de dépendance ici.
+ */
+export function Fab({
+  icon: Icon,
+  label,
+  onClick,
+  tone = 'brand',
+  className = '',
+}: {
+  icon: ComponentType<IconProps>;
+  label: string;
+  onClick: () => void;
+  tone?: 'brand' | 'emerald';
+  className?: string;
+}) {
+  const toneCls = tone === 'emerald' ? 'bg-emerald-600' : 'bg-brand';
+  const cls = `lg:hidden fixed right-4 z-20 flex h-14 items-center gap-2 rounded-full ${toneCls} pl-4 pr-5 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(15,118,110,0.5),0_6px_12px_-6px_rgba(15,23,42,0.2)] ring-4 ring-white transition active:scale-95 ${className}`;
+  const style = { bottom: 'calc(var(--bottom-nav-h) + var(--safe-bottom) + 12px)' };
+  return (
+    <button type="button" aria-label={label} onClick={onClick} className={cls} style={style}>
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </button>
+  );
+}

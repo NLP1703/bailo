@@ -114,8 +114,10 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
     }
   };
 
+  // Mobile : feuille collée en bas, slide-up, bords supérieurs arrondis + poignée.
+  // Desktop (≥ sm) : dialog centré classique.
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center" onKeyDown={onKeyDown}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4" onKeyDown={onKeyDown}>
       <div className="absolute inset-0 animate-fade-in bg-slate-900/50" onClick={() => onClose(false)} aria-hidden="true" />
       <div
         ref={panelRef}
@@ -123,8 +125,11 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={options.message ? descId : undefined}
-        className="relative w-full max-w-md animate-pop-in rounded-2xl bg-white p-5 shadow-pop ring-1 ring-slate-200 sm:p-6"
+        className="relative w-full max-w-md animate-slide-up rounded-t-2xl bg-white px-5 pb-5 pt-3 pb-safe shadow-pop ring-1 ring-slate-200 sm:animate-pop-in sm:rounded-2xl sm:p-6 sm:pb-6"
       >
+        {/* Poignée de glissement (purement visuelle, bottom sheet uniquement) */}
+        <div aria-hidden="true" className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300 sm:hidden" />
+
         <div className="flex gap-4">
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
@@ -163,11 +168,14 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
           </div>
         </div>
 
+        {/* Actions : empilées pleine largeur mobile (gros tap target), alignées à
+            droite desktop. `flex-col-reverse` place l'action principale en bas
+            de la pile — la plus accessible au pouce sur téléphone. */}
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
             onClick={() => onClose(false)}
-            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="h-12 rounded-lg px-5 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:h-10"
           >
             {options.cancelLabel ?? t('common.cancel')}
           </button>
@@ -175,7 +183,7 @@ function ConfirmDialog({ options, onClose }: { options: ConfirmOptions; onClose:
             ref={confirmRef}
             disabled={!canConfirm}
             onClick={() => onClose(true)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+            className={`h-12 rounded-lg px-5 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 ${
               danger
                 ? 'bg-red-600 hover:bg-red-700 focus:ring-red-300'
                 : 'bg-brand hover:bg-brand-dark focus:ring-brand/40'

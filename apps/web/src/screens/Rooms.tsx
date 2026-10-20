@@ -106,7 +106,10 @@ export function Rooms() {
       {units.length === 0 ? (
         <EmptyState icon={DoorIcon} message={t('rooms.title')} />
       ) : (
-        <div className="grid grid-cols-4 gap-2.5">
+        // Grille responsive : plus large sur grand écran (plus de chambres visibles
+        // d'un seul coup d'œil), plus confortable au doigt sur téléphone (3 colonnes
+        // ≈ carrés de 110 px, tap sans mire).
+        <div className="grid grid-cols-3 gap-2.5 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
           {units.map((u) => {
             // Détermine quoi afficher sous le code selon l'état de la case.
             const isReserved = u.color === 'BLUE';

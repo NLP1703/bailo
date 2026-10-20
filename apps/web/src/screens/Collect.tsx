@@ -6,10 +6,21 @@ import { api, ApiError, API } from '../lib/api';
 import { enqueuePayment } from '../lib/sync';
 import { formatFcfa } from '../lib/format';
 import { FileField } from '../components/FileField';
-import { PageHeader, Card, Input, Label, NativeSelect, Button } from '../components/ui';
+import { PageHeader, Card, Input, Label, Button } from '../components/ui';
 import { DoorIcon, ChevronRightIcon, CheckCircleIcon } from '../components/icons';
 
+// Libellés et pastilles courts des modes de paiement (chips lisibles au doigt).
+const MODE_INFO: Record<PaymentMode, { label: string; short: string }> = {
+  ESPECES: { label: 'Espèces', short: '💵' },
+  MTN_MOMO: { label: 'MTN MoMo', short: 'MTN' },
+  ORANGE_MONEY: { label: 'Orange Money', short: 'OM' },
+  VIREMENT: { label: 'Virement', short: '🏦' },
+  AUTRE: { label: 'Autre', short: '•' },
+};
 const MODES: PaymentMode[] = ['ESPECES', 'MTN_MOMO', 'ORANGE_MONEY', 'VIREMENT', 'AUTRE'];
+
+// Suggestions de montants (le gardien saisit rarement un montant exotique).
+const QUICK_AMOUNTS = [10_000, 25_000, 50_000, 100_000];
 
 interface PreviewLine {
   chargeId: string;
@@ -122,30 +133,72 @@ export function Collect() {
   }
 
   return (
-    <div className="space-y-4">
+    // Marge basse mobile : bandeau Valider (≈ 72 px) + bottom-nav (72 px) + inset
+    // → ≈ 160 px. Désactivé ≥ sm (le bouton redevient inline, pas de bandeau).
+    <div className="space-y-4 pb-44 sm:pb-0">
       <PageHeader subtitle={t('pageSub.collect')} title={room ? `${t('collect.title')} · ${room}` : t('collect.title')} />
 
-      <Card className="space-y-3">
+      <Card className="space-y-4">
         <div>
           <Label>{t('collect.amount')}</Label>
+          {/* Grosse zone montant : chiffres plus lisibles (saisie éclair du gardien),
+              clavier numérique sur mobile. */}
           <Input
             inputMode="numeric"
+            pattern="[0-9]*"
             placeholder="0"
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
             onBlur={doPreview}
+            className="h-14 text-right text-2xl font-bold tabular-nums tracking-tight"
           />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {QUICK_AMOUNTS.map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => {
+                  setAmount(String(v));
+                  // Précharge l'aperçu dès qu'un montant est posé.
+                  setTimeout(doPreview, 0);
+                }}
+                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95"
+              >
+                + {formatFcfa(v)}
+              </button>
+            ))}
+          </div>
         </div>
+
         <div>
           <Label>{t('collect.mode')}</Label>
-          <NativeSelect value={mode} onChange={(e) => setMode(e.target.value as PaymentMode)}>
-            {MODES.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </NativeSelect>
+          {/* Chips à sélection unique — plus rapide qu'un <select> natif au doigt,
+              et plus clair que 5 radios empilés. */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {MODES.map((m) => {
+              const active = m === mode;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-sm font-semibold transition ${
+                    active
+                      ? 'border-brand bg-brand text-white shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                  aria-pressed={active}
+                >
+                  <span className={active ? 'text-white' : 'text-slate-500'}>
+                    {MODE_INFO[m].short}
+                  </span>
+                  <span className="truncate">{MODE_INFO[m].label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
         <FileField
           purpose="payment-proof"
           label={t('collect.proof')}
@@ -166,10 +219,15 @@ export function Collect() {
                     ? ` ${String(l.periodMonth).padStart(2, '0')}/${l.periodYear}`
                     : ''}
                 </span>
-                <span className="font-medium text-slate-900">{formatFcfa(l.amount)}</span>
+                <span className="font-medium tabular-nums text-slate-900">{formatFcfa(l.amount)}</span>
               </div>
             ))}
           </div>
+          {preview.leftover > 0 && (
+            <p className="mt-2 rounded-lg bg-sky-50 px-2.5 py-1.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-100">
+              Avance : {formatFcfa(preview.leftover)} seront reportés sur les prochaines échéances.
+            </p>
+          )}
         </Card>
       )}
 
@@ -191,9 +249,36 @@ export function Collect() {
         </div>
       )}
 
-      <Button block size="md" busy={busy} disabled={!amountNum} onClick={validate}>
-        {t('collect.validate')}
-      </Button>
+      {/* Validation : barre collée en bas sur mobile (toujours visible, au-dessus
+          de la bottom-nav), bouton inline sur desktop.
+          On la positionne à `bottom = hauteur bottom-nav + inset bas` pour que
+          la bottom-nav reste visible dessous — on garde ainsi la navigation
+          d'un seul tap depuis le formulaire d'encaissement. */}
+      <div
+        className="fixed inset-x-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+        style={{ bottom: 'calc(var(--bottom-nav-h) + var(--safe-bottom))' }}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          {amountNum > 0 && (
+            <span className="hidden shrink-0 text-right text-xs text-slate-500 sm:block">
+              Montant saisi
+              <span className="block text-base font-bold tabular-nums text-slate-900">
+                {formatFcfa(amountNum)}
+              </span>
+            </span>
+          )}
+          <Button
+            block
+            size="md"
+            busy={busy}
+            disabled={!amountNum}
+            onClick={validate}
+            className="h-12 text-base"
+          >
+            {amountNum > 0 ? `${t('collect.validate')} · ${formatFcfa(amountNum)}` : t('collect.validate')}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { formatDate } from '../lib/format';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/Confirm';
-import { PageHeader, EmptyState, PageSkeleton, Button } from '../components/ui';
+import { PageHeader, EmptyState, PageSkeleton, Button, Fab } from '../components/ui';
 import {
   DataTable,
   FilterChips,
@@ -76,6 +76,7 @@ export function Tenants() {
   const { t } = useTranslation();
   const toast = useToast();
   const confirm = useConfirm();
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<FilterKey>('all');
   const [rows, setRows] = useState<EnrichedTenant[]>([]);
@@ -291,13 +292,17 @@ export function Tenants() {
         actions={
           <Link
             to="/new-entry"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
+            className="hidden items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark lg:inline-flex"
           >
             <UserPlusIcon className="h-4 w-4" />
             {t('tenants.add')}
           </Link>
         }
       />
+
+      {/* FAB mobile : « Nouveau locataire » reste à portée du pouce même en
+          bas de liste, sans scroller jusqu'à l'en-tête. */}
+      <Fab icon={UserPlusIcon} label={t('tenants.add')} onClick={() => navigate('/new-entry')} />
 
       {/* Chambres réservées — visible seulement s'il y en a */}
       {reservations.length > 0 && (
