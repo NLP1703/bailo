@@ -139,22 +139,51 @@ export function Cash() {
                 <WalletIcon className="h-5 w-5 text-brand" />
                 {t('cash.handover')}
               </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto]">
+              {/* Même grammaire visuelle qu'Encaisser : grosse zone montant (saisie
+                  rapide, chiffres lisibles), note en dessous, bouton pleine largeur
+                  sur mobile, en ligne sur bureau. */}
+              <div>
+                <span className="mb-1 block text-xs font-medium text-slate-500">
+                  {t('cash.handedAmount')}
+                </span>
                 <Input
                   inputMode="numeric"
-                  placeholder={t('cash.handedAmount')}
+                  pattern="[0-9]*"
+                  placeholder="0"
                   value={handed}
                   onChange={(e) => setHanded(e.target.value.replace(/\D/g, ''))}
+                  className="h-14 text-right text-2xl font-bold tabular-nums tracking-tight"
                 />
+                {journal.toHand > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setHanded(String(journal.toHand))}
+                    className="mt-2 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/15 active:scale-95"
+                  >
+                    = tout remettre ({formatAmount(journal.toHand)} FCFA)
+                  </button>
+                )}
+              </div>
+              <div>
+                <span className="mb-1 block text-xs font-medium text-slate-500">
+                  {t('cash.note')}
+                </span>
                 <Input
-                  placeholder={t('cash.note')}
+                  placeholder="Observations (facultatif)"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                 />
-                <Button busy={busy} onClick={submitHandover} className="md:px-6">
-                  {t('cash.submit')}
-                </Button>
               </div>
+              <Button
+                block
+                busy={busy}
+                onClick={submitHandover}
+                disabled={!Number(handed)}
+                className="h-12 text-base sm:h-11"
+              >
+                {t('cash.submit')}
+                {Number(handed) > 0 && ` · ${formatAmount(Number(handed))} FCFA`}
+              </Button>
             </Card>
           )}
 

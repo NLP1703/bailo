@@ -94,7 +94,11 @@ export function StatTile({
         )}
         <div className="text-xs font-medium text-slate-500">{label}</div>
       </div>
-      <div className="mt-2 text-xl font-semibold text-slate-900 sm:text-[22px]">{value}</div>
+      {/* Valeur : plus grosse sur mobile pour qu'elle reste lisible à bout de bras
+          et compense l'empilement vertical des tuiles. Revient à ~22 px desktop. */}
+      <div className="mt-2 text-[26px] font-semibold leading-tight text-slate-900 tabular-nums sm:text-[22px]">
+        {value}
+      </div>
       {meter !== undefined && (
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
           <div

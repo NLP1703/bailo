@@ -227,8 +227,37 @@ export function TenantDetail() {
   const depositPct = depositExpected > 0 ? Math.round((depositPaid / depositExpected) * 100) : 0;
   const activeOcc = timeline.find((o) => o.status === 'ACTIVE' || o.status === 'NOTICE');
 
+  // Barre d'actions mobile sticky : rend « Encaisser » et « Sortie » toujours
+  // atteignables au pouce sans scroller en haut de la fiche. Visible seulement
+  // quand il y a une occupation en cours et que la fiche n'est pas archivée.
+  const stickyActions = activeOcc && !tenant.archived && (
+    <div
+      className="fixed inset-x-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden print:hidden"
+      style={{ bottom: 'calc(var(--bottom-nav-h) + var(--safe-bottom))' }}
+    >
+      <div className="mx-auto flex max-w-xl items-center gap-2">
+        <Link
+          to={`/collect?occupancyId=${activeOcc.occupancyId}&room=${activeOcc.unitCode}`}
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+        >
+          <BanknoteIcon className="h-5 w-5" />
+          Encaisser
+        </Link>
+        <Link
+          to={`/checkout?occupancyId=${activeOcc.occupancyId}`}
+          className="flex h-12 items-center justify-center gap-2 rounded-lg bg-red-50 px-4 text-sm font-semibold text-red-700 ring-1 ring-inset ring-red-200 transition active:scale-95"
+        >
+          <ClockAlertIcon className="h-5 w-5" />
+          Sortie
+        </Link>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-4">
+    // Marge basse mobile : barre d'actions sticky (~72 px) + bottom-nav (72 px)
+    // + inset bas → ~160 px. Annulée ≥ lg où la barre disparaît.
+    <div className={`space-y-4 ${stickyActions ? 'pb-44 lg:pb-0' : ''}`}>
       {tenant.archived && (
         <div
           role="status"
@@ -364,6 +393,8 @@ export function TenantDetail() {
           </ul>
         </section>
       )}
+
+      {stickyActions}
 
       {/* Timeline par occupation : charges + paiements */}
       {timeline.map((o) => (

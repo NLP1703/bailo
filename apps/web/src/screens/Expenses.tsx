@@ -136,20 +136,31 @@ export function Expenses() {
       {tab === 'list' ? (
         <>
           <StatTile label="Total dépenses sur la période" value={formatFcfa(total)} icon={ReceiptIcon} tone="amber" />
-          <Card>
+          <Card className="!p-0 sm:!p-4">
             {list.length === 0 ? (
               <p className="py-6 text-center text-sm text-slate-500">Aucune dépense sur cette période.</p>
             ) : (
               <ul className="divide-y divide-slate-100">
                 {list.map((e) => (
-                  <li key={e.id} className="flex flex-wrap items-center gap-2 py-2">
-                    <span className="w-24 font-mono text-xs text-slate-500">{formatDate(e.spentAt)}</span>
-                    <Badge tone={CAT_TONE[e.category]}>{CAT_LABEL[e.category]}</Badge>
-                    <span className="font-medium text-slate-900">{e.label}</span>
-                    <span className="text-xs text-slate-500">· {siteName(e.siteId)}</span>
-                    {e.payee && <span className="text-xs text-slate-500">· {e.payee}</span>}
-                    {e.ticketId && <Badge tone="brand">Ticket</Badge>}
-                    <span className="ml-auto text-sm font-semibold text-slate-900">{formatFcfa(e.amount)}</span>
+                  <li
+                    key={e.id}
+                    className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 px-4 py-3 sm:flex sm:flex-wrap sm:items-center sm:gap-2 sm:px-0 sm:py-2"
+                  >
+                    {/* Mobile : titre + montant sur une ligne, meta sur la seconde.
+                        Bureau : tout aligné, inchangé. */}
+                    <span className="min-w-0 truncate font-medium text-slate-900">
+                      {e.label}
+                    </span>
+                    <span className="shrink-0 text-right text-base font-semibold tabular-nums text-slate-900 sm:order-last sm:ml-auto sm:text-sm">
+                      {formatFcfa(e.amount)}
+                    </span>
+                    <span className="col-span-2 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500 sm:col-span-1 sm:contents">
+                      <span className="font-mono tabular-nums sm:w-24">{formatDate(e.spentAt)}</span>
+                      <Badge tone={CAT_TONE[e.category]}>{CAT_LABEL[e.category]}</Badge>
+                      <span className="truncate">· {siteName(e.siteId)}</span>
+                      {e.payee && <span className="truncate">· {e.payee}</span>}
+                      {e.ticketId && <Badge tone="brand">Ticket</Badge>}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -190,8 +201,14 @@ export function Expenses() {
       )}
 
       {showNew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog">
-          <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+        // Bottom sheet mobile → dialog centré ≥ sm, cohérent avec Confirm.
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg animate-slide-up rounded-t-2xl bg-white p-5 pb-safe shadow-pop sm:animate-pop-in sm:rounded-xl sm:pb-5">
+            <div aria-hidden="true" className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300 sm:hidden" />
             <h3 className="text-base font-semibold">Nouvelle dépense</h3>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="text-sm sm:col-span-2">
@@ -237,9 +254,19 @@ export function Expenses() {
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" />
               </label>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setShowNew(false)}>Annuler</Button>
-              <Button onClick={save} disabled={busy}>Enregistrer</Button>
+            {/* Actions : pleine largeur empilées mobile (gros tap target), alignées
+                à droite desktop — identique à Confirm. */}
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => setShowNew(false)}
+                className="h-12 sm:h-10"
+              >
+                Annuler
+              </Button>
+              <Button onClick={save} disabled={busy} className="h-12 sm:h-10">
+                Enregistrer
+              </Button>
             </div>
           </div>
         </div>

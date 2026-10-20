@@ -9,21 +9,54 @@ import { useToast } from '../components/Toast';
 import { PageHeader, Card, Input, NativeSelect, Button, Label, EmptyState } from '../components/ui';
 import { DoorIcon, CheckCircleIcon } from '../components/icons';
 
+/** Progression du parcours en 3 étapes (Chambre → Locataire → Conditions).
+ *  Mobile : barre linéaire fine + libellé de l'étape courante en gros (lisible
+ *  d'un coup d'œil, moins de bruit visuel que trois ronds numérotés).
+ *  Bureau : ronds numérotés + barre entre eux, comme avant. */
 function Steps({ current }: { current: number }) {
+  const labels = ['Chambre', 'Locataire', 'Conditions'];
+  const label = labels[current - 1] ?? '';
   return (
-    <div className="flex items-center gap-2">
-      {[1, 2, 3].map((n) => (
-        <div key={n} className="flex flex-1 items-center gap-2">
-          <span
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-              n <= current ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'
-            }`}
-          >
-            {n}
+    <div>
+      {/* Mobile : barre + numéro + libellé */}
+      <div className="sm:hidden">
+        <div className="flex items-baseline justify-between text-xs font-semibold text-slate-500">
+          <span>
+            Étape <span className="text-brand">{current}</span>/3
           </span>
-          {n < 3 && <span className={`h-0.5 flex-1 ${n < current ? 'bg-brand' : 'bg-slate-200'}`} />}
+          <span className="truncate text-slate-900">{label}</span>
         </div>
-      ))}
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full rounded-full bg-brand transition-all"
+            style={{ width: `${(current / 3) * 100}%` }}
+          />
+        </div>
+      </div>
+      {/* Bureau : ronds numérotés classiques */}
+      <div className="hidden items-center gap-2 sm:flex">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="flex flex-1 items-center gap-2">
+            <span
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                n <= current ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'
+              }`}
+            >
+              {n}
+            </span>
+            <span
+              className={`truncate text-xs font-medium ${
+                n <= current ? 'text-slate-900' : 'text-slate-400'
+              }`}
+            >
+              {labels[n - 1]}
+            </span>
+            {n < 3 && (
+              <span className={`h-0.5 flex-1 ${n < current ? 'bg-brand' : 'bg-slate-200'}`} />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
