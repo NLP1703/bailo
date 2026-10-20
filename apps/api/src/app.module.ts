@@ -42,6 +42,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { CurrencyModule } from './modules/currency/currency.module';
 import { InsightsModule } from './modules/insights/insights.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { AccountingModule } from './modules/accounting/accounting.module';
     CurrencyModule,
     InsightsModule,
     AccountingModule,
+    AdminModule,
   ],
   providers: [
     // Ordre significatif : authentification, rôles, puis état d'abonnement.

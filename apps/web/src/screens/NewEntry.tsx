@@ -177,7 +177,6 @@ export function NewEntry() {
         if (found) chooseUnit(found);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId]);
 
   // ─── Recherche de locataire existant (debounce 300ms) ────────────────────

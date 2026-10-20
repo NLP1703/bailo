@@ -28,3 +28,4 @@ export * from './dto/expenses';
 export * from './dto/currency';
 export * from './dto/insights';
 export * from './dto/accounting';
+export * from './dto/admin';

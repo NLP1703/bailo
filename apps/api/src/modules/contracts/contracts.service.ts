@@ -240,7 +240,7 @@ ${c.signedByTenant ? `<div class="sign">Signé électroniquement par le locatair
     durationMonths?: number | null;
     noticeDays: number;
   }): string {
-    const fcfa = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ') + ' FCFA';
+    const fcfa = (n: number) => n.toLocaleString('fr-FR').replace(/\u00A0/g, ' ') + ' FCFA';
     const duree = input.durationMonths
       ? `${input.durationMonths} mois reconductibles`
       : 'durée indéterminée reconductible mensuellement';

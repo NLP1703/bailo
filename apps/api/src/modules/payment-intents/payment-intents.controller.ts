@@ -69,6 +69,9 @@ export class PaymentIntentsController {
     if (!['MTN_MOMO', 'ORANGE_MONEY', 'MOCK'].includes(upper)) {
       throw new BadRequestException('Provider inconnu');
     }
+    // `upper` provient de l'URL, déjà normalisé en MAJUSCULES ; le registry
+    // lève sur une valeur inconnue — le cast est volontaire ici.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const provider = this.registry.get(upper as any);
     const raw = req.rawBody?.toString('utf8') ?? JSON.stringify(req.body);
     const event = provider.parseWebhook(headers, raw);

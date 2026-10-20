@@ -31,6 +31,9 @@ export class InsightsService {
     if (!a || a.accountId !== ctx.accountId) throw new NotFoundException();
     return this.prisma.anomaly.update({
       where: { id },
+      // Fusion non typée de JSON Prisma — un cast ciblé évite d'étaler le schéma
+      // d'`Anomaly.context` ici (il varie selon `kind`).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: { resolvedAt: new Date(), resolvedBy: ctx.userId, context: { ...((a.context as any) ?? {}), resolveNote: dto.note } as Prisma.InputJsonValue },
     });
   }

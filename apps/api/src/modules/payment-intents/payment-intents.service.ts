@@ -94,6 +94,9 @@ export class PaymentIntentsService {
   async handleWebhook(providerName: string, event: ProviderWebhookDto): Promise<void> {
     const intent = await this.prisma.paymentIntent.findFirst({
       where: {
+        // Cast ciblé : `providerName` est validé en amont, l'enum Prisma n'est
+        // pas exposé ici.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         provider: providerName.toUpperCase() as any,
         providerRef: event.providerRef,
       },
@@ -114,6 +117,9 @@ export class PaymentIntentsService {
           reference: intent.providerRef ?? undefined,
           paidAt: new Date(),
           receiptPrefix: intent.account.receiptPrefix,
+          // `allocationPlan` est stocké en JSON Prisma ; forme libre consommée
+          // par `PaymentsService` qui ré-attache ses propres types.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           manualAllocations: (intent.allocationPlan as any) ?? undefined,
         });
         await tx.paymentIntent.update({

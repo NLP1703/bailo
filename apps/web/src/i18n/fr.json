@@ -33,6 +33,7 @@
     "maintenance": "Maintenance",
     "expenses": "Dépenses",
     "accounting": "Comptabilité",
+    "admin": "Administration",
     "meters": "Compteurs",
     "cash": "Caisse",
     "templates": "Modèles",
@@ -587,6 +588,32 @@
     "cancel": "Annuler",
     "close": "Fermer",
     "add": "Ajouter"
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Équipe, droits, journal d'audit, paramètres, abonnement et intégrations du compte.",
+    "tabs": "Sous-sections de l'administration",
+    "placeholder": "Cette section arrivera dans un prochain lot.",
+    "loadError": "Impossible de charger la vue d'ensemble pour le moment.",
+    "tab": {
+      "overview": "Vue d'ensemble",
+      "team": "Équipe",
+      "audit": "Journal d'audit",
+      "settings": "Paramètres",
+      "subscription": "Abonnement",
+      "integrations": "Intégrations",
+      "data": "Données"
+    },
+    "overview": {
+      "users": "Utilisateurs actifs",
+      "usersHint": "{{inactive}} désactivé(s)",
+      "anomalies": "Anomalies ouvertes",
+      "sensitive7d": "Actions sensibles (7 j)",
+      "sensitive7dHint": "Annulations, suppressions, archivages",
+      "plan": "Offre en cours",
+      "planEnds": "Valable jusqu'au {{date}}",
+      "next": "Les sous-onglets ci-dessus seront enrichis dans les prochains lots : équipe, journal d'audit, paramètres, abonnement, intégrations, données."
+    }
   },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "Ce locataire occupe encore un logement avec des paiements : enregistrez d'abord sa sortie.",

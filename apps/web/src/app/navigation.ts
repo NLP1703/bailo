@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   TagIcon,
   SettingsIcon,
+  ShieldIcon,
   WrenchIcon,
   ReceiptIcon,
   BookIcon,
@@ -90,6 +91,7 @@ export const NAV_SECTIONS: NavSection[] = [
     key: 'admin',
     labelKey: 'nav.section.admin',
     items: [
+      { to: '/admin', labelKey: 'nav.admin', Icon: ShieldIcon, roles: MGMT, keywords: 'administration équipe audit abonnement intégrations gouvernance' },
       { to: '/sites/new', labelKey: 'nav.addSite', Icon: BuildingIcon, roles: MGMT, write: true, keywords: 'immeuble créer' },
       { to: '/templates', labelKey: 'nav.templates', Icon: FileTextIcon, roles: ['OWNER'], keywords: 'messages modèles contrat reçu' },
       { to: '/plans', labelKey: 'nav.plans', Icon: TagIcon, roles: ['OWNER'], keywords: 'abonnement facturation prix' },
@@ -129,6 +131,7 @@ const DETAIL_ROUTES: { pattern: RegExp; section: NavSection['key']; parent?: str
   { pattern: /^\/inspections$/, section: 'rental', parent: '/tenants', labelKey: 'nav.crumb.inspections' },
   { pattern: /^\/meters$/, section: 'ops', parent: '/rooms', labelKey: 'nav.crumb.meters' },
   { pattern: /^\/sites\/(?!new$)[^/]+$/, section: 'admin', parent: '/settings', labelKey: 'nav.crumb.site' },
+  { pattern: /^\/admin\/[a-z-]+$/, section: 'admin', parent: '/admin', labelKey: 'nav.admin' },
   { pattern: /^\/profile$/, section: 'admin', labelKey: 'nav.profile' },
   { pattern: /^\/more$/, section: 'admin', labelKey: 'nav.more' },
 ];

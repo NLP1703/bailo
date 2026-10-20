@@ -30,8 +30,9 @@ export class MetersService {
           createdBy: ctx.userId,
         },
       });
-    } catch (e: any) {
-      if (e?.code === 'P2002') throw new BadRequestException(`Un compteur ${dto.type} existe déjà pour cette unité`);
+    } catch (e: unknown) {
+      if ((e as { code?: string } | null)?.code === 'P2002')
+        throw new BadRequestException(`Un compteur ${dto.type} existe déjà pour cette unité`);
       throw e;
     }
   }

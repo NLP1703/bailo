@@ -33,6 +33,7 @@
     "maintenance": "Maintenance",
     "expenses": "Expenses",
     "accounting": "Accounting",
+    "admin": "Administration",
     "meters": "Meters",
     "cash": "Cash book",
     "templates": "Templates",
@@ -582,6 +583,32 @@
     "cancel": "Cancel",
     "close": "Close",
     "add": "Add"
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Team, permissions, audit log, settings, subscription and integrations for this account.",
+    "tabs": "Administration sections",
+    "placeholder": "This section will be delivered in a later batch.",
+    "loadError": "Could not load the overview right now.",
+    "tab": {
+      "overview": "Overview",
+      "team": "Team",
+      "audit": "Audit log",
+      "settings": "Settings",
+      "subscription": "Subscription",
+      "integrations": "Integrations",
+      "data": "Data"
+    },
+    "overview": {
+      "users": "Active users",
+      "usersHint": "{{inactive}} disabled",
+      "anomalies": "Open anomalies",
+      "sensitive7d": "Sensitive actions (7 d)",
+      "sensitive7dHint": "Voids, deletions, archives",
+      "plan": "Current plan",
+      "planEnds": "Valid through {{date}}",
+      "next": "The tabs above will be filled in later batches: team, audit log, settings, subscription, integrations, data."
+    }
   },
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
