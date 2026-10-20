@@ -288,6 +288,7 @@ model User {
   passwordHash String
   role         UserRole
   active       Boolean  @default(true)
+  lastLoginAt  DateTime? // Admin Lot 1 -- derniere connexion reussie (null = jamais)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   createdBy    String?
@@ -300,6 +301,7 @@ model User {
   // mais un même numéro ne se connecte qu'à un compte : voir résolution à la connexion dans la doc auth).
   @@unique([accountId, phone])
   @@index([accountId])
+  @@index([accountId, lastLoginAt(sort: Desc)])
   @@map("user")
 }
 

@@ -92,10 +92,49 @@ export interface AdminUserView {
 
 // ─── Vue d'ensemble du tableau de bord Admin ──────────────────────────────────
 
+/** Mesure vs limite pour une jauge de quota (null = illimité pour ce plan). */
+export interface AdminQuotaGauge {
+  used: number;
+  limit: number | null;
+  /** Entier 0..100 ou null quand la jauge est illimitée. */
+  pct: number | null;
+}
+
+/** Dernière connexion d'un membre de l'équipe (listée dans la vue d'ensemble). */
+export interface AdminRecentLogin {
+  userId: string;
+  name: string;
+  role: UserRole;
+  lastLoginAt: string | null;
+}
+
+/** Résumé d'une action sensible pour la vue d'ensemble (lien profond vers /audit). */
+export interface AdminSensitiveAction {
+  id: string;
+  createdAt: string;
+  actorName: string | null;
+  entity: string;
+  entityId: string;
+  action: AuditAction;
+  /** Vrai lorsqu'un UPDATE sur `user` fait varier le champ `role`. */
+  isRoleChange: boolean;
+}
+
+/** Anomalie ouverte (non résolue), triée par sévérité puis récence. */
+export interface AdminOpenAnomaly {
+  id: string;
+  kind: string;
+  severity: number;
+  message: string;
+  siteId: string | null;
+  createdAt: string;
+}
+
 /**
- * Forme stable renvoyée par `GET /admin/overview`. Le LOT 0 remplit un
- * sous-ensemble minimal (role + compteurs de base) ; les champs manquants
- * sont ajoutés au LOT 1 sans rupture de contrat (les clients lisent défensivement).
+ * Forme stable renvoyée par `GET /admin/overview`. Le LOT 0 posait un sous-
+ * ensemble minimal ; le LOT 1 ajoute les jauges de quota, les listes courtes
+ * et les détails d'actions sensibles. Les lots suivants ne retireront jamais
+ * de champ — ils enrichiront, et les clients lisent défensivement.
  */
 export interface AdminOverview {
   accountId: string;
@@ -108,6 +147,18 @@ export interface AdminOverview {
     code: string;
     endsAt: string | null;
   };
+  /** Jauges d'utilisation vs limite du plan (Lot 5 branchera `PlanLimit`). */
+  quotas: {
+    sites: AdminQuotaGauge;
+    units: AdminQuotaGauge;
+    users: AdminQuotaGauge;
+  };
+  /** 5 utilisateurs les plus récemment connectés (NULLS LAST). */
+  recentLogins: AdminRecentLogin[];
+  /** 5 actions sensibles (VOID, DELETE, ARCHIVE, changement de rôle) des 7 derniers jours. */
+  recentSensitiveActions: AdminSensitiveAction[];
+  /** 5 anomalies ouvertes les plus critiques. */
+  openAnomalies: AdminOpenAnomaly[];
 }
 
 // ─── Section d'onglets Admin (interface web) ──────────────────────────────────

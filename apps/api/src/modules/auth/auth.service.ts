@@ -92,6 +92,12 @@ export class AuthService {
     for (const candidate of candidates) {
       if (await argon2.verify(candidate.passwordHash, dto.password)) {
         await this.rateLimiter.reset(key);
+        // Horodate la connexion pour la vue d'ensemble Admin (Lot 1) et le
+        // futur suivi d'inactivité. En arrière-plan : jamais bloquant pour le
+        // login — un échec de l'UPDATE est ignoré silencieusement.
+        void this.prisma.user
+          .update({ where: { id: candidate.id }, data: { lastLoginAt: new Date() } })
+          .catch(() => undefined);
         return this.tokens.issue({
           id: candidate.id,
           accountId: candidate.accountId,
