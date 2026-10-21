@@ -786,9 +786,18 @@
       "overline": "HOW IT WORKS",
       "title": "Operational in 10 minutes",
       "subtitle": "No training, no install. You open an account, add your rooms, start collecting.",
-      "s1": { "title": "Create your account", "body": "Name, phone, password. No card, no commitment." },
-      "s2": { "title": "Declare your building", "body": "Room count, base rent. You can import existing tenants." },
-      "s3": { "title": "Collect & track", "body": "Every payment generates a receipt, updates arrears, feeds your accounting." }
+      "s1": {
+        "title": "Create your account",
+        "body": "Name, phone, password. No card, no commitment."
+      },
+      "s2": {
+        "title": "Declare your building",
+        "body": "Room count, base rent. You can import existing tenants."
+      },
+      "s3": {
+        "title": "Collect & track",
+        "body": "Every payment generates a receipt, updates arrears, feeds your accounting."
+      }
     },
     "pricing": {
       "overline": "PLANS",
@@ -819,11 +828,26 @@
       "overline": "FREQUENT QUESTIONS",
       "title": "Answers to common questions",
       "subtitle": "Can't find your answer? Reach out via the help button at the bottom right.",
-      "q1": { "q": "Is it really free?", "a": "Yes. The Discovery plan covers up to 5 rooms, with no time or payment limit. No card is required at sign-up." },
-      "q2": { "q": "Does it work offline?", "a": "Partly. The app is installable (PWA) and caches your screens. Payments entered offline are queued and sent when the network returns." },
-      "q3": { "q": "Is my data safe?", "a": "Yes. Data is hosted in Europe (Railway EU West), encrypted in transit (HTTPS) and at rest. Each account is strictly isolated — one landlord never sees another's data." },
-      "q4": { "q": "Can I export my data?", "a": "Yes. You can export your OHADA accounting as CSV at any time. A full export (all tenants and payments) is also planned from the Administration tab." },
-      "q5": { "q": "Who has access to my residence?", "a": "You decide. As an owner, you invite your managers and caretakers, assign them specific sites, revoke access anytime. Every action is logged in the audit journal." }
+      "q1": {
+        "q": "Is it really free?",
+        "a": "Yes. The Discovery plan covers up to 5 rooms, with no time or payment limit. No card is required at sign-up."
+      },
+      "q2": {
+        "q": "Does it work offline?",
+        "a": "Partly. The app is installable (PWA) and caches your screens. Payments entered offline are queued and sent when the network returns."
+      },
+      "q3": {
+        "q": "Is my data safe?",
+        "a": "Yes. Data is hosted in Europe (Railway EU West), encrypted in transit (HTTPS) and at rest. Each account is strictly isolated — one landlord never sees another's data."
+      },
+      "q4": {
+        "q": "Can I export my data?",
+        "a": "Yes. You can export your OHADA accounting as CSV at any time. A full export (all tenants and payments) is also planned from the Administration tab."
+      },
+      "q5": {
+        "q": "Who has access to my residence?",
+        "a": "You decide. As an owner, you invite your managers and caretakers, assign them specific sites, revoke access anytime. Every action is logged in the audit journal."
+      }
     },
     "final": {
       "title": "Ready to stop chasing rent?",
@@ -834,9 +858,34 @@
       "tagline": "Rental management for Cameroonian residences and buildings — finally as simple as a notebook, without the mistakes.",
       "rights": "All rights reserved.",
       "product": "Product",
-      "legal": "Legal"
+      "legal": "Legal",
+      "privacy": "Privacy policy"
     },
-    "mockup": { "collected": "Collected", "arrears": "Arrears", "occupancy": "Occupancy" }
+    "mockup": {
+      "collected": "Collected",
+      "arrears": "Arrears",
+      "occupancy": "Occupancy"
+    },
+    "toast": {
+      "payment": "Payment received",
+      "receipt": "Receipt generated",
+      "reminder": "WhatsApp reminder sent"
+    },
+    "trust": {
+      "ohada": "OHADA accounting",
+      "momo": "MTN MoMo & Orange Money",
+      "qr": "QR-verifiable receipts",
+      "offline": "Works offline",
+      "secure": "Hosted in Europe",
+      "multisite": "Multi-site",
+      "whatsapp": "SMS / WhatsApp reminders"
+    },
+    "stats": {
+      "setup": "to get up and running",
+      "free": "free rooms, no time limit",
+      "cost": "to open an account",
+      "audit": "of actions logged in the audit trail"
+    }
   },
   "privacy": {
     "title": "Privacy policy",

@@ -124,6 +124,68 @@ textarea,
   animation: pop-tap 180ms ease-out;
 }
 
+/* ─── Motion design page d'accueil ─────────────────────────────────────────── */
+@keyframes bailo-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes bailo-aurora-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(60px, 40px, 0) scale(1.12); }
+}
+@keyframes bailo-aurora-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-70px, 30px, 0) scale(0.92); }
+}
+@keyframes bailo-aurora-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(40px, -50px, 0) scale(1.08); }
+}
+@keyframes bailo-gradient-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.aurora-a { animation: bailo-aurora-a 18s ease-in-out infinite; will-change: transform; }
+.aurora-b { animation: bailo-aurora-b 22s ease-in-out infinite; will-change: transform; }
+.aurora-c { animation: bailo-aurora-c 26s ease-in-out infinite; will-change: transform; }
+.text-gradient-animated {
+  background-image: linear-gradient(90deg, #0f766e, #14b8a6, #f59e0b, #14b8a6, #0f766e);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: bailo-gradient-pan 9s ease-in-out infinite;
+}
+.btn-shine { position: relative; overflow: hidden; isolation: isolate; }
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-shine:hover::after { transform: translateX(120%); }
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+}
+.dark .bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-a, .aurora-b, .aurora-c, .text-gradient-animated { animation: none; }
+  .btn-shine::after { display: none; }
+}
+
 /* ─── Impression A4 des états (impayés, caisse…) ──────────────────────────── */
 @media print {
   @page {

@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
+import { EASE } from './motion';
 import { BuildingIcon, MenuIcon, XIcon } from '../../components/icons';
 
 /**
@@ -21,6 +23,10 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const { pathname, hash } = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -33,13 +39,21 @@ export function PublicShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <header
-        className={`fixed inset-x-0 top-0 z-40 pt-safe transition-all duration-300 ${
+      <motion.header
+        initial={reduce ? false : { y: -24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: EASE }}
+        className={`fixed inset-x-0 top-0 z-40 pt-safe transition-[background-color,box-shadow,backdrop-filter] duration-500 ${
           scrolled
-            ? 'bg-white/85 shadow-sm backdrop-blur dark:bg-slate-950/85'
+            ? 'border-b border-slate-200/60 bg-white/75 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.25)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/75'
             : 'bg-transparent'
         }`}
       >
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[2px] origin-left bg-gradient-to-r from-brand via-teal-400 to-amber-400"
+          style={{ scaleX: progress }}
+        />
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
           <Link to="/" className="flex items-center gap-2.5 group">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm transition-transform group-hover:scale-105">
@@ -52,13 +66,24 @@ export function PublicShell({ children }: { children: ReactNode }) {
               </span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
+          <nav
+            className="hidden items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex"
+            onMouseLeave={() => setHovered(null)}
+          >
             {NAV.map((n) => (
               <a
                 key={n.to}
                 href={n.to}
-                className="transition hover:text-slate-900 dark:hover:text-white"
+                onMouseEnter={() => setHovered(n.to)}
+                className="relative isolate rounded-full px-3.5 py-2 transition-colors hover:text-slate-900 dark:hover:text-white"
               >
+                {hovered === n.to && (
+                  <motion.span
+                    layoutId="nav-hover"
+                    className="absolute inset-0 -z-10 rounded-full bg-slate-900/[0.05] dark:bg-white/10"
+                    transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  />
+                )}
                 {t(n.labelKey)}
               </a>
             ))}
@@ -86,28 +111,40 @@ export function PublicShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </div>
-        {drawer && (
-          <div className="border-t border-slate-200 bg-white px-5 py-4 shadow-md dark:border-slate-800 dark:bg-slate-950 md:hidden">
-            <nav className="flex flex-col gap-1 text-sm font-medium">
-              {NAV.map((n) => (
-                <a
-                  key={n.to}
-                  href={n.to}
-                  className="rounded-lg px-3 py-2.5 text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+        <AnimatePresence initial={false}>
+          {drawer && (
+            <motion.div
+              key="drawer"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              className="overflow-hidden border-t border-slate-200 bg-white/95 shadow-md backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 md:hidden"
+            >
+              <nav className="flex flex-col gap-1 px-5 py-4 text-sm font-medium">
+                {NAV.map((n, i) => (
+                  <motion.a
+                    key={n.to}
+                    href={n.to}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, ease: EASE, delay: 0.05 + i * 0.05 }}
+                    className="rounded-lg px-3 py-3 text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    {t(n.labelKey)}
+                  </motion.a>
+                ))}
+                <Link
+                  to="/login"
+                  className="mt-2 rounded-lg px-3 py-3 text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100 dark:text-slate-200 dark:ring-slate-700"
                 >
-                  {t(n.labelKey)}
-                </a>
-              ))}
-              <Link
-                to="/login"
-                className="mt-2 rounded-lg px-3 py-2.5 text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100 dark:text-slate-200 dark:ring-slate-700"
-              >
-                {t('public.cta.login')}
-              </Link>
-            </nav>
-          </div>
-        )}
-      </header>
+                  {t('public.cta.login')}
+                </Link>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
 
       <main className="pt-16">{children}</main>
 

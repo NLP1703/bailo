@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
@@ -38,8 +38,11 @@ import { AdminLayout, AdminPlaceholder } from '../screens/admin/AdminLayout';
 import { AdminOverview } from '../screens/admin/AdminOverview';
 import { AdminTeam } from '../screens/admin/AdminTeam';
 import { AdminAudit } from '../screens/admin/AdminAudit';
-import { Landing } from '../screens/public/Landing';
-import { Privacy } from '../screens/public/Privacy';
+// Pages publiques chargées à la demande : framer-motion n'alourdit pas le
+// bundle de l'application connectée.
+const Landing = lazy(() => import('../screens/public/Landing').then((m) => ({ default: m.Landing })));
+const Privacy = lazy(() => import('../screens/public/Privacy').then((m) => ({ default: m.Privacy })));
+const publicFallback = <div className="min-h-screen bg-white dark:bg-slate-950" />;
 
 export function App() {
   const { user, loading } = useAuth();
@@ -64,11 +67,11 @@ export function App() {
     // confidentialité est accessible sans compte.
     return (
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/" element={<Suspense fallback={publicFallback}><Landing /></Suspense>} />
+        <Route path="/privacy" element={<Suspense fallback={publicFallback}><Privacy /></Suspense>} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="*" element={<Landing />} />
+        <Route path="*" element={<Suspense fallback={publicFallback}><Landing /></Suspense>} />
       </Routes>
     );
   }

@@ -607,7 +607,6 @@
       "integrations": "Intégrations",
       "data": "Données"
     },
-
     "overview": {
       "users": "Utilisateurs actifs",
       "usersHint": "{{inactive}} désactivé(s)",
@@ -864,12 +863,33 @@
       "tagline": "La gestion locative des cités et immeubles au Cameroun, enfin aussi simple qu'un cahier — mais sans les erreurs.",
       "rights": "Tous droits réservés.",
       "product": "Produit",
-      "legal": "Mentions"
+      "legal": "Mentions",
+      "privacy": "Politique de confidentialité"
     },
     "mockup": {
       "collected": "Encaissé",
       "arrears": "Impayés",
       "occupancy": "Occupation"
+    },
+    "toast": {
+      "payment": "Paiement reçu",
+      "receipt": "Reçu généré",
+      "reminder": "Relance WhatsApp envoyée"
+    },
+    "trust": {
+      "ohada": "Comptabilité OHADA",
+      "momo": "MTN MoMo & Orange Money",
+      "qr": "Reçus avec QR vérifiable",
+      "offline": "Fonctionne hors ligne",
+      "secure": "Hébergé en Europe",
+      "multisite": "Multi-sites",
+      "whatsapp": "Relances SMS / WhatsApp"
+    },
+    "stats": {
+      "setup": "pour être opérationnel",
+      "free": "chambres gratuites, sans limite de durée",
+      "cost": "pour ouvrir un compte",
+      "audit": "des actions tracées dans le journal"
     }
   },
   "privacy": {
