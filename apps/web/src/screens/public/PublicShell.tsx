@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
+import { initTheme } from '../../lib/theme';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
 import { EASE } from './motion';
@@ -27,6 +28,16 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 });
+
+  // Les pages publiques restent toujours en thème clair (fond blanc), même si
+  // l'appareil du visiteur est en mode sombre. Le thème choisi est rétabli en
+  // quittant la zone publique (connexion, inscription, application).
+  useLayoutEffect(() => {
+    const html = document.documentElement;
+    html.classList.remove('dark');
+    html.dataset.theme = 'light';
+    return () => initTheme();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

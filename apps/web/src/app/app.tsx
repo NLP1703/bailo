@@ -42,7 +42,7 @@ import { AdminAudit } from '../screens/admin/AdminAudit';
 // bundle de l'application connectée.
 const Landing = lazy(() => import('../screens/public/Landing').then((m) => ({ default: m.Landing })));
 const Privacy = lazy(() => import('../screens/public/Privacy').then((m) => ({ default: m.Privacy })));
-const publicFallback = <div className="min-h-screen bg-white dark:bg-slate-950" />;
+const publicFallback = <div className="fixed inset-0 bg-white" />;
 
 export function App() {
   const { user, loading } = useAuth();
