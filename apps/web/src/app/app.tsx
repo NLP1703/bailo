@@ -38,6 +38,7 @@ import { AdminLayout, AdminPlaceholder } from '../screens/admin/AdminLayout';
 import { AdminOverview } from '../screens/admin/AdminOverview';
 import { AdminTeam } from '../screens/admin/AdminTeam';
 import { AdminAudit } from '../screens/admin/AdminAudit';
+import { AdminSettings } from '../screens/admin/AdminSettings';
 // Pages publiques chargées à la demande : framer-motion n'alourdit pas le
 // bundle de l'application connectée.
 const Landing = lazy(() => import('../screens/public/Landing').then((m) => ({ default: m.Landing })));
@@ -139,7 +140,7 @@ function AuthedApp() {
           <Route index element={<AdminOverview />} />
           <Route path="team" element={<AdminTeam />} />
           <Route path="audit" element={<AdminAudit />} />
-          <Route path="settings" element={<AdminPlaceholder sectionKey="settings" />} />
+          <Route path="settings" element={<AdminSettings />} />
           <Route path="subscription" element={<AdminPlaceholder sectionKey="subscription" />} />
           <Route path="integrations" element={<AdminPlaceholder sectionKey="integrations" />} />
           <Route path="data" element={<AdminPlaceholder sectionKey="data" />} />

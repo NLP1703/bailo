@@ -259,3 +259,100 @@ export const ADMIN_SECTIONS = [
   'data',
 ] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
+
+// ─── LOT 4 : paramètres du compte (OWNER) ───────────────────────────────────
+
+import {
+  CURRENCIES,
+  PENALTY_MODES,
+  PRORATA_MODES,
+  type PenaltyMode,
+  type ProrataMode,
+  type Currency,
+  type TemplateKind,
+  type ReminderStage,
+} from '../enums';
+
+/**
+ * Préfixe de reçu : court, majuscules, lettres ou chiffres uniquement — il
+ * s'intercale dans le numéro séquentiel RG9 (p. ex. « BL-2026-000142 »).
+ */
+export const RECEIPT_PREFIX_RE = /^[A-Z0-9]{1,6}$/;
+
+/**
+ * Variables disponibles dans les modèles de messages (F7.2). Les clés sont
+ * remplacées par `renderTemplate(body, vars)`.
+ */
+export const TEMPLATE_VARIABLES = ['nom', 'chambre', 'montant', 'date', 'site'] as const;
+export type TemplateVariable = (typeof TEMPLATE_VARIABLES)[number];
+
+export interface AdminAccountView {
+  id: string;
+  name: string;
+  phone: string;
+  logoKey: string | null;
+  receiptPrefix: string;
+  receiptFooter: string | null;
+  displayCurrency: Currency;
+  diasporaMode: boolean;
+  verifyBaseUrl: string | null;
+  defaults: {
+    penaltyEnabled: boolean;
+    penaltyMode: PenaltyMode;
+    penaltyValue: number;
+    penaltyGraceDays: number;
+    prorataMode: ProrataMode;
+  };
+}
+
+/**
+ * Patch partiel : chaque champ est optionnel. `logoKey: null` efface le logo
+ * courant. La validation stricte interdit les champs inconnus (pas de
+ * typo-écriture silencieuse).
+ */
+export const updateAdminAccountDto = z
+  .object({
+    name: z.string().min(2).max(120).optional(),
+    phone: z.string().min(6).max(32).optional(),
+    logoKey: z.string().max(512).nullable().optional(),
+    receiptPrefix: z
+      .string()
+      .regex(RECEIPT_PREFIX_RE, {
+        message: 'Préfixe invalide : 1 à 6 caractères, lettres majuscules ou chiffres',
+      })
+      .optional(),
+    receiptFooter: z.string().max(280).nullable().optional(),
+    displayCurrency: z.enum(CURRENCIES).optional(),
+    diasporaMode: z.boolean().optional(),
+    verifyBaseUrl: z.string().url('URL invalide').max(255).nullable().optional(),
+    defaults: z
+      .object({
+        penaltyEnabled: z.boolean(),
+        penaltyMode: z.enum(PENALTY_MODES),
+        penaltyValue: z.number().int().min(0).max(1_000_000),
+        penaltyGraceDays: z.number().int().min(0).max(60),
+        prorataMode: z.enum(PRORATA_MODES),
+      })
+      .optional(),
+  })
+  .strict();
+export type UpdateAdminAccountDto = z.infer<typeof updateAdminAccountDto>;
+
+// ─── Modèles de messages — DTOs enrichis pour l'onglet Administration ──────
+
+export const adminTemplatePreviewDto = z.object({
+  bodyHtml: z.string().min(1).max(4000),
+  vars: z.record(z.string(), z.string()).optional(),
+});
+export type AdminTemplatePreviewDto = z.infer<typeof adminTemplatePreviewDto>;
+
+export interface AdminTemplateView {
+  id: string;
+  kind: TemplateKind;
+  name: string;
+  locale: string;
+  stage: ReminderStage | null;
+  bodyHtml: string;
+  isDefault: boolean;
+  updatedAt: string;
+}

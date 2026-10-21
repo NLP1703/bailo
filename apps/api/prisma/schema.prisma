@@ -252,6 +252,12 @@ model Account {
   momoMerchantId    String? // identifiant marchand MoMo/OM (chiffré en prod)
   momoApiKeyRef     String? // référence vers un secret stocké hors-DB
   verifyBaseUrl     String? // base de l'URL de vérification des reçus (pour les QR)
+  // ─── Règles par défaut appliquées aux nouveaux sites (Admin Lot 4) ────────
+  defaultPenaltyEnabled   Boolean     @default(false)
+  defaultPenaltyMode      PenaltyMode @default(FIXED)
+  defaultPenaltyValue     Int         @default(0)
+  defaultPenaltyGraceDays Int         @default(0)
+  defaultProrataMode      ProrataMode @default(FULL)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 

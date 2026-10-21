@@ -590,7 +590,8 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "close": "Fermer",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "edit": "Modifier"
   },
   "admin": {
     "title": "Administration",
@@ -632,6 +633,70 @@
       "noAnomalies": "Aucune anomalie ouverte.",
       "now": "à l'instant",
       "next": "Les sous-onglets ci-dessus seront enrichis dans les prochains lots : équipe, journal d'audit, paramètres, abonnement, intégrations, données."
+    },
+    "settings": {
+      "loadError": "Impossible de charger les paramètres pour le moment.",
+      "saved": "Enregistré",
+      "err": {
+        "prefix": "Préfixe invalide : 1 à 6 caractères, lettres majuscules ou chiffres.",
+        "generic": "Impossible d’enregistrer. Vérifiez les champs et réessayez."
+      },
+      "identity": {
+        "title": "Identité et reçus",
+        "subtitle": "Ces informations apparaissent sur chaque reçu que vous émettez.",
+        "name": "Raison sociale",
+        "phone": "Téléphone (identifiant de connexion du propriétaire)",
+        "prefix": "Préfixe des reçus",
+        "prefixHint": "1 à 6 caractères, lettres majuscules ou chiffres (ex. CG, BAILO, M01).",
+        "currency": "Devise d’affichage",
+        "verifyUrl": "URL de vérification des reçus (pour les QR)",
+        "verifyUrlHint": "En production, l’adresse doit utiliser HTTPS. Laissez vide pour désactiver le QR.",
+        "footer": "Mentions en pied de reçu",
+        "footerPlaceholder": "Ex. : Siège : Yaoundé, Ngoa-Ekellé — Tél. 690 00 00 00",
+        "diaspora": "Mode diaspora",
+        "diasporaHint": "Récap WhatsApp mensuel pour le propriétaire à l’étranger (envoi au Lot 6).",
+        "preview": "Aperçu du prochain reçu",
+        "previewHint": "Les reçus déjà émis gardent leur ancien préfixe."
+      },
+      "defaults": {
+        "title": "Règles par défaut",
+        "subtitle": "Ces valeurs servent de base aux nouveaux sites. Chaque site reste modifiable individuellement.",
+        "penaltyEnabled": "Pénalité de retard activée par défaut",
+        "penaltyEnabledHint": "La pénalité est appliquée au-delà du délai de grâce indiqué ci-dessous.",
+        "penaltyMode": "Mode de calcul",
+        "penaltyMode_FIXED": "Montant fixe",
+        "penaltyMode_PERCENT": "Pourcentage du loyer",
+        "penaltyValue_FIXED": "Montant (FCFA)",
+        "penaltyValue_PERCENT": "Pourcentage (%)",
+        "graceDays": "Délai de grâce (jours)",
+        "prorata": "Premier mois",
+        "prorata_FULL": "Mois complet",
+        "prorata_PRORATA": "Au prorata des jours"
+      },
+      "templates": {
+        "title": "Modèles de messages",
+        "subtitle": "Relances, contrats et reçus — rédigez vos propres textes, FR ou EN.",
+        "add": "Nouveau modèle",
+        "edit": "Modifier le modèle",
+        "new": "Nouveau modèle",
+        "empty": "Aucun modèle personnalisé.",
+        "emptyHint": "Les messages par défaut (FR/EN) sont utilisés tant que vous n’en créez pas.",
+        "name": "Nom",
+        "kind": "Type",
+        "locale": "Langue",
+        "stage": "Palier de relance",
+        "body": "Message",
+        "vars": "Variables disponibles",
+        "preview": "Aperçu",
+        "setDefault": "Utiliser ce modèle par défaut pour cette combinaison type / langue / palier",
+        "default": "Par défaut",
+        "kind_REMINDER": "Relance",
+        "kind_CONTRACT": "Contrat",
+        "kind_RECEIPT": "Reçu",
+        "err": {
+          "required": "Nom et message sont obligatoires."
+        }
+      }
     }
   },
   "adminTeam": {

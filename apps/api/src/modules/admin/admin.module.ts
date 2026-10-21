@@ -3,6 +3,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminUsersModule } from './users/admin-users.module';
 import { AdminAuditModule } from './audit/admin-audit.module';
+import { AdminAccountModule } from './account/admin-account.module';
 
 /**
  * Module ombrelle du périmètre /admin — regroupe au fil des lots :
@@ -19,7 +20,7 @@ import { AdminAuditModule } from './audit/admin-audit.module';
  * ré-enregistrer ici.
  */
 @Module({
-  imports: [AdminUsersModule, AdminAuditModule],
+  imports: [AdminUsersModule, AdminAuditModule, AdminAccountModule],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],

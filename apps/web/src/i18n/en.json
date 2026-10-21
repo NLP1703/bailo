@@ -585,7 +585,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
-    "add": "Add"
+    "add": "Add",
+    "edit": "Edit"
   },
   "admin": {
     "title": "Administration",
@@ -627,6 +628,70 @@
       "noAnomalies": "No open anomalies.",
       "now": "just now",
       "next": "The tabs above will be filled in later batches: team, audit log, settings, subscription, integrations, data."
+    },
+    "settings": {
+      "loadError": "Could not load settings right now.",
+      "saved": "Saved",
+      "err": {
+        "prefix": "Invalid prefix: 1 to 6 characters, uppercase letters or digits.",
+        "generic": "Could not save. Check the fields and try again."
+      },
+      "identity": {
+        "title": "Identity & receipts",
+        "subtitle": "These details appear on every receipt you issue.",
+        "name": "Business name",
+        "phone": "Phone (owner sign-in identifier)",
+        "prefix": "Receipt prefix",
+        "prefixHint": "1 to 6 characters, uppercase letters or digits (e.g. CG, BAILO, M01).",
+        "currency": "Display currency",
+        "verifyUrl": "Receipt verification URL (for QR codes)",
+        "verifyUrlHint": "In production, the URL must use HTTPS. Leave empty to disable the QR code.",
+        "footer": "Receipt footer",
+        "footerPlaceholder": "E.g. Head office: Yaoundé, Ngoa-Ekellé — Tel. 690 00 00 00",
+        "diaspora": "Diaspora mode",
+        "diasporaHint": "Monthly WhatsApp summary for owners abroad (sending wired in Lot 6).",
+        "preview": "Preview of the next receipt",
+        "previewHint": "Receipts already issued keep their old prefix."
+      },
+      "defaults": {
+        "title": "Default rules",
+        "subtitle": "Used as a baseline for new sites. Each site can still be tuned individually.",
+        "penaltyEnabled": "Late penalty enabled by default",
+        "penaltyEnabledHint": "Penalty is applied past the grace period below.",
+        "penaltyMode": "Calculation",
+        "penaltyMode_FIXED": "Fixed amount",
+        "penaltyMode_PERCENT": "Percentage of rent",
+        "penaltyValue_FIXED": "Amount (FCFA)",
+        "penaltyValue_PERCENT": "Percentage (%)",
+        "graceDays": "Grace period (days)",
+        "prorata": "First month",
+        "prorata_FULL": "Full month",
+        "prorata_PRORATA": "Pro-rated by day"
+      },
+      "templates": {
+        "title": "Message templates",
+        "subtitle": "Reminders, contracts and receipts — write your own copy in FR or EN.",
+        "add": "New template",
+        "edit": "Edit template",
+        "new": "New template",
+        "empty": "No custom template yet.",
+        "emptyHint": "The default FR/EN messages are used until you create your own.",
+        "name": "Name",
+        "kind": "Type",
+        "locale": "Language",
+        "stage": "Reminder stage",
+        "body": "Message",
+        "vars": "Available variables",
+        "preview": "Preview",
+        "setDefault": "Use this template by default for this type / language / stage combo",
+        "default": "Default",
+        "kind_REMINDER": "Reminder",
+        "kind_CONTRACT": "Contract",
+        "kind_RECEIPT": "Receipt",
+        "err": {
+          "required": "Name and message are required."
+        }
+      }
     }
   },
   "adminTeam": {
