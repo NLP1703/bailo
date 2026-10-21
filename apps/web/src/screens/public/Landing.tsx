@@ -93,14 +93,6 @@ function Hero() {
 
   return (
     <section ref={ref} className="relative overflow-hidden">
-      {/* Fond : aurore + grille */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="aurora-a absolute -top-40 left-[10%] h-[520px] w-[520px] rounded-full bg-teal-400/25 blur-[110px] dark:bg-teal-500/20" />
-        <div className="aurora-b absolute -top-20 right-[5%] h-[440px] w-[440px] rounded-full bg-amber-300/30 blur-[110px] dark:bg-amber-500/10" />
-        <div className="aurora-c absolute top-[40%] left-[35%] h-[380px] w-[380px] rounded-full bg-emerald-300/20 blur-[100px] dark:bg-emerald-500/10" />
-        <div className="bg-grid absolute inset-0" />
-      </div>
-
       <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 pb-20 pt-16 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:pb-28 lg:pt-24">
         <motion.div style={{ y: contentY, opacity: contentOpacity }}>
           <motion.span
@@ -409,16 +401,14 @@ function Stats() {
     { value: 100, suffix: ' %', key: 'audit' },
   ];
   return (
-    <section className="relative overflow-hidden bg-slate-950 py-20 text-white">
-      <div aria-hidden="true" className="bg-grid absolute inset-0 opacity-40" />
-      <div aria-hidden="true" className="aurora-a absolute -left-20 top-0 h-72 w-72 rounded-full bg-brand/40 blur-[100px]" />
+    <section className="border-y border-slate-200/70 bg-white py-20 dark:border-slate-800 dark:bg-slate-950">
       <Stagger className="relative mx-auto grid max-w-6xl grid-cols-2 gap-8 px-5 sm:px-8 lg:grid-cols-4">
         {stats.map((s) => (
           <StaggerItem key={s.key} className="text-center lg:text-left">
-            <p className="text-4xl font-bold tracking-tight sm:text-5xl">
+            <p className="text-4xl font-bold tracking-tight text-brand sm:text-5xl">
               <Counter to={s.value} suffix={s.suffix} />
             </p>
-            <p className="mt-2 text-sm text-white/60">{t(`public.stats.${s.key}`)}</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t(`public.stats.${s.key}`)}</p>
           </StaggerItem>
         ))}
       </Stagger>
@@ -522,14 +512,13 @@ function Steps() {
   const steps = ['s1', 's2', 's3'] as const;
 
   return (
-    <section className="relative overflow-hidden bg-slate-950 py-24 text-white sm:py-32">
-      <div aria-hidden="true" className="aurora-b absolute -right-20 top-10 h-96 w-96 rounded-full bg-teal-500/25 blur-[120px]" />
+    <section className="relative bg-white py-24 sm:py-32 dark:bg-slate-950">
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
-        <SectionHeading overline={t('public.step.overline')} title={t('public.step.title')} subtitle={t('public.step.subtitle')} light />
+        <SectionHeading overline={t('public.step.overline')} title={t('public.step.title')} subtitle={t('public.step.subtitle')} />
 
         <div ref={ref} className="relative mt-20 grid gap-10 md:grid-cols-3 md:gap-6">
           {/* rail + progression (desktop) */}
-          <div aria-hidden="true" className="absolute left-[16.6%] right-[16.6%] top-6 hidden h-px bg-white/15 md:block">
+          <div aria-hidden="true" className="absolute left-[16.6%] right-[16.6%] top-6 hidden h-px bg-slate-200 md:block dark:bg-slate-800">
             <motion.div className="h-full origin-left bg-gradient-to-r from-brand via-teal-400 to-amber-400" style={{ scaleX: progress }} />
           </div>
 
@@ -537,7 +526,7 @@ function Steps() {
             <FadeIn key={s} delay={i * 0.15} className="relative text-center">
               <StepDot index={i} progress={progress} />
               <h3 className="mt-6 text-lg font-semibold">{t(`public.step.${s}.title`)}</h3>
-              <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-white/60">{t(`public.step.${s}.body`)}</p>
+              <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-slate-600 dark:text-slate-400">{t(`public.step.${s}.body`)}</p>
             </FadeIn>
           ))}
         </div>
@@ -548,12 +537,13 @@ function Steps() {
 
 function StepDot({ index, progress }: { index: number; progress: ReturnType<typeof useSpring> }) {
   const threshold = index / 2; // 0, 0.5, 1
-  const bg = useTransform(progress, [Math.max(0, threshold - 0.08), threshold], ['rgba(255,255,255,0.06)', 'rgba(15,118,110,1)']);
+  const bg = useTransform(progress, [Math.max(0, threshold - 0.08), threshold], ['rgba(241,245,249,1)', 'rgba(15,118,110,1)']);
   const scale = useTransform(progress, [Math.max(0, threshold - 0.08), threshold, threshold + 0.1], [1, 1.15, 1]);
+  const color = useTransform(progress, [Math.max(0, threshold - 0.08), threshold], ['rgb(100,116,139)', 'rgb(255,255,255)']);
   return (
     <motion.span
-      style={{ backgroundColor: bg, scale }}
-      className="relative mx-auto flex h-12 w-12 items-center justify-center rounded-full font-mono text-sm font-bold ring-1 ring-white/20"
+      style={{ backgroundColor: bg, color, scale }}
+      className="relative mx-auto flex h-12 w-12 items-center justify-center rounded-full font-mono text-sm font-bold ring-1 ring-slate-200 dark:ring-slate-700"
     >
       {String(index + 1).padStart(2, '0')}
     </motion.span>
@@ -634,7 +624,7 @@ function Faq() {
   const [open, setOpen] = useState<string | null>('q1');
   const keys = ['q1', 'q2', 'q3', 'q4', 'q5'];
   return (
-    <section id="faq" className="scroll-mt-20 bg-slate-50 py-24 sm:py-32 dark:bg-slate-900/50">
+    <section id="faq" className="scroll-mt-20 bg-white py-24 sm:py-32 dark:bg-slate-950">
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
         <SectionHeading overline={t('public.faq.overline')} title={t('public.faq.title')} subtitle={t('public.faq.subtitle')} />
         <Stagger className="mt-12 space-y-3">
@@ -693,10 +683,7 @@ function FinalCta() {
     <section className="py-24">
       <div className="mx-auto max-w-5xl px-5 sm:px-8">
         <FadeIn>
-          <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-8 py-16 text-center text-white sm:px-16 sm:py-20">
-            <div aria-hidden="true" className="aurora-a absolute -left-10 -top-20 h-80 w-80 rounded-full bg-brand/60 blur-[100px]" />
-            <div aria-hidden="true" className="aurora-c absolute -bottom-24 right-0 h-80 w-80 rounded-full bg-amber-500/40 blur-[100px]" />
-            <div aria-hidden="true" className="bg-grid absolute inset-0 opacity-30" />
+          <div className="relative overflow-hidden rounded-[2rem] bg-brand px-8 py-16 text-center text-white sm:px-16 sm:py-20">
             <h2 className="relative mx-auto max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">{t('public.final.title')}</h2>
             <p className="relative mx-auto mt-4 max-w-xl text-white/70">{t('public.final.subtitle')}</p>
             <motion.div className="relative mt-9 inline-block" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
