@@ -10,7 +10,6 @@ import type {
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { AppException } from '../../common/http/app.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { BillingService } from '../../common/billing/billing.service';
 import { RateLimiterService } from '../../common/redis/rate-limiter.service';
 import { OtpService } from './otp.service';
 import { TokenService } from './token.service';
@@ -24,7 +23,6 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly otp: OtpService,
     private readonly tokens: TokenService,
-    private readonly billing: BillingService,
     private readonly rateLimiter: RateLimiterService,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
@@ -44,12 +42,15 @@ export class AuthService {
     const passwordHash = await argon2.hash(dto.password);
     const user = await this.prisma
       .$transaction(async (tx) => {
+        // À l'inscription, le compte démarre sur l'offre Découverte : 1 cité et
+        // 5 logements maximum, sans engagement ni carte bancaire. Le passage à
+        // une offre payante se fait depuis l'onglet « Offres ».
         const account = await tx.account.create({
           data: {
             name: dto.accountName,
             phone: dto.phone,
-            plan: 'CITE_PRO',
-            subscriptionEndAt: this.billing.trialEnd(),
+            plan: 'DISCOVERY',
+            subscriptionEndAt: null,
           },
         });
         return tx.user.create({
