@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FilePurpose } from '@bailo/shared';
 import { uploadFile } from '../lib/upload';
+import { useStorageStatus } from '../lib/storage-status';
 import { CheckIcon } from './icons';
 
 interface Props {
@@ -21,6 +22,20 @@ export function FileField({ purpose, label, onUploaded, accept = 'image/*' }: Pr
   const ref = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
   const [name, setName] = useState('');
+  const { enabled } = useStorageStatus();
+
+  // Stockage objet pas câblé sur ce déploiement : on désactive proprement
+  // plutôt que de laisser le navigateur buter sur un hôte invalide.
+  if (enabled === false) {
+    return (
+      <div className="text-sm">
+        <span className="mb-1 block">{label}</span>
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-200">
+          {t('file.disabled')}
+        </p>
+      </div>
+    );
+  }
 
   const pick = async (file: File | undefined) => {
     if (!file) return;

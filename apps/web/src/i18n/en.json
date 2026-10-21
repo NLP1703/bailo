@@ -557,7 +557,8 @@
     "choose": "Choose a file",
     "uploading": "Uploading…",
     "remove": "Remove",
-    "error": "Upload failed"
+    "error": "Upload failed",
+    "disabled": "File uploads are not enabled on this server yet. The OWNER must wire object storage (S3 or MinIO) before photos can be saved."
   },
   "templates": {
     "title": "Message templates",

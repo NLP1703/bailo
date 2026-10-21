@@ -562,7 +562,8 @@
     "choose": "Choisir un fichier",
     "uploading": "Envoi…",
     "remove": "Retirer",
-    "error": "Échec de l'envoi"
+    "error": "Échec de l'envoi",
+    "disabled": "Le dépôt de fichiers n’est pas encore activé sur ce serveur. L’OWNER doit brancher le stockage objet (S3 ou MinIO) pour que la photo puisse être enregistrée."
   },
   "templates": {
     "title": "Modèles de messages",

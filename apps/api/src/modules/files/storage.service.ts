@@ -1,9 +1,23 @@
 import { randomUUID } from 'node:crypto';
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import type { FilePurpose, UploadUrlResult, DownloadUrlResult } from '@bailo/shared';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { requireContext } from '../../common/tenancy/request-context';
 import { presignS3Url, type PresignConfig } from './sigv4';
+
+/**
+ * Hôtes marqueurs utilisés pour un déploiement où le stockage objet n'a pas
+ * encore été branché (p. ex. valeurs par défaut Railway). On refuse alors
+ * explicitement l'émission d'URL signée plutôt que de renvoyer un lien
+ * aboutissant à un ERR_NAME_NOT_RESOLVED côté navigateur.
+ */
+const DISABLED_HOST_RE = /(^|\.)disabled\.local$/i;
+const DISABLED_ACCESS_KEYS = new Set(['railway-placeholder', 'disabled', 'placeholder']);
 
 const EXTENSION: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -38,8 +52,38 @@ export class StorageService {
     return `accounts/${accountId}/`;
   }
 
+  /**
+   * Vrai dès qu'un endpoint S3 opérationnel est câblé : ni valeurs d'exemple
+   * MinIO (dev), ni hôte « disabled.local » (placeholder Railway). Permet au
+   * contrôleur d'exposer un `/files/status` consommable par l'UI pour
+   * désactiver les champs d'upload quand le stockage n'est pas prêt.
+   */
+  isEnabled(): boolean {
+    const endpoint = this.env.S3_ENDPOINT || '';
+    const key = this.env.S3_ACCESS_KEY || '';
+    if (DISABLED_ACCESS_KEYS.has(key)) return false;
+    try {
+      const host = new URL(endpoint).hostname;
+      if (DISABLED_HOST_RE.test(host)) return false;
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  private assertEnabled(): void {
+    if (!this.isEnabled()) {
+      throw new ServiceUnavailableException({
+        code: 'STORAGE_NOT_CONFIGURED',
+        message:
+          "Le stockage de fichiers n'est pas configuré sur ce déploiement. L'OWNER doit renseigner S3_ENDPOINT, S3_ACCESS_KEY et S3_SECRET_KEY.",
+      });
+    }
+  }
+
   /** URL signée de dépôt (PUT direct vers S3/MinIO) + clé à persister sur la ressource. */
   createUploadUrl(purpose: FilePurpose, contentType: string): UploadUrlResult {
+    this.assertEnabled();
     const { accountId } = requireContext();
     const ext = EXTENSION[contentType] ?? 'bin';
     const key = `${this.prefix(accountId)}${purpose}/${randomUUID()}.${ext}`;
@@ -50,6 +94,7 @@ export class StorageService {
 
   /** URL signée de lecture à durée limitée ; refuse une clé d'un autre compte (NF7). */
   createDownloadUrl(key: string): DownloadUrlResult {
+    this.assertEnabled();
     const { accountId } = requireContext();
     if (!key.startsWith(this.prefix(accountId))) {
       throw new ForbiddenException("Cette ressource n'appartient pas au compte");
