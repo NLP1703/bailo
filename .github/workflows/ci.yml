@@ -29,6 +29,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      # @bailo/shared est consommé via son dist/ (non versionné) : à compiler d'abord.
+      - run: pnpm --filter @bailo/shared build
       - run: pnpm -r prisma:generate
       - run: pnpm -r lint
       - run: pnpm -r typecheck
@@ -73,9 +75,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @bailo/shared build
+      - run: pnpm --filter @bailo/api prisma:generate
       - run: pnpm --filter @bailo/api prisma:deploy
       - run: pnpm --filter @bailo/shared test
       - run: pnpm --filter @bailo/api test
+      # Parcours complets (auth par cookie, paiements, isolation, pagination…) sur le Postgres du job.
+      - run: pnpm --filter @bailo/api test:e2e
 
   build:
     name: Build
