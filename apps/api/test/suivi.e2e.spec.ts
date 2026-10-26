@@ -109,7 +109,9 @@ describe('Relances, tableau de bord & exports (e2e)', () => {
       .expect(201);
 
     const dash = await api().get('/api/v1/dashboard?month=2026-10').set(auth(token)).expect(200);
-    expect(dash.body.expected).toBe(25000);
+    // `expected` = reste à encaisser (depuis le 16/10/2026) ; le brut du mois est `expectedGross`.
+    expect(dash.body.expectedGross).toBe(25000);
+    expect(dash.body.expected).toBe(15000);
     expect(dash.body.collected).toBe(10000);
     expect(dash.body.remaining).toBe(15000);
     expect(dash.body.recoveryRate).toBe(40);
@@ -141,7 +143,9 @@ describe('Relances, tableau de bord & exports (e2e)', () => {
     expect(csv.text).toContain(pay.payment.receiptNumber);
   });
 
-  it('dépense → recettes − dépenses par site dans le tableau de bord', async () => {
+  // Le tableau de bord donne les recettes par site ; le résultat net (recettes − dépenses)
+  // est servi par GET /expenses/net-result depuis le module Dépenses (V2).
+  it('dépense → recettes par site au tableau de bord, net par site via /expenses/net-result', async () => {
     const { token, occ } = await fixtures();
     const site = (await api().get('/api/v1/sites').set(auth(token)).expect(200)).body[0];
     await api()
@@ -158,13 +162,29 @@ describe('Relances, tableau de bord & exports (e2e)', () => {
     await api()
       .post('/api/v1/expenses')
       .set(auth(token))
-      .send({ siteId: site.id, category: 'ENTRETIEN', amount: 5000, spentAt: '2026-10-06' })
+      .send({
+        siteId: site.id,
+        category: 'MAINTENANCE',
+        label: 'Réparation robinet',
+        amount: 5000,
+        spentAt: '2026-10-06',
+      })
       .expect(201);
 
     const dash = await api().get('/api/v1/dashboard?month=2026-10').set(auth(token)).expect(200);
     const line = dash.body.perSite.find((s: { siteId: string }) => s.siteId === site.id);
     expect(line.recettes).toBe(25000);
-    expect(line.depenses).toBe(5000);
-    expect(line.net).toBe(20000);
+
+    const net = (
+      await api()
+        .get('/api/v1/expenses/net-result?from=2026-10-01&to=2026-10-31')
+        .set(auth(token))
+        .expect(200)
+    ).body as Array<{ siteId: string; income: number; expense: number; net: number }>;
+    expect(net.find((s) => s.siteId === site.id)).toMatchObject({
+      income: 25000,
+      expense: 5000,
+      net: 20000,
+    });
   });
 });

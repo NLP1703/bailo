@@ -74,7 +74,9 @@ describe('Abonnements — limites & lecture seule (e2e)', () => {
     await api().post('/api/v1/sites').set(auth).send({ name: 'OK', type: 'CITE' }).expect(201);
   });
 
-  it('inscription : essai Cité Pro de 30 jours', async () => {
+  // Depuis le 21/10/2026, l'inscription démarre sur l'offre Découverte (1 cité / 5 logements),
+  // gratuite et sans échéance — et non plus sur un essai Cité Pro de 30 jours.
+  it('inscription : offre Découverte gratuite, sans échéance', async () => {
     await api()
       .post('/api/v1/auth/signup')
       .send({
@@ -92,8 +94,8 @@ describe('Abonnements — limites & lecture seule (e2e)', () => {
       .get('/api/v1/account/billing')
       .set({ Authorization: `Bearer ${token}` })
       .expect(200);
-    expect(billing.body.plan).toBe('CITE_PRO');
+    expect(billing.body.plan).toBe('DISCOVERY');
     expect(billing.body.readOnly).toBe(false);
-    expect(billing.body.subscriptionEndAt).toBeTruthy();
+    expect(billing.body.subscriptionEndAt).toBeNull();
   });
 });

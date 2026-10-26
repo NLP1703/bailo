@@ -104,7 +104,10 @@ describe('Admin — journal d\'audit (e2e)', () => {
       .set({ Authorization: `Bearer ${manager}` })
       .expect(200);
     expect(m.body.items.length).toBe(2);
-    expect(m.body.items.map((i: { siteId: string | null }) => i.siteId).sort()).toEqual([null, siteA.id]);
+    // Comparaison sans ordre : `.sort()` place la chaîne « null » après un UUID.
+    const managerSiteIds = m.body.items.map((i: { siteId: string | null }) => i.siteId);
+    expect(managerSiteIds).toHaveLength(2);
+    expect(managerSiteIds).toEqual(expect.arrayContaining([null, siteA.id]));
   });
 
   it('sensitiveOnly ne garde que VOID/DELETE/ARCHIVE + changements de rôle', async () => {
