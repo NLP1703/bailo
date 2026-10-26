@@ -51,12 +51,22 @@ Suivi des améliorations appliquées depuis l'audit du 09/10/2026.
 - **5.4 Backup PostgreSQL** — `scripts/backup-postgres.sh` : dump quotidien
   compressé + rétention + push S3 optionnel. À planifier via cron.
 
-## À faire — Phase 2+
+## Appliquées — Phase 2 (Lot 8, 26/10/2026)
 
-Voir l'audit complet dans l'artifact Claude Docs.
-Prochaines étapes recommandées :
-- **1.2** Migration JWT vers cookies HttpOnly (infrastructure préparée dans `env.ts`)
-- **2.1** Correction des N+1 dans `maintenance.service.ts`
-- **2.2** Pagination sur les endpoints de liste
-- **6.4** Intégration Sentry (hook déjà en place dans `ErrorBoundary.tsx`)
-- **8.1** Vrai provider SMS/WhatsApp (Africa's Talking recommandé pour le Cameroun)
+Détails : [`LOT8.md`](LOT8.md).
+
+- **1.2 Cookies HttpOnly** — refresh token en cookie `bailo_rt` (HttpOnly, Lax,
+  `Path=/api/v1/auth`), jeton d'accès en mémoire uniquement, migration transparente des
+  sessions existantes, proxy same-origin `/api` dans l'image web.
+- **2.1 N+1 maintenance** — lectures par lots, `updateMany` / `createMany` groupés.
+- **2.2 Pagination** — `page` / `pageSize` optionnels sur dépenses, maintenance, contrats, relances.
+- **6.4 Sentry** — API + web, inactif sans DSN, aucune donnée personnelle envoyée.
+- **8.1 SMS** — fournisseur Africa's Talking (`SMS_PROVIDER=africastalking`).
+
+## Reste à faire (hors code)
+
+- Brancher R2 (clés + CORS), Redis (Upstash) avec `ENABLE_JOBS=true`, Africa's Talking,
+  et éventuellement Sentry : variables à saisir sur Railway (voir `DEPLOY_RAILWAY.md` §6).
+- Planifier les sauvegardes Postgres (sauvegardes Railway ou `scripts/backup-postgres.sh`
+  vers un stockage **privé** — les dumps contiennent des données de locataires).
+- Domaine personnalisé (`bailo.cm` ou équivalent).

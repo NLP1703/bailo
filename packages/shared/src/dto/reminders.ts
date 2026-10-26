@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { uuid, locale } from './common';
+import { uuid, locale, optionalPaginationQuery } from './common';
 import { REMINDER_RECIPIENTS, REMINDER_CHANNELS } from '../enums';
 
 const isoDate = z.string().datetime({ offset: true }).or(z.string().date());
@@ -19,5 +19,6 @@ export type MarkReminderSentDto = z.infer<typeof markReminderSentDto>;
 
 export const remindersHistoryQuery = z.object({
   tenantId: uuid.optional(),
-});
+})
+  .merge(optionalPaginationQuery);
 export type RemindersHistoryQuery = z.infer<typeof remindersHistoryQuery>;

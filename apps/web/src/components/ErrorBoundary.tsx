@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { captureError } from '../lib/monitoring';
 
 interface Props {
   children: ReactNode;
@@ -13,7 +14,7 @@ interface State {
 /**
  * Error Boundary global : attrape toute erreur non catchée dans l'arbre React,
  * affiche un écran de repli et offre un bouton pour recharger la page.
- * On log aussi dans la console (hook à remplacer par Sentry.captureException quand configuré).
+ * L'erreur est aussi envoyée au monitoring (Sentry, si un DSN est configuré).
  */
 export class ErrorBoundary extends Component<Props, State> {
   override state: State = { error: null };
@@ -24,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error('[ErrorBoundary]', error, info.componentStack);
-    // TODO (6.4 monitoring) : Sentry.captureException(error, { contexts: { react: info } });
+    captureError(error, { componentStack: info.componentStack });
   }
 
   private readonly reset = (): void => {

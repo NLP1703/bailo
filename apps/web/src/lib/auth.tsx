@@ -1,6 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { AuthTokens, LoginDto, MeView, SignupDto } from '@bailo/shared';
-import { api, clearTokens, hasSession, setTokens } from './api';
+import type { AuthSession, LoginDto, MeView, SignupDto } from '@bailo/shared';
+import {
+  api,
+  clearSession,
+  isNetworkError,
+  mayHaveSession,
+  refreshSession,
+  setAccessToken,
+} from './api';
+import { setMonitoringUser } from './monitoring';
 
 interface AuthContextValue {
   user: MeView | null;
@@ -14,42 +22,93 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Profil mis en cache pour l'ouverture hors-ligne de la PWA (NF3). Il ne contient
+ * aucun secret : sans réseau, aucun appel API n'aboutit de toute façon, et les
+ * paiements saisis partent dans la file d'attente jusqu'au retour du réseau.
+ */
+const CACHED_ME_KEY = 'bailo.me';
+
+function readCachedMe(): MeView | null {
+  try {
+    const raw = localStorage.getItem(CACHED_ME_KEY);
+    return raw ? (JSON.parse(raw) as MeView) : null;
+  } catch {
+    return null;
+  }
+}
+function writeCachedMe(me: MeView | null): void {
+  try {
+    if (me) localStorage.setItem(CACHED_ME_KEY, JSON.stringify(me));
+    else localStorage.removeItem(CACHED_ME_KEY);
+  } catch {
+    /* stockage indisponible : pas de mode hors-ligne au démarrage */
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<MeView | null>(null);
+  const [user, setUserState] = useState<MeView | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const setUser = (me: MeView | null): void => {
+    setUserState(me);
+    writeCachedMe(me);
+    setMonitoringUser(me);
+  };
+
   useEffect(() => {
-    if (!hasSession()) {
+    // Le jeton d'accès n'est pas persisté : au démarrage, on le régénère à partir
+    // du cookie HttpOnly. Un visiteur jamais connecté ne déclenche aucun appel.
+    if (!mayHaveSession()) {
+      writeCachedMe(null);
       setLoading(false);
       return;
     }
-    api
-      .get<MeView>('/me')
-      .then(setUser)
-      .catch(() => clearTokens())
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        if (await refreshSession()) {
+          setUser(await api.get<MeView>('/me'));
+        } else {
+          clearSession();
+          setUser(null);
+        }
+      } catch (error) {
+        if (isNetworkError(error)) {
+          // Hors-ligne : on rouvre l'app avec le dernier profil connu.
+          setUserState(readCachedMe());
+        } else {
+          clearSession();
+          setUser(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const login = async (credentials: LoginDto): Promise<void> => {
-    const tokens = await api.post<AuthTokens>('/auth/login', credentials);
-    setTokens(tokens.accessToken, tokens.refreshToken);
+  const openSession = async (session: AuthSession): Promise<void> => {
+    setAccessToken(session.accessToken);
     setUser(await api.get<MeView>('/me'));
+  };
+
+  const login = async (credentials: LoginDto): Promise<void> => {
+    await openSession(await api.post<AuthSession>('/auth/login', credentials));
   };
 
   // Inscription d'un bailleur : création directe du compte + propriétaire,
   // qui ouvre immédiatement la session (sans code de vérification).
   const signup = async (dto: SignupDto): Promise<void> => {
-    const tokens = await api.post<AuthTokens>('/auth/signup', dto);
-    setTokens(tokens.accessToken, tokens.refreshToken);
-    setUser(await api.get<MeView>('/me'));
+    await openSession(await api.post<AuthSession>('/auth/signup', dto));
   };
 
   const logout = async (): Promise<void> => {
-    const rt = localStorage.getItem('rt');
     try {
-      if (rt) await api.post('/auth/logout', { refreshToken: rt });
+      // Le cookie HttpOnly accompagne la requête : l'API révoque le refresh et l'efface.
+      await api.post('/auth/logout', {});
+    } catch {
+      /* hors-ligne : la session locale est oubliée quand même */
     } finally {
-      clearTokens();
+      clearSession();
       setUser(null);
     }
   };

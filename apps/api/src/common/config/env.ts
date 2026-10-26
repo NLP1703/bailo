@@ -51,6 +51,10 @@ const jwtSecret = (field: string) =>
       }
     });
 
+/** Chaîne optionnelle où une valeur vide (« VAR= » dans compose / Railway) vaut « absente ». */
+const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), schema.optional());
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -80,7 +84,11 @@ const envSchema = z
     OTP_MAX_ATTEMPTS: z.coerce.number().int().default(5),
     LOGIN_MAX_ATTEMPTS: z.coerce.number().int().default(5),
 
-    SMS_PROVIDER: z.string().default('console'),
+    // Fournisseur SMS (OTP, signature de contrat) : console (dev) | africastalking (8.1).
+    SMS_PROVIDER: z.enum(['console', 'africastalking']).default('console'),
+    SMS_USERNAME: optionalString(z.string()), // Africa's Talking : nom d'application (« sandbox » = bac à sable)
+    SMS_API_KEY: optionalString(z.string()),
+    SMS_SENDER_ID: optionalString(z.string()), // identifiant d'expéditeur validé (optionnel)
 
     S3_ENDPOINT: z.string().default('http://localhost:9000'), // endpoint de SIGNATURE (navigateur)
     S3_INTERNAL_ENDPOINT: z.string().optional(), // endpoint joignable PAR LE SERVEUR (logo sur PDF)
@@ -95,14 +103,34 @@ const envSchema = z
     PUBLIC_RECEIPT_BASE: z.string().default('http://localhost:5173/r'),
     // URL publique de l'API — utilisée par les callbacks webhooks (MoMo/OM).
     PUBLIC_API_URL: z.string().default('http://localhost:3000'),
-    PDF_ENGINE: z.string().default('puppeteer'),
+    // puppeteer : Chromium (repli HTML s'il est absent) | html : rendu HTML direct.
+    PDF_ENGINE: z.enum(['puppeteer', 'html']).default('puppeteer'),
 
     // Cookies & auth-browser — passage des tokens de localStorage à des cookies HttpOnly (sécurité 1.2).
     COOKIE_SECRET: z.string().optional(), // signature des cookies (optionnel en dev)
     COOKIE_SECURE: boolEnv(false), // true en prod (HTTPS obligatoire)
     COOKIE_SAMESITE: z.enum(['strict', 'lax', 'none']).default('lax'),
+
+    // Monitoring des erreurs (6.4) — inactif sans DSN. Lu aussi au démarrage (main.ts).
+    SENTRY_DSN: optionalString(z.string().url()),
+    SENTRY_ENVIRONMENT: optionalString(z.string()),
   })
   .superRefine((env, ctx) => {
+    // Les navigateurs ignorent un cookie SameSite=None sans l'attribut Secure.
+    if (env.COOKIE_SAMESITE === 'none' && !env.COOKIE_SECURE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['COOKIE_SAMESITE'],
+        message: 'COOKIE_SAMESITE=none exige COOKIE_SECURE=true (HTTPS)',
+      });
+    }
+    if (env.SMS_PROVIDER === 'africastalking' && (!env.SMS_USERNAME || !env.SMS_API_KEY)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SMS_API_KEY'],
+        message: "SMS_PROVIDER=africastalking exige SMS_USERNAME et SMS_API_KEY",
+      });
+    }
     // En production : refuse les identifiants S3 par défaut (minioadmin) + exige HTTPS pour CORS.
     if (env.NODE_ENV === 'production') {
       if (env.S3_ACCESS_KEY === 'minioadmin' || env.S3_SECRET_KEY === 'minioadmin') {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TenantDeletionCheck } from '@bailo/shared';
-import { api, API, ApiError } from '../lib/api';
+import { api, API, ApiError, authFetch } from '../lib/api';
 import { formatDate, formatFcfa } from '../lib/format';
 import { signedUrl } from '../lib/upload';
 import { SignedImage } from '../components/SignedImage';
@@ -205,16 +205,12 @@ export function TenantDetail() {
     try { window.open(await signedUrl(tenant.idDocKey), '_blank', 'noopener'); } catch { /* lien expiré : rien à faire */ }
   };
   const openContract = async (occupancyId: string) => {
-    const res = await fetch(`${API}/occupancies/${occupancyId}/contract`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('at') ?? ''}` },
-    });
+    const res = await authFetch(`${API}/occupancies/${occupancyId}/contract`);
     if (!res.ok) return;
     window.open(URL.createObjectURL(await res.blob()), '_blank', 'noopener');
   };
   const openReceipt = async (paymentId: string) => {
-    const res = await fetch(`${API}/payments/${paymentId}/receipt`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('at') ?? ''}` },
-    });
+    const res = await authFetch(`${API}/payments/${paymentId}/receipt`);
     if (!res.ok) return;
     window.open(URL.createObjectURL(await res.blob()), '_blank', 'noopener');
   };

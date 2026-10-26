@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { Link } from 'react-router-dom';
 import type { BillingSummary } from '@bailo/shared';
-import { api, ApiError, clearTokens } from '../lib/api';
+import { api, ApiError, clearSession } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { FileField } from '../components/FileField';
 import { SignedImage } from '../components/SignedImage';
@@ -233,7 +233,7 @@ export function Settings() {
     if (!ok) return;
     try {
       await api.del(isOwner ? '/account' : '/me');
-      clearTokens();
+      clearSession();
       window.location.href = '/';
     } catch (err) {
       setUserError(err instanceof ApiError ? err.message : t('signup.error'));

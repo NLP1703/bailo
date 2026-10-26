@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nest
 import { Queue, Worker } from 'bullmq';
 import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { MaintenanceService } from './maintenance.service';
+import { captureServerError } from '../../common/monitoring/monitoring';
 
 const QUEUE_NAME = 'maintenance';
 const JOB_NAME = 'daily';
@@ -44,7 +45,10 @@ export class JobsService implements OnModuleInit, OnModuleDestroy {
     const connection = parseRedis(this.env.REDIS_URL);
 
     this.worker = new Worker(QUEUE_NAME, async () => this.maintenance.run(), { connection });
-    this.worker.on('failed', (_job, err) => this.logger.error(`Job échoué: ${err.message}`));
+    this.worker.on('failed', (_job, err) => {
+      this.logger.error(`Job échoué: ${err.message}`);
+      captureServerError(err, { job: JOB_NAME });
+    });
 
     this.queue = new Queue(QUEUE_NAME, { connection });
     await this.queue.add(

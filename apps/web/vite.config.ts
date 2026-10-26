@@ -21,6 +21,9 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // L'API est servie sous /api sur le même domaine (proxy nginx) : une
+        // navigation vers /api/… ne doit jamais retomber sur l'app.
+        navigateFallbackDenylist: [/^\/api\//],
         // Police Inter (alphabets latins seulement) préchargée : l'app garde son
         // apparence hors-ligne au lieu de retomber sur la police système.
         globPatterns: ['**/*.{js,css,html,svg}', 'assets/inter-latin-*.woff2'],

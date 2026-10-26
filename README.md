@@ -55,9 +55,18 @@ Monorepo pnpm, TypeScript strict de bout en bout.
 - **RG17** (pas de chevauchement) garanti en base par contrainte d'exclusion GIST.
 - **Hors-ligne (NF3)** : paiements saisis hors-ligne mis en file (Dexie) avec `clientId`,
   rejoués au retour du réseau — **idempotents**, jamais de doublon.
+- **Sessions** : jeton d'accès en mémoire, refresh token en **cookie HttpOnly** ; l'image web
+  relaie `/api` vers l'API pour que le cookie reste first-party.
+
+Fonctionnalités V2 : contrats signés par OTP, états des lieux, maintenance, compteurs,
+dépenses, comptabilité OHADA, module **Administration** (équipe, sessions, journal d'audit,
+paramètres et modèles de messages).
 
 Détails par lot : [`docs/LOT2.md`](docs/LOT2.md) · [`docs/LOT3.md`](docs/LOT3.md) ·
 [`docs/LOT4.md`](docs/LOT4.md) · [`docs/LOT5.md`](docs/LOT5.md) ·
+[`docs/LOT6.md`](docs/LOT6.md) · [`docs/LOT7.md`](docs/LOT7.md) ·
+[`docs/LOT8.md`](docs/LOT8.md) (durcissement production) ·
+journal [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) · déploiement [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md) ·
 cadrage initial [`docs/CADRAGE.md`](docs/CADRAGE.md) ·
 critères d'acceptation [`docs/ACCEPTATION.md`](docs/ACCEPTATION.md).
 
@@ -72,8 +81,8 @@ corepack pnpm --filter @bailo/api test:e2e    # e2e (nécessite Postgres)
 ## Variables d'environnement
 
 Toutes documentées dans [`.env.example`](.env.example) : base, Redis/jobs, JWT/OTP,
-S3/MinIO, PDF/reçus, front (`VITE_*`). En production, renseigner des secrets forts et
-un vrai fournisseur SMS (`SMS_PROVIDER`).
+S3/MinIO/R2, SMS, Sentry, PDF/reçus, front (`VITE_*`). En production, renseigner des
+secrets forts et un vrai fournisseur SMS (`SMS_PROVIDER=africastalking`).
 
 ## Contraintes réglementaires
 

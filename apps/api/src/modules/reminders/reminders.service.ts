@@ -12,6 +12,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { toDate } from '../../common/time/to-date';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { TemplatesService } from '../templates/templates.service';
+import { listMaybePaginated } from '../../common/http/paginate';
 
 function formatDate(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
@@ -211,14 +212,21 @@ export class RemindersService {
   }
 
   async history(query: RemindersHistoryQuery) {
-    return this.prisma.reminder.findMany({
-      where: {
-        status: 'SENT',
-        ...(query.tenantId ? { charge: { occupancy: { tenantId: query.tenantId } } } : {}),
-      },
-      orderBy: { sentAt: 'desc' },
-      include: { charge: { include: { occupancy: { include: { unit: true, tenant: true } } } } },
-    });
+    const where = {
+      status: 'SENT' as const,
+      ...(query.tenantId ? { charge: { occupancy: { tenantId: query.tenantId } } } : {}),
+    };
+    return listMaybePaginated(
+      query,
+      (window) =>
+        this.prisma.reminder.findMany({
+          where,
+          orderBy: [{ sentAt: 'desc' }, { id: 'asc' }],
+          include: { charge: { include: { occupancy: { include: { unit: true, tenant: true } } } } },
+          ...window,
+        }),
+      () => this.prisma.reminder.count({ where }),
+    );
   }
 
   /** Lien wa.me pré-rempli (F7.1) pour le(s) destinataire(s) de la relance. */

@@ -87,6 +87,10 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
       SMS_PROVIDER: ${SMS_PROVIDER:-console}
+      SMS_USERNAME: ${SMS_USERNAME:-}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+      SMS_SENDER_ID: ${SMS_SENDER_ID:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
       ENABLE_JOBS: ${ENABLE_JOBS:-true}
       JOBS_CRON: ${JOBS_CRON:-0 2 * * *}
       PUBLIC_RECEIPT_BASE: ${PUBLIC_RECEIPT_BASE:-http://localhost/r}

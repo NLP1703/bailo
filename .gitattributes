@@ -1,0 +1,2 @@
+# Scripts shell exécutés dans des conteneurs Linux : toujours en LF.
+*.sh text eol=lf

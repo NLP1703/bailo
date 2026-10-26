@@ -15,6 +15,7 @@ import { toDate } from '../../common/time/to-date';
 import { SMS_PROVIDER, type SmsProvider } from '../sms/sms.provider';
 import { loadEnv } from '../../common/config/env';
 import { PDF_RENDERER, type PdfRenderer, type RenderedDocument } from '../pdf/pdf.renderer';
+import { listMaybePaginated } from '../../common/http/paginate';
 
 @Injectable()
 export class ContractsService {
@@ -174,16 +175,23 @@ ${c.signedByTenant ? `<div class="sign">Signé électroniquement par le locatair
   }
 
   async list(ctx: RequestContext, q: ContractListQuery) {
-    return this.prisma.contract.findMany({
-      where: {
-        accountId: ctx.accountId,
-        ...(q.status ? { status: q.status } : {}),
-        ...(q.tenantId ? { tenantId: q.tenantId } : {}),
-        ...(q.occupancyId ? { occupancyId: q.occupancyId } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      include: { tenant: { select: { name: true } } },
-    });
+    const where = {
+      accountId: ctx.accountId,
+      ...(q.status ? { status: q.status } : {}),
+      ...(q.tenantId ? { tenantId: q.tenantId } : {}),
+      ...(q.occupancyId ? { occupancyId: q.occupancyId } : {}),
+    };
+    return listMaybePaginated(
+      q,
+      (window) =>
+        this.prisma.contract.findMany({
+          where,
+          orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+          include: { tenant: { select: { name: true } } },
+          ...window,
+        }),
+      () => this.prisma.contract.count({ where }),
+    );
   }
 
   async get(ctx: RequestContext, id: string): Promise<Contract | null> {

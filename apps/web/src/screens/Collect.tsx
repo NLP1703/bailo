@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { CreatePaymentDto, PaymentMode } from '@bailo/shared';
-import { api, ApiError, API } from '../lib/api';
+import { api, ApiError, API, authFetch } from '../lib/api';
 import { enqueuePayment } from '../lib/sync';
 import { formatFcfa } from '../lib/format';
 import { FileField } from '../components/FileField';
@@ -99,9 +99,7 @@ export function Collect() {
   // Ouvre le reçu PDF (le GET exige le jeton : on récupère le blob puis on l'ouvre).
   const viewReceipt = async () => {
     if (!lastPaymentId) return;
-    const res = await fetch(`${API}/payments/${lastPaymentId}/receipt`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('at') ?? ''}` },
-    });
+    const res = await authFetch(`${API}/payments/${lastPaymentId}/receipt`);
     const url = URL.createObjectURL(await res.blob());
     window.open(url, '_blank', 'noopener');
   };

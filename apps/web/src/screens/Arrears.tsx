@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { api, API } from '../lib/api';
+import { api, API, authFetch } from '../lib/api';
 import { formatDate } from '../lib/format';
 import { PageHeader, Button, EmptyState, StatTile, PageSkeleton } from '../components/ui';
 import {
@@ -19,9 +19,7 @@ import { normalize } from '../app/navigation';
 
 /** Télécharge un export en envoyant le jeton (un <a href> ne le ferait pas). */
 async function downloadExport(path: string, filename: string): Promise<void> {
-  const res = await fetch(`${API}${path}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('at') ?? ''}` },
-  });
+  const res = await authFetch(`${API}${path}`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

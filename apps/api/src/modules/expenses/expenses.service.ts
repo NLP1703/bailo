@@ -5,23 +5,32 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { toDate } from '../../common/time/to-date';
+import { listMaybePaginated } from '../../common/http/paginate';
 
 @Injectable()
 export class ExpensesService {
   constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
 
   async list(ctx: RequestContext, q: ExpenseListQuery) {
-    return this.prisma.expense.findMany({
-      where: {
-        accountId: ctx.accountId,
-        ...(q.siteId ? { siteId: q.siteId } : {}),
-        ...(q.category ? { category: q.category } : {}),
-        ...(q.from || q.to
-          ? { spentAt: { ...(q.from ? { gte: toDate(q.from) } : {}), ...(q.to ? { lte: toDate(q.to) } : {}) } }
-          : {}),
-      },
-      orderBy: { spentAt: 'desc' },
-    });
+    const where = {
+      accountId: ctx.accountId,
+      ...(q.siteId ? { siteId: q.siteId } : {}),
+      ...(q.category ? { category: q.category } : {}),
+      ...(q.from || q.to
+        ? { spentAt: { ...(q.from ? { gte: toDate(q.from) } : {}), ...(q.to ? { lte: toDate(q.to) } : {}) } }
+        : {}),
+    };
+    return listMaybePaginated(
+      q,
+      (window) =>
+        this.prisma.expense.findMany({
+          where,
+          // `id` départage les dépenses du même jour : ordre stable d'une page à l'autre.
+          orderBy: [{ spentAt: 'desc' }, { id: 'asc' }],
+          ...window,
+        }),
+      () => this.prisma.expense.count({ where }),
+    );
   }
 
   async create(ctx: RequestContext, dto: CreateExpenseDto): Promise<Expense> {

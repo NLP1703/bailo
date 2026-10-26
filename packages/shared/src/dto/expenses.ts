@@ -1,6 +1,6 @@
 // Dépenses du bailleur.
 import { z } from 'zod';
-import { uuid } from './common';
+import { uuid, optionalPaginationQuery } from './common';
 import { EXPENSE_CATEGORIES } from '../enums';
 
 const isoDate = z.string().datetime({ offset: true }).or(z.string().date());
@@ -27,5 +27,6 @@ export const expenseListQuery = z.object({
   category: z.enum(EXPENSE_CATEGORIES).optional(),
   from: isoDate.optional(),
   to: isoDate.optional(),
-});
+})
+  .merge(optionalPaginationQuery);
 export type ExpenseListQuery = z.infer<typeof expenseListQuery>;

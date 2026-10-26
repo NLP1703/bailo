@@ -1,5 +1,16 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import {
   loginDto,
   logoutDto,
@@ -7,7 +18,7 @@ import {
   refreshDto,
   requestOtpDto,
   signupDto,
-  type AuthTokens,
+  type AuthSession,
   type LoginDto,
   type LogoutDto,
   type PasswordResetDto,
@@ -15,14 +26,24 @@ import {
   type RequestOtpDto,
   type SignupDto,
 } from '@bailo/shared';
+import { APP_ENV, type AppEnv } from '../../common/config/env';
 import { Public } from '../../common/auth/public.decorator';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe';
 import { AuthService } from './auth.service';
+import { clearRefreshCookie, presentedRefreshToken, sendSession } from './refresh-cookie';
 
+/**
+ * Authentification. Le jeton d'accès (courte durée) est renvoyé dans le corps et
+ * gardé en mémoire par le front ; le refresh token (longue durée) est posé en
+ * cookie HttpOnly `bailo_rt`, illisible par le JavaScript (sécurité 1.2).
+ */
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    @Inject(APP_ENV) private readonly env: AppEnv,
+  ) {}
 
   @Public()
   @Post('otp')
@@ -34,25 +55,47 @@ export class AuthController {
 
   @Public()
   @Post('signup')
-  @ApiOperation({ summary: 'Créer un compte + propriétaire (OTP validé)' })
-  async signup(@Body(new ZodValidationPipe(signupDto)) dto: SignupDto): Promise<AuthTokens> {
-    return this.auth.signup(dto);
+  @ApiOperation({ summary: 'Créer un compte + propriétaire' })
+  async signup(
+    @Body(new ZodValidationPipe(signupDto)) dto: SignupDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthSession> {
+    return sendSession(req, res, this.env, await this.auth.signup(dto));
   }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Connexion téléphone + mot de passe' })
-  async login(@Body(new ZodValidationPipe(loginDto)) dto: LoginDto): Promise<AuthTokens> {
-    return this.auth.login(dto);
+  @ApiOperation({ summary: 'Connexion téléphone/email + mot de passe' })
+  async login(
+    @Body(new ZodValidationPipe(loginDto)) dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthSession> {
+    return sendSession(req, res, this.env, await this.auth.login(dto));
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Renouveler le JWT (rotation du refresh)' })
-  async refresh(@Body(new ZodValidationPipe(refreshDto)) dto: RefreshDto): Promise<AuthTokens> {
-    return this.auth.refresh(dto.refreshToken);
+  @ApiOperation({ summary: 'Renouveler le JWT (rotation du refresh, cookie HttpOnly)' })
+  async refresh(
+    @Body(new ZodValidationPipe(refreshDto)) dto: RefreshDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthSession> {
+    const presented = presentedRefreshToken(req, dto.refreshToken);
+    if (!presented) {
+      throw new UnauthorizedException('Session expirée, reconnexion requise');
+    }
+    try {
+      return sendSession(req, res, this.env, await this.auth.refresh(presented));
+    } catch (error) {
+      // Refresh révoqué ou expiré : on retire le cookie pour ne pas le renvoyer en boucle.
+      if (error instanceof UnauthorizedException) clearRefreshCookie(res, this.env);
+      throw error;
+    }
   }
 
   @Public()
@@ -68,8 +111,14 @@ export class AuthController {
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Révoquer le refresh token' })
-  async logout(@Body(new ZodValidationPipe(logoutDto)) dto: LogoutDto): Promise<void> {
-    await this.auth.logout(dto.refreshToken);
+  @ApiOperation({ summary: 'Révoquer le refresh token et retirer le cookie' })
+  async logout(
+    @Body(new ZodValidationPipe(logoutDto)) dto: LogoutDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const presented = presentedRefreshToken(req, dto.refreshToken);
+    if (presented) await this.auth.logout(presented);
+    clearRefreshCookie(res, this.env);
   }
 }

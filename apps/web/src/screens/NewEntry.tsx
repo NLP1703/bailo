@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PAYMENT_MODES, generateRentSchedule, type PaymentMode } from '@bailo/shared';
-import { api, API, ApiError } from '../lib/api';
+import { api, API, ApiError, authFetch } from '../lib/api';
 import { formatFcfa } from '../lib/format';
 import { FileField } from '../components/FileField';
 import { useToast } from '../components/Toast';
@@ -310,9 +310,7 @@ export function NewEntry() {
   const viewReceipt = async () => {
     if (!lastPaymentId) return;
     try {
-      const res = await fetch(`${API}/payments/${lastPaymentId}/receipt`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('at') ?? ''}` },
-      });
+      const res = await authFetch(`${API}/payments/${lastPaymentId}/receipt`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       window.open(URL.createObjectURL(await res.blob()), '_blank', 'noopener');
     } catch (err) {

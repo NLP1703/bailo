@@ -5,12 +5,17 @@ import { config as loadDotenv } from 'dotenv';
 import { resolve } from 'path';
 loadDotenv({ path: resolve(__dirname, '../../../.env') });
 
+// Monitoring (Sentry) initialisé avant le reste de l'application — inactif sans SENTRY_DSN.
+import { initMonitoring } from './common/monitoring/monitoring';
+initMonitoring();
+
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { loadEnv } from './common/config/env';
 import { PrismaExceptionFilter } from './common/http/prisma-exception.filter';
+import { AllExceptionsFilter } from './common/monitoring/all-exceptions.filter';
 
 async function bootstrap(): Promise<void> {
   const env = loadEnv();
@@ -32,7 +37,11 @@ async function bootstrap(): Promise<void> {
     origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
   });
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  // Ordre important : l'attrape-tout d'abord, le filtre Prisma (plus spécifique) ensuite.
+  app.useGlobalFilters(
+    new AllExceptionsFilter(app.get(HttpAdapterHost).httpAdapter),
+    new PrismaExceptionFilter(),
+  );
   // La validation métier passe par Zod (ZodValidationPipe) ; ce pipe ne sert
   // qu'à rejeter les charges utiles non conformes au typage de base.
   app.useGlobalPipes(new ValidationPipe({ transform: false, whitelist: false }));

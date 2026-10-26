@@ -9,23 +9,31 @@ import type {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
+import { listMaybePaginated } from '../../common/http/paginate';
 
 @Injectable()
 export class MaintenanceService {
   constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
 
   async list(ctx: RequestContext, q: TicketListQuery) {
-    return this.prisma.maintenanceTicket.findMany({
-      where: {
-        accountId: ctx.accountId,
-        ...(q.siteId ? { siteId: q.siteId } : {}),
-        ...(q.unitId ? { unitId: q.unitId } : {}),
-        ...(q.status ? { status: q.status } : {}),
-        ...(q.priority ? { priority: q.priority } : {}),
-      },
-      orderBy: [{ status: 'asc' }, { reportedAt: 'desc' }],
-      include: { unit: { select: { code: true } }, site: { select: { name: true } } },
-    });
+    const where = {
+      accountId: ctx.accountId,
+      ...(q.siteId ? { siteId: q.siteId } : {}),
+      ...(q.unitId ? { unitId: q.unitId } : {}),
+      ...(q.status ? { status: q.status } : {}),
+      ...(q.priority ? { priority: q.priority } : {}),
+    };
+    return listMaybePaginated(
+      q,
+      (window) =>
+        this.prisma.maintenanceTicket.findMany({
+          where,
+          orderBy: [{ status: 'asc' }, { reportedAt: 'desc' }, { id: 'asc' }],
+          include: { unit: { select: { code: true } }, site: { select: { name: true } } },
+          ...window,
+        }),
+      () => this.prisma.maintenanceTicket.count({ where }),
+    );
   }
 
   async create(ctx: RequestContext, dto: CreateTicketDto): Promise<MaintenanceTicket> {

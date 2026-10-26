@@ -1,6 +1,6 @@
 // Contrats de bail + signature électronique.
 import { z } from 'zod';
-import { uuid } from './common';
+import { uuid, optionalPaginationQuery } from './common';
 import { fcfaPositive } from '../money';
 import { CONTRACT_STATUSES } from '../enums';
 
@@ -40,5 +40,6 @@ export const contractListQuery = z.object({
   status: z.enum(CONTRACT_STATUSES).optional(),
   tenantId: uuid.optional(),
   occupancyId: uuid.optional(),
-});
+})
+  .merge(optionalPaginationQuery);
 export type ContractListQuery = z.infer<typeof contractListQuery>;

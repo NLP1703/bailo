@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { API, api, ApiError } from '../lib/api';
+import { authFetch, API, api, ApiError } from '../lib/api';
 import { formatFcfa, formatDate } from '../lib/format';
 import { Badge, Button, Card, PageHeader, PageSkeleton, StatTile } from '../components/ui';
 import { useToast } from '../components/Toast';
@@ -41,10 +41,7 @@ const monthStart = () => {
 
 /** Télécharge un fichier produit par une URL authentifiée (Bearer). */
 async function downloadWithAuth(url: string, suggestedName: string): Promise<void> {
-  const token = localStorage.getItem('at');
-  const res = await fetch(url, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const res = await authFetch(url);
   if (!res.ok) throw new ApiError(res.status, `Téléchargement impossible (${res.status})`);
   const blob = await res.blob();
   const href = URL.createObjectURL(blob);

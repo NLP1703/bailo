@@ -1,6 +1,6 @@
 // Tickets de maintenance.
 import { z } from 'zod';
-import { uuid } from './common';
+import { uuid, optionalPaginationQuery } from './common';
 import { MAINTENANCE_PRIORITIES, MAINTENANCE_STATUSES } from '../enums';
 
 export const createTicketDto = z.object({
@@ -37,5 +37,6 @@ export const ticketListQuery = z.object({
   unitId: uuid.optional(),
   status: z.enum(MAINTENANCE_STATUSES).optional(),
   priority: z.enum(MAINTENANCE_PRIORITIES).optional(),
-});
+})
+  .merge(optionalPaginationQuery);
 export type TicketListQuery = z.infer<typeof ticketListQuery>;

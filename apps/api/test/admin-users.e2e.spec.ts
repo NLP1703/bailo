@@ -18,6 +18,8 @@ import { createTestApp, resetDb, seedAccount, seedUser, type TestContext } from 
  *  - Invitation : création → listée → révocable, et le jeton n'est jamais
  *    stocké en clair (le hash SHA-256 est vérifié).
  */
+
+const NATIVE = { 'X-Bailo-Client': 'native' };
 describe('Admin — équipe & sessions (e2e)', () => {
   let ctx: TestContext;
   const api = () => request(ctx.app.getHttpServer());
@@ -33,7 +35,12 @@ describe('Admin — équipe & sessions (e2e)', () => {
   });
 
   async function login(phone: string, password: string): Promise<{ at: string; rt: string }> {
-    const res = await api().post('/api/v1/auth/login').send({ phone, password }).expect(200);
+    // Client natif : le refresh est renvoyé dans le corps (le navigateur le reçoit en cookie).
+    const res = await api()
+      .post('/api/v1/auth/login')
+      .set(NATIVE)
+      .send({ phone, password })
+      .expect(200);
     return { at: res.body.accessToken as string, rt: res.body.refreshToken as string };
   }
 
@@ -134,7 +141,11 @@ describe('Admin — équipe & sessions (e2e)', () => {
 
     // La victime se connecte, obtient un refresh ; on vérifie qu'il tourne.
     const victim = await login('690000121', 'passVic12');
-    const rot1 = await api().post('/api/v1/auth/refresh').send({ refreshToken: victim.rt }).expect(200);
+    const rot1 = await api()
+      .post('/api/v1/auth/refresh')
+      .set(NATIVE)
+      .send({ refreshToken: victim.rt })
+      .expect(200);
     const rt2 = rot1.body.refreshToken as string;
 
     // L'OWNER désactive la victime via /admin/users/:id.
@@ -146,7 +157,7 @@ describe('Admin — équipe & sessions (e2e)', () => {
       .expect(200);
 
     // La rotation suivante doit échouer en 401.
-    await api().post('/api/v1/auth/refresh').send({ refreshToken: rt2 }).expect(401);
+    await api().post('/api/v1/auth/refresh').set(NATIVE).send({ refreshToken: rt2 }).expect(401);
   });
 
   it('invitation : création renvoie un token, listée, puis révocable', async () => {

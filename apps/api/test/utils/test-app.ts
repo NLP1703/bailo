@@ -4,7 +4,9 @@ import * as argon2 from 'argon2';
 import type { UserRole } from '@bailo/shared';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
+import { HttpAdapterHost } from '@nestjs/core';
 import { PrismaExceptionFilter } from '../../src/common/http/prisma-exception.filter';
+import { AllExceptionsFilter } from '../../src/common/monitoring/all-exceptions.filter';
 import { SMS_PROVIDER, type SmsProvider } from '../../src/modules/sms/sms.provider';
 
 /** Fournisseur SMS de test : capture les messages pour extraire l'OTP. */
@@ -48,7 +50,10 @@ export async function createTestApp(): Promise<TestContext> {
 
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api/v1');
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalFilters(
+    new AllExceptionsFilter(app.get(HttpAdapterHost).httpAdapter),
+    new PrismaExceptionFilter(),
+  );
   app.useGlobalPipes(new ValidationPipe({ transform: false, whitelist: false }));
   await app.init();
 

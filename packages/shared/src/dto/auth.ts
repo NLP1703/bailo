@@ -30,9 +30,17 @@ export const loginDto = z
   });
 export type LoginDto = z.infer<typeof loginDto>;
 
-export const refreshDto = z.object({
-  refreshToken: z.string().min(10),
-});
+/**
+ * Renouvellement de session. Le refresh token voyage normalement dans le cookie
+ * HttpOnly `bailo_rt` (navigateur) ; le corps n'est utilisé que par les clients
+ * natifs (en-tête `X-Bailo-Client: native`) et pour migrer une ancienne session
+ * stockée dans le navigateur.
+ */
+export const refreshDto = z
+  .object({
+    refreshToken: z.string().min(10).optional(),
+  })
+  .default({});
 export type RefreshDto = z.infer<typeof refreshDto>;
 
 export const passwordResetDto = z.object({
@@ -42,13 +50,33 @@ export const passwordResetDto = z.object({
 });
 export type PasswordResetDto = z.infer<typeof passwordResetDto>;
 
-export const logoutDto = z.object({
-  refreshToken: z.string().min(10),
-});
+export const logoutDto = z
+  .object({
+    refreshToken: z.string().min(10).optional(),
+  })
+  .default({});
 export type LogoutDto = z.infer<typeof logoutDto>;
 
+/** Couple de jetons émis côté serveur (le refresh est opaque, stocké haché en base). */
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+}
+
+/** Nom du cookie HttpOnly qui porte le refresh token (sécurité 1.2). */
+export const REFRESH_COOKIE_NAME = 'bailo_rt';
+
+/** En-tête par lequel un client natif (app mobile, scripts) demande le refresh dans le corps. */
+export const NATIVE_CLIENT_HEADER = 'x-bailo-client';
+
+/**
+ * Réponse des routes d'authentification. Pour un navigateur, le refresh token
+ * n'est **jamais** dans le corps : il est posé en cookie HttpOnly, inaccessible
+ * au JavaScript. `refreshToken` n'est renvoyé qu'aux clients natifs.
+ */
+export interface AuthSession {
+  accessToken: string;
+  expiresIn: number;
+  refreshToken?: string;
 }

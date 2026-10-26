@@ -29,3 +29,15 @@ export const paginationQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 export type PaginationQuery = z.infer<typeof paginationQuery>;
+
+/**
+ * Pagination par offset **optionnelle** pour les listes historiques (dépenses,
+ * maintenance, contrats, relances). Sans `pageSize`, l'endpoint renvoie la liste
+ * complète (tableau, comportement historique) ; avec `pageSize`, il renvoie
+ * `{ items, total, page, pageSize }` (voir `PaginatedResult`).
+ */
+export const optionalPaginationQuery = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+});
+export type OptionalPaginationQuery = z.infer<typeof optionalPaginationQuery>;

@@ -7,7 +7,7 @@ import type {
   AuditAction,
 } from '@bailo/shared';
 import { AUDIT_ACTIONS } from '@bailo/shared';
-import { api, API, ApiError } from '../../lib/api';
+import { authFetch, api, API, ApiError } from '../../lib/api';
 import { formatDate } from '../../lib/format';
 import { useToast } from '../../components/Toast';
 import {
@@ -33,10 +33,7 @@ import { DownloadIcon, ClockAlertIcon } from '../../components/icons';
  */
 
 async function downloadWithAuth(url: string, filename: string): Promise<void> {
-  const token = localStorage.getItem('at');
-  const res = await fetch(url, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const res = await authFetch(url);
   if (!res.ok) throw new ApiError(res.status, `Export impossible (${res.status})`);
   const blob = await res.blob();
   const href = URL.createObjectURL(blob);

@@ -15,7 +15,12 @@ export interface PdfRenderer {
 /**
  * Rendu HTML→PDF. Puppeteer (Chromium) est chargé paresseusement : s'il n'est pas
  * disponible (dev/test sans Chromium), on renvoie le HTML tel quel — le reçu reste
- * consultable sur téléphone, et la CI/prod installe Chromium (cf. Dockerfile).
+ * consultable sur téléphone.
+ *
+ * `PDF_ENGINE=html` saute directement au rendu HTML (pas de tentative de lancement
+ * de Chromium à chaque document). Pour de vrais PDF en image Docker, construire
+ * l'image API avec `INSTALL_CHROMIUM=true` (cf. apps/api/Dockerfile) : Puppeteer
+ * utilise alors le Chromium système via `PUPPETEER_EXECUTABLE_PATH`.
  */
 @Injectable()
 export class HtmlToPdfRenderer implements PdfRenderer {
@@ -24,7 +29,7 @@ export class HtmlToPdfRenderer implements PdfRenderer {
   constructor(@Inject(APP_ENV) private readonly env: AppEnv) {}
 
   async render(html: string): Promise<RenderedDocument> {
-    if (this.env.NODE_ENV === 'test') {
+    if (this.env.NODE_ENV === 'test' || this.env.PDF_ENGINE === 'html') {
       return { buffer: Buffer.from(html, 'utf8'), contentType: 'text/html' };
     }
     try {

@@ -6,9 +6,13 @@ import {
   utcDate,
   yearMonthOf,
   addMonths,
+  type ChargeStatus,
 } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RemindersService } from '../reminders/reminders.service';
+
+/** Taille des lots lus par la maintenance (borne la mémoire sur les gros comptes). */
+const MAINTENANCE_BATCH_SIZE = 1000;
 
 /**
  * Maintenance quotidienne (système, hors contexte compte — toutes les données).
@@ -25,9 +29,7 @@ export class MaintenanceService {
     private readonly reminders: RemindersService,
   ) {}
 
-  async run(
-    today = new Date(),
-  ): Promise<{
+  async run(today = new Date()): Promise<{
     statusUpdates: number;
     penalties: number;
     reminders: number;
@@ -66,10 +68,16 @@ export class MaintenanceService {
    * Pénalités de retard (F5.6) : pour chaque site l'ayant activée, crée une
    * échéance PENALITE sur les loyers en retard au-delà du délai de grâce, sans
    * doublon (une pénalité par échéance d'origine via `penaltyForChargeId`).
+   *
+   * Requêtes groupées : une lecture par site (les pénalités déjà créées sont
+   * exclues dès la requête) puis une seule insertion `createMany` par site —
+   * `skipDuplicates` s'appuie sur l'unicité de `penaltyForChargeId` pour rester
+   * idempotent même si deux exécutions se chevauchent.
    */
   async generatePenalties(today: Date): Promise<number> {
     const sites = await this.prisma.site.findMany({
       where: { penaltyEnabled: true, penaltyValue: { gt: 0 } },
+      select: { id: true, penaltyGraceDays: true, penaltyMode: true, penaltyValue: true },
     });
     let created = 0;
     for (const site of sites) {
@@ -81,66 +89,112 @@ export class MaintenanceService {
           dueDate: { lt: cutoff },
           occupancy: { unit: { siteId: site.id } },
         },
-        include: {
+        select: {
+          id: true,
+          accountId: true,
+          occupancyId: true,
+          amount: true,
           allocations: { where: { payment: { status: 'VALID' } }, select: { amount: true } },
         },
       });
+      if (charges.length === 0) continue;
+
+      const existing = await this.prisma.charge.findMany({
+        where: { penaltyForChargeId: { in: charges.map((c) => c.id) } },
+        select: { penaltyForChargeId: true },
+      });
+      const alreadyPenalised = new Set(existing.map((e) => e.penaltyForChargeId));
+
+      const rows = [];
       for (const c of charges) {
+        if (alreadyPenalised.has(c.id)) continue;
         const paid = c.allocations.reduce((s, a) => s + a.amount, 0);
         const remaining = c.amount - paid;
         if (remaining <= 0) continue;
         const amount = computePenalty(site.penaltyMode, site.penaltyValue, remaining);
         if (amount <= 0) continue;
-        const already = await this.prisma.charge.findUnique({
-          where: { penaltyForChargeId: c.id },
+        rows.push({
+          accountId: c.accountId,
+          occupancyId: c.occupancyId,
+          type: 'PENALITE' as const,
+          amount,
+          dueDate: today,
+          status: 'DUE' as const,
+          penaltyForChargeId: c.id,
         });
-        if (already) continue;
-        await this.prisma.charge.create({
-          data: {
-            accountId: c.accountId,
-            occupancyId: c.occupancyId,
-            type: 'PENALITE',
-            amount,
-            dueDate: today,
-            status: 'DUE',
-            penaltyForChargeId: c.id,
-          },
-        });
-        created += 1;
       }
+      if (rows.length === 0) continue;
+      const result = await this.prisma.charge.createMany({ data: rows, skipDuplicates: true });
+      created += result.count;
     }
     return created;
   }
 
-  /** Recalcule et persiste le statut des échéances non réglées (RG7/RG10). */
+  /**
+   * Recalcule et persiste le statut des échéances non réglées (RG7/RG10).
+   *
+   * Parcours par lots (curseur sur l'id) pour borner la mémoire, et une seule
+   * écriture `updateMany` par statut cible et par lot au lieu d'un UPDATE par ligne.
+   */
   async refreshChargeStatuses(today: Date): Promise<number> {
-    const charges = await this.prisma.charge.findMany({
-      where: { status: { notIn: ['CANCELLED', 'PAID'] } },
-      include: {
-        allocations: { where: { payment: { status: 'VALID' } }, select: { amount: true } },
-        occupancy: { include: { unit: { include: { site: true } } } },
-      },
-    });
     let updated = 0;
-    for (const charge of charges) {
-      const paid = charge.allocations.reduce((s, a) => s + a.amount, 0);
-      const status = computeChargeStatus({
-        amount: charge.amount,
-        paid,
-        dueDate: charge.dueDate,
-        today,
-        graceDays: charge.occupancy.unit.site.graceDays,
-        cancelled: false,
+    let cursor: string | undefined;
+    for (;;) {
+      const batch = await this.prisma.charge.findMany({
+        where: { status: { notIn: ['CANCELLED', 'PAID'] } },
+        select: {
+          id: true,
+          amount: true,
+          dueDate: true,
+          status: true,
+          allocations: { where: { payment: { status: 'VALID' } }, select: { amount: true } },
+          occupancy: { select: { unit: { select: { site: { select: { graceDays: true } } } } } },
+        },
+        orderBy: { id: 'asc' },
+        take: MAINTENANCE_BATCH_SIZE,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       });
-      if (status !== charge.status) {
-        await this.prisma.charge.update({ where: { id: charge.id }, data: { status } });
-        updated += 1;
+      if (batch.length === 0) break;
+
+      const idsByStatus = new Map<ChargeStatus, string[]>();
+      for (const charge of batch) {
+        const paid = charge.allocations.reduce((s, a) => s + a.amount, 0);
+        const status = computeChargeStatus({
+          amount: charge.amount,
+          paid,
+          dueDate: charge.dueDate,
+          today,
+          graceDays: charge.occupancy.unit.site.graceDays,
+          cancelled: false,
+        });
+        if (status !== charge.status) {
+          const ids = idsByStatus.get(status) ?? [];
+          ids.push(charge.id);
+          idsByStatus.set(status, ids);
+        }
       }
+      for (const [status, ids] of idsByStatus) {
+        const result = await this.prisma.charge.updateMany({
+          where: { id: { in: ids } },
+          data: { status },
+        });
+        updated += result.count;
+      }
+
+      if (batch.length < MAINTENANCE_BATCH_SIZE) break;
+      cursor = batch[batch.length - 1]!.id;
     }
     return updated;
   }
 
-  /** Prolonge les occupations sans fin prévue dont la couverture expire sous 60 jours (RG1). */
+  /**
+   * Prolonge les occupations sans fin prévue dont la couverture expire sous 60 jours (RG1).
+   *
+   * Une insertion `createMany` par occupation (au lieu d'un upsert par mois) :
+   * `skipDuplicates` respecte l'unicité (occupation, type, période) et ne réécrit
+   * jamais un montant figé (RG2). L'insertion et la mise à jour de la borne
+   * `chargesGeneratedUntil` sont atomiques.
+   */
   async extendSchedules(today: Date): Promise<number> {
     const horizon = new Date(today.getTime() + 60 * 86_400_000);
     const occupancies = await this.prisma.occupancy.findMany({
@@ -148,6 +202,13 @@ export class MaintenanceService {
         status: { in: ['ACTIVE', 'NOTICE'] },
         plannedEndDate: null,
         chargesGeneratedUntil: { lt: horizon },
+      },
+      select: {
+        id: true,
+        accountId: true,
+        monthlyRent: true,
+        dueDay: true,
+        chargesGeneratedUntil: true,
       },
     });
 
@@ -165,33 +226,25 @@ export class MaintenanceService {
         prorataFirstMonth: false, // mois pleins en continuation
         horizonMonths: 12,
       });
-      for (const rc of schedule.charges) {
-        await this.prisma.charge.upsert({
-          where: {
-            occupancyId_type_periodYear_periodMonth: {
-              occupancyId: occ.id,
-              type: 'LOYER',
-              periodYear: rc.periodYear,
-              periodMonth: rc.periodMonth,
-            },
-          },
-          create: {
+      await this.prisma.$transaction([
+        this.prisma.charge.createMany({
+          data: schedule.charges.map((rc) => ({
             accountId: occ.accountId,
             occupancyId: occ.id,
-            type: 'LOYER',
+            type: 'LOYER' as const,
             periodYear: rc.periodYear,
             periodMonth: rc.periodMonth,
             amount: rc.amount,
             dueDate: rc.dueDate,
-            status: 'UPCOMING',
-          },
-          update: {}, // ne jamais réécrire un montant figé (RG2)
-        });
-      }
-      await this.prisma.occupancy.update({
-        where: { id: occ.id },
-        data: { chargesGeneratedUntil: schedule.generatedUntil },
-      });
+            status: 'UPCOMING' as const,
+          })),
+          skipDuplicates: true, // ne jamais réécrire un montant figé (RG2)
+        }),
+        this.prisma.occupancy.update({
+          where: { id: occ.id },
+          data: { chargesGeneratedUntil: schedule.generatedUntil },
+        }),
+      ]);
       extended += 1;
     }
     return extended;

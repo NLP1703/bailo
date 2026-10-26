@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ContractStatus } from '@bailo/shared';
-import { api, ApiError, API } from '../lib/api';
+import { api, ApiError, API, authFetch } from '../lib/api';
 import { formatDate, formatFcfa } from '../lib/format';
 import { Badge, Button, Card, PageHeader, PageSkeleton, type Tone } from '../components/ui';
 import { useToast } from '../components/Toast';
@@ -73,9 +73,8 @@ export function ContractDetail() {
   };
 
   const pdfUrl = `${API}/contracts/${c.id}/pdf`;
-  const token = localStorage.getItem('at') ?? '';
   const openPdf = async () => {
-    const r = await fetch(pdfUrl, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await authFetch(pdfUrl);
     if (!r.ok) { toast.error('Impossible de générer le document'); return; }
     const blob = await r.blob();
     window.open(URL.createObjectURL(blob), '_blank', 'noopener');
