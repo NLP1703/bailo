@@ -82,9 +82,11 @@ techniques (id de requête, route, compte) partent.
 
 ## 5. Notifications par e-mail (8.1)
 
-Le SMS est abandonné : les codes de vérification partent **par e-mail**, via l'API HTTPS de
-**Brevo** ou **Resend** (`EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM`). Railway bloque le
-SMTP sortant hors offre Pro, d'où le choix d'une API.
+Le SMS est abandonné : les codes de vérification partent **par e-mail**, depuis un compte
+**Gmail** via l'API Gmail (OAuth, portée `gmail.send` uniquement) — `EMAIL_PROVIDER=gmail`,
+`GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `EMAIL_FROM`. Le jeton
+s'obtient une fois avec `scripts/gmail-refresh-token.mjs`. Railway bloquant le SMTP sortant
+hors offre Pro, l'envoi passe par HTTPS. Brevo et Resend restent disponibles en alternative.
 
 | Parcours                | Avant                            | Après                                                                                                             |
 | ----------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |

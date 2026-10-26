@@ -53,7 +53,10 @@ const jwtSecret = (field: string) =>
 
 /** Chaîne optionnelle où une valeur vide (« VAR= » dans compose / Railway) vaut « absente ». */
 const optionalString = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), schema.optional());
+  z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    schema.optional(),
+  );
 
 const envSchema = z
   .object({
@@ -84,13 +87,17 @@ const envSchema = z
     OTP_MAX_ATTEMPTS: z.coerce.number().int().default(5),
     LOGIN_MAX_ATTEMPTS: z.coerce.number().int().default(5),
 
-    // E-mails transactionnels (codes de vérification) : console (dev) | brevo | resend.
+    // E-mails transactionnels (codes de vérification) : console (dev) | gmail | brevo | resend.
     // Envoi par API HTTPS : Railway bloque le SMTP sortant hors offre Pro.
-    EMAIL_PROVIDER: z.enum(['console', 'brevo', 'resend']).default('console'),
+    EMAIL_PROVIDER: z.enum(['console', 'gmail', 'brevo', 'resend']).default('console'),
     EMAIL_API_KEY: optionalString(z.string()),
     EMAIL_FROM: optionalString(z.string().email()), // adresse d'expéditeur vérifiée chez le fournisseur
     EMAIL_FROM_NAME: z.string().default('Bailo'),
     EMAIL_REPLY_TO: optionalString(z.string().email()),
+    // Gmail (API, OAuth) — obtenus avec scripts/gmail-refresh-token.mjs.
+    GMAIL_CLIENT_ID: optionalString(z.string()),
+    GMAIL_CLIENT_SECRET: optionalString(z.string()),
+    GMAIL_REFRESH_TOKEN: optionalString(z.string()),
 
     S3_ENDPOINT: z.string().default('http://localhost:9000'), // endpoint de SIGNATURE (navigateur)
     S3_INTERNAL_ENDPOINT: z.string().optional(), // endpoint joignable PAR LE SERVEUR (logo sur PDF)
@@ -126,7 +133,18 @@ const envSchema = z
         message: 'COOKIE_SAMESITE=none exige COOKIE_SECURE=true (HTTPS)',
       });
     }
-    if (env.EMAIL_PROVIDER !== 'console' && (!env.EMAIL_API_KEY || !env.EMAIL_FROM)) {
+    if (env.EMAIL_PROVIDER === 'gmail') {
+      const missing = (
+        ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN', 'EMAIL_FROM'] as const
+      ).filter((k) => !env[k]);
+      if (missing.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [missing[0]!],
+          message: `EMAIL_PROVIDER=gmail exige ${missing.join(', ')}`,
+        });
+      }
+    } else if (env.EMAIL_PROVIDER !== 'console' && (!env.EMAIL_API_KEY || !env.EMAIL_FROM)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['EMAIL_API_KEY'],
@@ -144,7 +162,9 @@ const envSchema = z
         });
       }
       // Chaque origine listée doit être HTTPS en production.
-      const origins = env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+      const origins = env.CORS_ORIGIN.split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
       if (origins.some((o) => !o.startsWith('https://'))) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

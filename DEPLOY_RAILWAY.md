@@ -149,34 +149,53 @@ Créer une base Redis gratuite sur Upstash, puis service **API** : `REDIS_URL=re
 (URL TLS fournie par Upstash) et `ENABLE_JOBS=true`. La maintenance tourne à 02:00 (Douala) :
 statuts, pénalités, relances du jour, prolongation des échéanciers.
 
-### E-mails — Brevo ou Resend (mot de passe oublié, signature de contrat)
+### E-mails — Gmail (mot de passe oublié, signature de contrat)
 
-Les codes de vérification partent par e-mail, via une API HTTPS : Railway bloque le SMTP
-sortant hors offre Pro. Deux fournisseurs au choix :
+Les codes de vérification partent depuis votre compte Gmail, via l'**API Gmail** (HTTPS).
+Le « mot de passe d'application » Gmail ne convient pas : il passe par SMTP, que Railway
+bloque hors offre Pro. Limite Gmail : environ 500 destinataires par jour.
 
-| | **Brevo** (recommandé pour démarrer) | **Resend** |
-|---|---|---|
-| Offre gratuite | 300 e-mails / jour | 3 000 e-mails / mois |
-| Expéditeur | une adresse vérifiée suffit | nom de domaine vérifié obligatoire |
+**1. Projet Google Cloud** (une seule fois, ~10 min)
 
-**Brevo** : créer un compte sur brevo.com → *Senders, Domains & Dedicated IPs* → ajouter et
-vérifier l'adresse d'expéditeur → *SMTP & API → API Keys* → créer une clé. Service **API** :
+1. https://console.cloud.google.com → sélecteur de projet → **Nouveau projet** → nom `Bailo`.
+2. **API et services → Bibliothèque** → cherchez « Gmail API » → **Activer**.
+3. **Google Auth Platform** (ou « Écran de consentement OAuth ») → **Commencer** :
+   nom de l'application `Bailo`, e-mail d'assistance = votre Gmail, audience **Externe**,
+   coordonnées = votre Gmail → **Créer**.
+4. **Accès aux données** → **Ajouter ou supprimer des champs d'application** → cochez
+   `.../auth/gmail.send` (ou collez `https://www.googleapis.com/auth/gmail.send`) → **Mettre à jour** → **Enregistrer**.
+5. **Audience** → **Publier l'application** → confirmer (statut « En production »).
+   ⚠️ Indispensable : en mode « Test », Google révoque l'autorisation au bout de 7 jours.
+6. **Clients** → **Créer un client** → type **Application de bureau** → nom `Bailo` →
+   **Créer**. Copiez l'**ID client** et le **Code secret du client**.
+
+**2. Jeton d'autorisation** (sur votre PC, dans le dossier BAILO)
+
+```bash
+node scripts/gmail-refresh-token.mjs <ID_CLIENT> <CODE_SECRET>
+```
+
+Le navigateur s'ouvre : connectez-vous avec le Gmail expéditeur. Google affiche
+« Google n'a pas validé cette application » (normal, l'application n'est utilisée que par
+vous) → **Paramètres avancés** → **Accéder à Bailo** → **Continuer**. Le terminal affiche
+`GMAIL_REFRESH_TOKEN=…`.
+
+**3. Variables du service API (Railway)**
 
 | Variable | Valeur |
 |---|---|
-| `EMAIL_PROVIDER` | `brevo` |
-| `EMAIL_API_KEY` | la clé API Brevo (`xkeysib-…`) |
-| `EMAIL_FROM` | l'adresse vérifiée |
+| `EMAIL_PROVIDER` | `gmail` |
+| `EMAIL_FROM` | l'adresse Gmail autorisée à l'étape 2 |
 | `EMAIL_FROM_NAME` | `Bailo` (ou le nom de votre activité) |
+| `GMAIL_CLIENT_ID` | l'ID client |
+| `GMAIL_CLIENT_SECRET` | le code secret |
+| `GMAIL_REFRESH_TOKEN` | le jeton de l'étape 2 |
 
-**Resend** (quand vous aurez un domaine) : vérifier le domaine (enregistrements DNS),
-créer une clé, puis `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY=re_…`, `EMAIL_FROM=noreply@votre-domaine`.
+L'API refuse de démarrer s'il en manque une. L'ancienne variable `SMS_PROVIDER` peut être
+supprimée (ignorée).
 
-L'API refuse de démarrer s'il manque la clé ou l'expéditeur. L'ancienne variable
-`SMS_PROVIDER` peut être supprimée (elle est ignorée).
-
-> Délivrabilité : une adresse Gmail comme expéditeur via un service tiers finit souvent
-> en courrier indésirable. Un domaine à vous (avec SPF/DKIM) règle le problème.
+**Alternatives** : `EMAIL_PROVIDER=brevo` (300/jour, adresse vérifiée) ou `resend`
+(domaine requis), avec `EMAIL_API_KEY` et `EMAIL_FROM`.
 
 ### Monitoring — Sentry (optionnel)
 
@@ -212,5 +231,6 @@ ajouter le domaine à `CORS_ORIGIN` et à la règle CORS du bucket R2, et mettre
 | `/api/...` renvoie la page d'accueil | proxy absent : vérifier `VITE_API_URL` (URL absolue) ou `API_UPSTREAM` sur `bailo-web` ; les logs du conteneur affichent `bailo: proxy /api -> …` |
 | Déconnexion à chaque rechargement | cookie `bailo_rt` non posé : `COOKIE_SECURE=true` exige HTTPS ; vérifier que le front appelle bien `/api/v1` relatif |
 | Upload refusé (CORS) côté navigateur | règle CORS du bucket R2 absente ou origine différente |
-| `Fournisseur e-mail "console" interdit en production` | brancher Brevo ou Resend (§6) |
-| Code jamais reçu | vérifier le dossier « courrier indésirable », puis les journaux Brevo/Resend ; l'utilisateur doit avoir une adresse e-mail sur son compte |
+| `Fournisseur e-mail "console" interdit en production` | brancher Gmail (§6) |
+| Code jamais reçu | dossier « courrier indésirable », puis le dossier **Envoyés** du Gmail expéditeur ; l'utilisateur doit avoir une adresse e-mail sur son compte |
+| `Gmail : autorisation refusée (… expired or revoked …)` | application Google restée en mode « Test » (7 jours) ou accès retiré : la publier, relancer `scripts/gmail-refresh-token.mjs`, remplacer `GMAIL_REFRESH_TOKEN` |

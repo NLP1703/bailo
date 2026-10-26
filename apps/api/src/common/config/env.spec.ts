@@ -43,6 +43,21 @@ describe('configuration (env)', () => {
     expect(env.EMAIL_FROM_NAME).toBe('Bailo');
   });
 
+  it('Gmail : exige les trois identifiants OAuth et l’adresse expéditrice', () => {
+    expect(() => load({ EMAIL_PROVIDER: 'gmail', EMAIL_FROM: 'moi@gmail.com' })).toThrow(
+      /GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN/,
+    );
+    const env = load({
+      EMAIL_PROVIDER: 'gmail',
+      EMAIL_FROM: 'moi@gmail.com',
+      GMAIL_CLIENT_ID: 'id',
+      GMAIL_CLIENT_SECRET: 'secret',
+      GMAIL_REFRESH_TOKEN: 'rt',
+    });
+    expect(env.EMAIL_PROVIDER).toBe('gmail');
+    expect(env.EMAIL_API_KEY).toBeUndefined(); // pas de clé d'API pour Gmail
+  });
+
   it('refuse SameSite=None sans cookie Secure', () => {
     expect(() => load({ COOKIE_SAMESITE: 'none', COOKIE_SECURE: 'false' })).toThrow(
       /COOKIE_SECURE/,

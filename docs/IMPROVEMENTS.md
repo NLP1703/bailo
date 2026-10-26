@@ -61,12 +61,12 @@ Détails : [`LOT8.md`](LOT8.md).
 - **2.1 N+1 maintenance** — lectures par lots, `updateMany` / `createMany` groupés.
 - **2.2 Pagination** — `page` / `pageSize` optionnels sur dépenses, maintenance, contrats, relances.
 - **6.4 Sentry** — API + web, inactif sans DSN, aucune donnée personnelle envoyée.
-- **8.1 Notifications** — codes de vérification **par e-mail** (Brevo ou Resend) au lieu du
+- **8.1 Notifications** — codes de vérification **par e-mail** (Gmail via API ; Brevo/Resend en option) au lieu du
   SMS : mot de passe oublié (nouvel écran), reset admin, signature de contrat.
 
 ## Reste à faire (hors code)
 
-- Brancher R2 (clés + CORS), Redis (Upstash) avec `ENABLE_JOBS=true`, Brevo (e-mails),
+- Brancher R2 (clés + CORS), Redis (Upstash) avec `ENABLE_JOBS=true`, Gmail (e-mails, voir §6),
   et éventuellement Sentry : variables à saisir sur Railway (voir `DEPLOY_RAILWAY.md` §6).
 - Planifier les sauvegardes Postgres (sauvegardes Railway ou `scripts/backup-postgres.sh`
   vers un stockage **privé** — les dumps contiennent des données de locataires).

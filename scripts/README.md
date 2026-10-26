@@ -28,3 +28,16 @@ chmod +x scripts/generate-secrets.sh
   utiliser Docker secrets, HashiCorp Vault, ou l'équivalent du fournisseur cloud.
 - Le validateur `env.ts` **rejette** tout secret < 32 caractères en production, ainsi que les
   patterns `change-me`, `dev-*`, `secret*`, `password*`.
+
+## `gmail-refresh-token.mjs`
+
+Obtient le `GMAIL_REFRESH_TOKEN` qui autorise l'API à envoyer les e-mails de Bailo depuis un
+compte Gmail (portée `gmail.send` : envoi seulement, aucune lecture). Sans dépendance :
+
+```bash
+node scripts/gmail-refresh-token.mjs <ID_CLIENT> <CODE_SECRET>
+```
+
+Prérequis (projet Google Cloud, API Gmail activée, application publiée, client « Application
+de bureau ») : voir `DEPLOY_RAILWAY.md` §6. Le jeton est un secret : à mettre uniquement
+dans les variables Railway, jamais dans le dépôt.
