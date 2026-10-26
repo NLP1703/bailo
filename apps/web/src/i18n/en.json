@@ -960,6 +960,26 @@
       "free": "free rooms, no time limit",
       "cost": "to open an account",
       "audit": "of actions logged in the audit trail"
+    },
+    "audience": {
+      "overline": "Who is it for?",
+      "title": "Built for the people who keep residences running",
+      "subtitle": "From owners to caretakers, everyone saves time — and tenants get clear receipts without installing anything.",
+      "owners": {
+        "title": "Owners and landlords",
+        "body": "Rent, advances and arrears across all your residences, tracked from your phone — no notebook, no calculator.",
+        "alt": "A landlord handing over the keys to a tenant"
+      },
+      "teams": {
+        "title": "Managers and caretakers",
+        "body": "Collect payments on site, even offline, and hand over an exact cash box every evening.",
+        "alt": "A manager checking payments on her phone"
+      },
+      "tenants": {
+        "title": "Students and tenants",
+        "body": "A QR-verifiable receipt for every payment and clear reminders — no account needed.",
+        "alt": "Three smiling students with backpacks"
+      }
     }
   },
   "privacy": {

@@ -69,6 +69,7 @@ export function Landing() {
     <PublicShell>
       <Hero />
       <TrustMarquee />
+      <Audience />
       <Features />
       <Stats />
       <BeforeAfter />
@@ -352,6 +353,71 @@ function TrustMarquee() {
           </span>
         ))}
       </Marquee>
+    </section>
+  );
+}
+
+// ─── POUR QUI ? (photos) ─────────────────────────────────────────────────────
+// Photos libres de droits (licence Pexels : usage commercial gratuit), hébergées
+// dans le site (public/images/landing) en WebP, deux tailles chacune :
+//  - owners   : https://www.pexels.com/photo/people-holding-a-key-7579192/
+//  - teams    : https://www.pexels.com/photo/photo-of-a-woman-using-her-phone-while-smiling-5711715/
+//  - tenants  : https://www.pexels.com/photo/happy-black-students-standing-in-light-studio-6238198/
+// Elles illustrent les profils d'utilisateurs : ce ne sont ni des clients ni des témoignages.
+
+const AUDIENCE: { key: 'owners' | 'teams' | 'tenants'; icon: ComponentType<IconProps> }[] = [
+  { key: 'owners', icon: BanknoteIcon },
+  { key: 'teams', icon: UsersIcon },
+  { key: 'tenants', icon: ReceiptIcon },
+];
+
+function Audience() {
+  const { t } = useTranslation();
+  const reduce = useReducedMotion();
+  return (
+    <section className="relative py-24 sm:py-32">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <SectionHeading
+          overline={t('public.audience.overline')}
+          title={t('public.audience.title')}
+          subtitle={t('public.audience.subtitle')}
+        />
+        <Stagger className="mt-16 grid gap-6 md:grid-cols-3">
+          {AUDIENCE.map(({ key, icon: Icon }) => (
+            <StaggerItem key={key}>
+              <motion.article
+                whileHover={reduce ? undefined : { y: -6 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="group h-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <img
+                    src={`/images/landing/${key}-640.webp`}
+                    srcSet={`/images/landing/${key}-640.webp 640w, /images/landing/${key}-960.webp 960w`}
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    width={640}
+                    height={480}
+                    loading="lazy"
+                    decoding="async"
+                    alt={t(`public.audience.${key}.alt`)}
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/35 to-transparent" />
+                  <span className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 text-brand shadow-sm backdrop-blur dark:bg-slate-900/90">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold tracking-tight">{t(`public.audience.${key}.title`)}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    {t(`public.audience.${key}.body`)}
+                  </p>
+                </div>
+              </motion.article>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      </div>
     </section>
   );
 }
@@ -684,6 +750,22 @@ function FinalCta() {
       <div className="mx-auto max-w-5xl px-5 sm:px-8">
         <FadeIn>
           <div className="relative overflow-hidden rounded-[2rem] bg-brand px-8 py-16 text-center text-white sm:px-16 sm:py-20">
+            {/* Résidence à Lagos (Pexels, licence gratuite) :
+                https://www.pexels.com/photo/modern-high-rise-building-in-lagos-nigeria-34557960/
+                Fondue dans la couleur de marque pour garder le texte lisible. */}
+            <img
+              src="/images/landing/residence-960.webp"
+              srcSet="/images/landing/residence-960.webp 960w, /images/landing/residence-1600.webp 1600w"
+              sizes="(min-width: 1024px) 1024px, 100vw"
+              width={960}
+              height={540}
+              loading="lazy"
+              decoding="async"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand/80 via-brand/70 to-teal-900/80" />
             <h2 className="relative mx-auto max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">{t('public.final.title')}</h2>
             <p className="relative mx-auto mt-4 max-w-xl text-white/70">{t('public.final.subtitle')}</p>
             <motion.div className="relative mt-9 inline-block" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>

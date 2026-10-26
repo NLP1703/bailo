@@ -965,6 +965,26 @@
       "free": "chambres gratuites, sans limite de durée",
       "cost": "pour ouvrir un compte",
       "audit": "des actions tracées dans le journal"
+    },
+    "audience": {
+      "overline": "Pour qui ?",
+      "title": "Pensé pour celles et ceux qui font vivre les cités",
+      "subtitle": "Du propriétaire au gardien, chacun gagne du temps — et les locataires reçoivent des reçus clairs, sans rien installer.",
+      "owners": {
+        "title": "Propriétaires et bailleurs",
+        "body": "Loyers, avances et impayés de toutes vos cités, suivis depuis votre téléphone — sans cahier ni calculatrice.",
+        "alt": "Remise des clés d'un logement entre un bailleur et une locataire"
+      },
+      "teams": {
+        "title": "Gérants et gardiens",
+        "body": "Encaissez sur place, même sans réseau, et remettez chaque soir une caisse juste, au franc près.",
+        "alt": "Une gérante suit les encaissements sur son téléphone"
+      },
+      "tenants": {
+        "title": "Étudiants et locataires",
+        "body": "Un reçu vérifiable par QR code à chaque paiement et des rappels clairs — sans compte à créer.",
+        "alt": "Trois étudiants souriants, sac au dos"
+      }
     }
   },
   "privacy": {
