@@ -128,6 +128,7 @@ export function NewEntry() {
   // Nouveau locataire — fiche complète
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [idDocType, setIdDocType] = useState<string>('CNI');
   const [idDocNumber, setIdDocNumber] = useState('');
@@ -222,7 +223,10 @@ export function NewEntry() {
   /** step 2 est "complet" si on a soit sélectionné un existant, soit saisi un nouveau avec un nom suffisant. */
   const step2Ready =
     (tenantMode === 'existing' && !!selectedTenant) ||
-    (tenantMode === 'new' && name.trim().length >= 2);
+    (tenantMode === 'new' &&
+      name.trim().length >= 2 &&
+      // Un e-mail mal saisi bloquerait l'envoi du code de signature : on le corrige ici.
+      (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())));
 
   // ─── Submission : tenant (si nouveau) + garant (si rempli) + occupation ──
   const submit = async () => {
@@ -240,6 +244,7 @@ export function NewEntry() {
           name: name.trim(),
           phone: phone || undefined,
           whatsapp: whatsapp || undefined,
+          email: email.trim() || undefined,
           idDocType: idDocType || undefined,
           idDocNumber: idDocNumber || undefined,
           occupation: occupation || undefined,
@@ -335,7 +340,7 @@ export function NewEntry() {
     setStep(1);
     setUnit(null);
     setTenantMode('new'); setSelectedTenant(null); setSearchQ(''); setSearchHits([]);
-    setName(''); setPhone(''); setWhatsapp('');
+    setName(''); setPhone(''); setEmail(''); setWhatsapp('');
     setIdDocType('CNI'); setIdDocNumber('');
     setOccupation(''); setEmergencyName(''); setEmergencyPhone(''); setNotes('');
     setPhotoKey(null); setIdDocKey(null);
@@ -409,6 +414,9 @@ export function NewEntry() {
   if (tenantMode === 'new' && phone && !phoneCM.test(phone.replace(/\s/g, ''))) {
     errors.phone = 'Téléphone invalide (ex. +237 6XX XXX XXX)';
   }
+  if (tenantMode === 'new' && email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    errors.email = 'E-mail invalide';
+  }
   if (tenantMode === 'new' && whatsapp && !phoneCM.test(whatsapp.replace(/\s/g, ''))) {
     errors.whatsapp = 'WhatsApp invalide';
   }
@@ -425,7 +433,7 @@ export function NewEntry() {
     errors.paymentRef = 'Référence recommandée pour les paiements non-espèces';
   }
   const hasBlockingError =
-    Object.keys(errors).filter((k) => k !== 'paymentRef' && k !== 'phone' && k !== 'whatsapp')
+    Object.keys(errors).filter((k) => k !== 'paymentRef' && k !== 'phone' && k !== 'whatsapp' && k !== 'email')
       .length > 0;
 
   const renderStep3 = () => (
@@ -686,6 +694,22 @@ export function NewEntry() {
                     <p className="mt-1 text-xs font-medium text-red-600">{errors.whatsapp}</p>
                   )}
                 </div>
+              </div>
+              <div>
+                <Label>E-mail (facultatif)</Label>
+                <Input
+                  type="email"
+                  placeholder="locataire@exemple.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={!!errors.email}
+                  className={errors.email ? 'ring-1 ring-red-300' : undefined}
+                />
+                {errors.email ? (
+                  <p className="mt-1 text-xs font-medium text-red-600">{errors.email}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-slate-500">Reçoit le code de signature du contrat.</p>
+                )}
               </div>
 
               <div className="flex gap-2">

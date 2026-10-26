@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Contract } from '@prisma/client';
-import { createHash } from 'node:crypto';
+import { createHash, randomInt } from 'node:crypto';
 import type {
   ContractListQuery,
   CreateContractDto,
@@ -12,7 +12,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { toDate } from '../../common/time/to-date';
-import { SMS_PROVIDER, type SmsProvider } from '../sms/sms.provider';
+import { MAIL_PROVIDER, type MailProvider } from '../mail/mail.provider';
+import { contractSignatureMail } from '../mail/mail.templates';
+import { AppException } from '../../common/http/app.exception';
 import { loadEnv } from '../../common/config/env';
 import { PDF_RENDERER, type PdfRenderer, type RenderedDocument } from '../pdf/pdf.renderer';
 import { listMaybePaginated } from '../../common/http/paginate';
@@ -22,7 +24,7 @@ export class ContractsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    @Inject(SMS_PROVIDER) private readonly sms: SmsProvider,
+    @Inject(MAIL_PROVIDER) private readonly mail: MailProvider,
     @Inject(PDF_RENDERER) private readonly pdf: PdfRenderer,
   ) {}
 
@@ -94,26 +96,37 @@ ${c.signedByTenant ? `<div class="sign">Signé électroniquement par le locatair
     });
   }
 
-  /** Envoie un code OTP par SMS/WhatsApp au locataire pour signer. */
-  async sendForSignature(ctx: RequestContext, id: string, dto: SendForSignatureDto): Promise<Contract> {
+  /**
+   * Envoie le code de signature **par e-mail** au locataire. Le code reste rattaché
+   * au téléphone du locataire s'il en a un (clé historique de `otp_code`).
+   */
+  async sendForSignature(ctx: RequestContext, id: string, _dto: SendForSignatureDto): Promise<Contract> {
     const c = await this.prisma.contract.findUnique({
       where: { id },
-      include: { tenant: { select: { phone: true, whatsapp: true, name: true } } },
+      include: { tenant: { select: { phone: true, email: true, name: true } } },
     });
     if (!c || c.accountId !== ctx.accountId) throw new NotFoundException();
-    const phone = dto.channel === 'WHATSAPP' ? c.tenant.whatsapp ?? c.tenant.phone : c.tenant.phone;
-    if (!phone) throw new BadRequestException('Numéro du locataire manquant');
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    if (!c.tenant.email) throw new AppException('TENANT_EMAIL_REQUIRED', 400);
+    const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
     const codeHash = createHash('sha256').update(code).digest('hex');
     const env = loadEnv();
     const expiresAt = new Date(Date.now() + env.OTP_TTL_SECONDS * 1000);
+    const account = await this.prisma.account.findUnique({
+      where: { id: ctx.accountId },
+      select: { name: true },
+    });
 
     const otp = await this.prisma.otpCode.create({
-      data: { phone, codeHash, purpose: 'CONTRACT_SIGN', expiresAt },
+      data: { phone: c.tenant.phone ?? c.tenant.email, codeHash, purpose: 'CONTRACT_SIGN', expiresAt },
     });
-    await this.sms.send(
-      phone,
-      `Bailo — Code de signature du contrat ${c.reference} : ${code}. Valable ${Math.round(env.OTP_TTL_SECONDS / 60)} min.`,
+    await this.mail.send(
+      contractSignatureMail(c.tenant.email, {
+        code,
+        reference: c.reference,
+        tenantName: c.tenant.name,
+        landlordName: account?.name ?? 'Votre bailleur',
+        ttlSeconds: env.OTP_TTL_SECONDS,
+      }),
     );
     return this.prisma.contract.update({
       where: { id },
@@ -121,22 +134,32 @@ ${c.signedByTenant ? `<div class="sign">Signé électroniquement par le locatair
     });
   }
 
-  /** Vérifie l'OTP, marque le contrat signé et clôt la transaction. */
+  /** Vérifie le code, marque le contrat signé et clôt la transaction. */
   async sign(ctx: RequestContext, id: string, dto: SignContractDto): Promise<Contract> {
+    const c = await this.prisma.contract.findUnique({ where: { id } });
+    if (!c || c.accountId !== ctx.accountId) throw new NotFoundException();
+    if (c.status !== 'PENDING_SIGNATURE') throw new BadRequestException('Contrat non en attente de signature');
+    if (!c.signatureOtpId) throw new BadRequestException('Aucune demande de signature en cours');
+    const otp = await this.prisma.otpCode.findUnique({ where: { id: c.signatureOtpId } });
+    if (!otp || otp.consumedAt || otp.expiresAt < new Date())
+      throw new BadRequestException('Code expiré ou déjà utilisé');
+    // Anti-force-brute : au-delà du nombre d'essais permis, il faut renvoyer un nouveau code.
+    if (otp.attempts >= loadEnv().OTP_MAX_ATTEMPTS)
+      throw new BadRequestException('Trop d’essais : renvoyez un nouveau code au locataire');
+    const codeHash = createHash('sha256').update(dto.otpCode).digest('hex');
+    if (codeHash !== otp.codeHash) {
+      // Hors transaction : l'essai raté doit rester compté malgré l'erreur levée.
+      await this.prisma.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
+      throw new BadRequestException('Code incorrect');
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      const c = await tx.contract.findUnique({ where: { id } });
-      if (!c || c.accountId !== ctx.accountId) throw new NotFoundException();
-      if (c.status !== 'PENDING_SIGNATURE') throw new BadRequestException('Contrat non en attente de signature');
-      if (!c.signatureOtpId) throw new BadRequestException('Aucune demande de signature en cours');
-      const otp = await tx.otpCode.findUnique({ where: { id: c.signatureOtpId } });
-      if (!otp || otp.consumedAt || otp.expiresAt < new Date())
-        throw new BadRequestException('Code expiré ou déjà utilisé');
-      const codeHash = createHash('sha256').update(dto.otpCode).digest('hex');
-      if (codeHash !== otp.codeHash) {
-        await tx.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
-        throw new BadRequestException('Code incorrect');
-      }
-      await tx.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
+      // Consommation atomique : un code ne signe qu'une fois, même en cas de double envoi.
+      const consumed = await tx.otpCode.updateMany({
+        where: { id: otp.id, consumedAt: null },
+        data: { consumedAt: new Date() },
+      });
+      if (consumed.count !== 1) throw new BadRequestException('Code expiré ou déjà utilisé');
       const signed = await tx.contract.update({
         where: { id },
         data: { status: 'SIGNED', signedByTenant: true, signedAt: new Date() },

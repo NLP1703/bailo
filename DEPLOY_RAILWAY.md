@@ -48,7 +48,7 @@ Dans **Variables**, ajouter :
 | `COOKIE_SECURE` | `true` |
 | `COOKIE_SAMESITE` | `lax` *(le front relaie `/api` sur son domaine : cookie first-party)* |
 | `ENABLE_JOBS` | `false` *(active-le quand tu auras branché Redis — Upstash recommandé)* |
-| `SMS_PROVIDER` | `console` *(⚠️ interdit en prod : OTP en échec tant qu'il n'est pas remplacé — voir §6)* |
+| `EMAIL_PROVIDER` | `console` *(⚠️ interdit en prod : codes e-mail en échec tant qu'il n'est pas remplacé — voir §6)* |
 | `PDF_ENGINE` | `html` *(ou `puppeteer` avec `INSTALL_CHROMIUM=true` — voir §6)* |
 | `S3_ENDPOINT` | `https://disabled.local` *(placeholder — stockage objet non branché)* |
 | `S3_INTERNAL_ENDPOINT` | `https://disabled.local` |
@@ -149,13 +149,34 @@ Créer une base Redis gratuite sur Upstash, puis service **API** : `REDIS_URL=re
 (URL TLS fournie par Upstash) et `ENABLE_JOBS=true`. La maintenance tourne à 02:00 (Douala) :
 statuts, pénalités, relances du jour, prolongation des échéanciers.
 
-### SMS — Africa's Talking (OTP, signature de contrat)
+### E-mails — Brevo ou Resend (mot de passe oublié, signature de contrat)
 
-1. Créer une application sur africastalking.com ; tester d'abord en bac à sable
-   (`SMS_USERNAME=sandbox`, clé du sandbox).
-2. **Vérifier la couverture Cameroun** (MTN / Orange) et demander un identifiant d'expéditeur.
-3. Service **API** : `SMS_PROVIDER=africastalking`, `SMS_USERNAME`, `SMS_API_KEY`,
-   `SMS_SENDER_ID` (optionnel). L'API refuse de démarrer s'il manque le nom ou la clé.
+Les codes de vérification partent par e-mail, via une API HTTPS : Railway bloque le SMTP
+sortant hors offre Pro. Deux fournisseurs au choix :
+
+| | **Brevo** (recommandé pour démarrer) | **Resend** |
+|---|---|---|
+| Offre gratuite | 300 e-mails / jour | 3 000 e-mails / mois |
+| Expéditeur | une adresse vérifiée suffit | nom de domaine vérifié obligatoire |
+
+**Brevo** : créer un compte sur brevo.com → *Senders, Domains & Dedicated IPs* → ajouter et
+vérifier l'adresse d'expéditeur → *SMTP & API → API Keys* → créer une clé. Service **API** :
+
+| Variable | Valeur |
+|---|---|
+| `EMAIL_PROVIDER` | `brevo` |
+| `EMAIL_API_KEY` | la clé API Brevo (`xkeysib-…`) |
+| `EMAIL_FROM` | l'adresse vérifiée |
+| `EMAIL_FROM_NAME` | `Bailo` (ou le nom de votre activité) |
+
+**Resend** (quand vous aurez un domaine) : vérifier le domaine (enregistrements DNS),
+créer une clé, puis `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY=re_…`, `EMAIL_FROM=noreply@votre-domaine`.
+
+L'API refuse de démarrer s'il manque la clé ou l'expéditeur. L'ancienne variable
+`SMS_PROVIDER` peut être supprimée (elle est ignorée).
+
+> Délivrabilité : une adresse Gmail comme expéditeur via un service tiers finit souvent
+> en courrier indésirable. Un domaine à vous (avec SPF/DKIM) règle le problème.
 
 ### Monitoring — Sentry (optionnel)
 
@@ -191,4 +212,5 @@ ajouter le domaine à `CORS_ORIGIN` et à la règle CORS du bucket R2, et mettre
 | `/api/...` renvoie la page d'accueil | proxy absent : vérifier `VITE_API_URL` (URL absolue) ou `API_UPSTREAM` sur `bailo-web` ; les logs du conteneur affichent `bailo: proxy /api -> …` |
 | Déconnexion à chaque rechargement | cookie `bailo_rt` non posé : `COOKIE_SECURE=true` exige HTTPS ; vérifier que le front appelle bien `/api/v1` relatif |
 | Upload refusé (CORS) côté navigateur | règle CORS du bucket R2 absente ou origine différente |
-| `Fournisseur SMS "console" interdit en production` | brancher Africa's Talking (§6) |
+| `Fournisseur e-mail "console" interdit en production` | brancher Brevo ou Resend (§6) |
+| Code jamais reçu | vérifier le dossier « courrier indésirable », puis les journaux Brevo/Resend ; l'utilisateur doit avoir une adresse e-mail sur son compte |

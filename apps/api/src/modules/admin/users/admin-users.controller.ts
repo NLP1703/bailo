@@ -79,7 +79,7 @@ export class AdminUsersController {
   async resetPassword(
     @CurrentUser() ctx: RequestContext,
     @Param('id', new ZodValidationPipe(uuid)) id: string,
-  ): Promise<{ phone: string }> {
+  ): Promise<{ email: string }> {
     return this.service.resetPassword(ctx, id);
   }
 

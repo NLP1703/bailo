@@ -493,6 +493,7 @@ model Tenant {
   name           String
   phone          String?
   whatsapp       String?
+  email          String? // reçoit le code de signature du contrat
   idDocType      String? // type de pièce d'identité
   idDocNumber    String?
   idDocKey       String? // clé objet S3 (chiffrée), jamais publique

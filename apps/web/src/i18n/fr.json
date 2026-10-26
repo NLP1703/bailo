@@ -239,7 +239,8 @@
     "submit": "Se connecter",
     "error": "Identifiant ou mot de passe incorrect",
     "needIdentifier": "Entrez votre email ou votre téléphone",
-    "noAccount": "Pas encore de compte ?"
+    "noAccount": "Pas encore de compte ?",
+    "forgot": "Mot de passe oublié ?"
   },
   "signup": {
     "title": "Créer un compte",
@@ -439,7 +440,12 @@
     "blockedTitle": "Impossible de supprimer {{name}}",
     "blockedMsg": "Ce locataire occupe encore un logement et des paiements ont été enregistrés. Enregistrez d'abord sa sortie (solde, caution) ; vous pourrez ensuite l'archiver.",
     "blockedOk": "Enregistrer la sortie",
-    "restored": "{{name}} a été restauré."
+    "restored": "{{name}} a été restauré.",
+    "noEmail": "Aucune adresse e-mail",
+    "addEmail": "Ajouter un e-mail",
+    "editEmail": "Modifier",
+    "emailSaved": "Adresse e-mail enregistrée",
+    "emailInvalid": "Adresse e-mail invalide"
   },
   "newEntry": {
     "title": "Nouvelle entrée",
@@ -726,7 +732,7 @@
     "resetBtn": "Réinitialiser le mot de passe",
     "revokeAllBtn": "Révoquer toutes les sessions",
     "saved": "Modifications enregistrées.",
-    "resetSent": "Un code OTP a été envoyé à {{phone}}.",
+    "resetSent": "Un code de réinitialisation a été envoyé à {{email}}.",
     "revokeOk": "{{n}} session(s) révoquée(s).",
     "invRevoked": "Invitation révoquée.",
     "inviteShareToken": "Jeton copié : partagez-le avec le nouvel utilisateur.",
@@ -735,7 +741,7 @@
     "sendInvite": "Envoyer l'invitation",
     "confirm": {
       "resetTitle": "Réinitialiser le mot de passe de {{name}} ?",
-      "resetMsg": "Un code OTP à 6 chiffres sera envoyé au {{phone}}. L'utilisateur l'utilisera à la connexion pour choisir un nouveau mot de passe.",
+      "resetMsg": "Un code à 6 chiffres sera envoyé à {{email}}. L'utilisateur choisira un nouveau mot de passe via « Mot de passe oublié ? » sur l'écran de connexion.",
       "revokeTitle": "Révoquer les sessions de {{name}} ?",
       "revokeMsg": "Toutes les sessions actives seront immédiatement coupées. L'utilisateur devra se reconnecter.",
       "revokeInvTitle": "Révoquer l'invitation de {{name}} ?",
@@ -745,7 +751,10 @@
       "lastOwner": "Il doit toujours rester au moins un propriétaire actif.",
       "selfRole": "Vous ne pouvez pas modifier votre propre rôle.",
       "selfDeactivate": "Vous ne pouvez pas vous désactiver vous-même."
-    }
+    },
+    "emailEdit": "Adresse e-mail",
+    "emailHint": "Reçoit les codes de réinitialisation du mot de passe.",
+    "resetNeedsEmail": "Ajoutez d'abord une adresse e-mail à cet utilisateur."
   },
   "theme": {
     "label": "Thème",
@@ -1018,5 +1027,25 @@
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "Ce locataire occupe encore un logement avec des paiements : enregistrez d'abord sa sortie.",
     "TENANT_NOT_FOUND": "Locataire introuvable."
+  },
+  "forgot": {
+    "title": "Mot de passe oublié",
+    "subtitle": "Saisissez l'adresse e-mail de votre compte : nous vous envoyons un code.",
+    "subtitleCode": "Saisissez le code reçu par e-mail et votre nouveau mot de passe.",
+    "sendCode": "Recevoir un code",
+    "sent": "Si un compte correspond à {{email}}, un code à 6 chiffres vient d'y être envoyé (pensez aux courriers indésirables).",
+    "code": "Code reçu par e-mail",
+    "newPassword": "Nouveau mot de passe",
+    "submit": "Changer le mot de passe",
+    "resend": "Renvoyer un code",
+    "backToLogin": "Retour à la connexion",
+    "needEmail": "Entrez votre adresse e-mail",
+    "codeFormat": "Le code compte 6 chiffres",
+    "passwordLength": "Au moins 8 caractères",
+    "badCode": "Code incorrect ou expiré : demandez-en un nouveau",
+    "invalid": "Vérifiez les informations saisies",
+    "rateLimited": "Trop de demandes : réessayez dans quelques minutes",
+    "error": "Une erreur est survenue, réessayez",
+    "done": "Mot de passe modifié : connectez-vous avec le nouveau."
   }
 }

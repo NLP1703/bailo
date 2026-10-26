@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { Layout } from './Layout';
 import { Login } from '../screens/Login';
 import { Signup } from '../screens/Signup';
+import { ForgotPassword } from '../screens/ForgotPassword';
 import { Onboarding } from '../screens/Onboarding';
 import { Dashboard } from '../screens/Dashboard';
 import { Rooms } from '../screens/Rooms';
@@ -72,6 +73,7 @@ export function App() {
         <Route path="/privacy" element={<Suspense fallback={publicFallback}><Privacy /></Suspense>} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<Suspense fallback={publicFallback}><Landing /></Suspense>} />
       </Routes>
     );

@@ -24,6 +24,7 @@ import { AuditService } from '../../../common/audit/audit.service';
 import { OtpService } from '../../auth/otp.service';
 import { TokenService } from '../../auth/token.service';
 import type { RequestContext } from '../../../common/tenancy/request-context';
+import { AppException } from '../../../common/http/app.exception';
 
 /**
  * Gestion de l'équipe côté Admin (OWNER uniquement, @Roles au contrôleur).
@@ -212,11 +213,12 @@ export class AdminUsersService {
 
   // ─── Réinitialisation de mot de passe (envoi OTP) ─────────────────────────
 
-  async resetPassword(ctx: RequestContext, id: string): Promise<{ phone: string }> {
+  async resetPassword(ctx: RequestContext, id: string): Promise<{ email: string }> {
     const user = await this.prisma.user.findFirst({ where: { id, accountId: ctx.accountId } });
     if (!user) throw this.notFound();
-    // Le même OTP PASSWORD_RESET que la route publique /auth/reset-password.
-    await this.otp.request(user.phone, 'PASSWORD_RESET');
+    if (!user.email) throw new AppException('USER_EMAIL_REQUIRED', 400);
+    // Le même code PASSWORD_RESET que « Mot de passe oublié », envoyé à l'e-mail de l'utilisateur.
+    await this.otp.request({ phone: user.phone, email: user.email }, 'PASSWORD_RESET');
     await this.audit.log(this.prisma, {
       accountId: ctx.accountId,
       actorId: ctx.userId,
@@ -225,7 +227,7 @@ export class AdminUsersService {
       action: 'UPDATE',
       reason: 'ADMIN_RESET_PASSWORD_OTP_SENT',
     });
-    return { phone: user.phone };
+    return { email: user.email };
   }
 
   // ─── Révocation forcée de toutes les sessions ─────────────────────────────
@@ -306,17 +308,9 @@ export class AdminUsersService {
       return inv;
     });
 
-    // Envoi SMS best-effort : si l'opérateur SMS n'est pas branché (dev),
-    // l'OWNER verra le jeton dans la réponse pour partage manuel.
-    try {
-      // Pas de dépendance circulaire : on n'utilise pas directement SmsProvider
-      // ici, mais on passe par OtpService.request n'est pas pertinent (c'est un
-      // code à 6 chiffres). Le SMS d'invitation est envoyé plus tard par un
-      // module Notifications (Lot 6) : pour l'instant, le jeton + URL sont dans
-      // la réponse de création — l'OWNER partage par le canal qu'il veut.
-    } catch {
-      /* ignoré volontairement */
-    }
+    // Pas d'envoi automatique : il n'existe pas encore d'écran d'acceptation
+    // (/invite/:token). Le jeton et l'URL sont renvoyés à l'OWNER, qui les partage
+    // par le canal de son choix.
 
     const view = this.toInvitationView(invitation);
     view.token = rawToken;

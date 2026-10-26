@@ -7,18 +7,25 @@ import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { HttpAdapterHost } from '@nestjs/core';
 import { PrismaExceptionFilter } from '../../src/common/http/prisma-exception.filter';
 import { AllExceptionsFilter } from '../../src/common/monitoring/all-exceptions.filter';
-import { SMS_PROVIDER, type SmsProvider } from '../../src/modules/sms/sms.provider';
+import {
+  MAIL_PROVIDER,
+  type MailMessage,
+  type MailProvider,
+} from '../../src/modules/mail/mail.provider';
 
-/** Fournisseur SMS de test : capture les messages pour extraire l'OTP. */
-export class CapturingSmsProvider implements SmsProvider {
-  readonly messages: { phone: string; message: string }[] = [];
-  async send(phone: string, message: string): Promise<void> {
-    this.messages.push({ phone, message });
+/** Fournisseur e-mail de test : capture les messages pour extraire les codes. */
+export class CapturingMailProvider implements MailProvider {
+  readonly messages: MailMessage[] = [];
+  async send(message: MailMessage): Promise<void> {
+    this.messages.push(message);
   }
-  lastCode(phone: string): string {
-    const entry = [...this.messages].reverse().find((m) => m.phone === phone);
-    const match = entry ? /(\d{6})/.exec(entry.message) : null;
-    if (!match) throw new Error(`Aucun OTP capturé pour ${phone}`);
+  sentTo(email: string): MailMessage[] {
+    return this.messages.filter((m) => m.to === email);
+  }
+  lastCode(email: string): string {
+    const entry = [...this.messages].reverse().find((m) => m.to === email);
+    const match = entry ? /Code : (\d{6})/.exec(entry.text) : null;
+    if (!match) throw new Error(`Aucun code capturé pour ${email}`);
     return match[1]!;
   }
 }
@@ -26,7 +33,7 @@ export class CapturingSmsProvider implements SmsProvider {
 export interface TestContext {
   app: INestApplication;
   prisma: PrismaService;
-  sms: CapturingSmsProvider;
+  mail: CapturingMailProvider;
 }
 
 /** Renseigne des variables d'env par défaut si absentes (exécution hors docker). */
@@ -36,16 +43,15 @@ function ensureEnv(): void {
   process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
   process.env.JWT_ACCESS_TTL ??= '15m';
   process.env.JWT_REFRESH_TTL ??= '30d';
-  process.env.DATABASE_URL ??=
-    'postgresql://bailo:bailo@localhost:5432/bailo_test?schema=public';
+  process.env.DATABASE_URL ??= 'postgresql://bailo:bailo@localhost:5432/bailo_test?schema=public';
 }
 
 export async function createTestApp(): Promise<TestContext> {
   ensureEnv();
-  const sms = new CapturingSmsProvider();
+  const mail = new CapturingMailProvider();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-    .overrideProvider(SMS_PROVIDER)
-    .useValue(sms)
+    .overrideProvider(MAIL_PROVIDER)
+    .useValue(mail)
     .compile();
 
   const app = moduleRef.createNestApplication();
@@ -58,7 +64,7 @@ export async function createTestApp(): Promise<TestContext> {
   await app.init();
 
   const prisma = app.get(PrismaService);
-  return { app, prisma, sms };
+  return { app, prisma, mail };
 }
 
 /** Vide toutes les tables (ordre respectant les clés étrangères). */

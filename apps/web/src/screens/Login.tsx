@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import type { LoginDto } from '@bailo/shared';
 import { useAuth } from '../lib/auth';
 import {
@@ -22,6 +22,10 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // Retour de « Mot de passe oublié » : on confirme que le changement a réussi.
+  const passwordReset = Boolean(
+    (useLocation().state as { passwordReset?: boolean } | null)?.passwordReset,
+  );
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,6 +64,11 @@ export function Login() {
       }
     >
       <form onSubmit={submit} className="space-y-4">
+        {passwordReset && (
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status">
+            {t('forgot.done')}
+          </p>
+        )}
         <Field
           id="email"
           type="email"
@@ -90,6 +99,11 @@ export function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className="-mt-2 text-right">
+          <Link to="/forgot-password" className="text-sm font-medium text-brand hover:underline">
+            {t('login.forgot')}
+          </Link>
+        </div>
         <ErrorBanner message={error} />
         <PrimaryButton busy={busy}>{t('login.submit')}</PrimaryButton>
       </form>

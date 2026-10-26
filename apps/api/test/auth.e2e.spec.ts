@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createTestApp, resetDb, type TestContext } from './utils/test-app';
+import { RateLimiterService } from '../src/common/redis/rate-limiter.service';
 
 // Nécessite une base Postgres joignable (docker compose up postgres).
 const PHONE = '690111222';
@@ -20,6 +21,10 @@ describe('Auth (e2e)', () => {
   });
   beforeEach(async () => {
     await resetDb(ctx.prisma);
+    // Compteurs anti-abus (Redis ou mémoire) : remis à zéro entre deux tests.
+    const limiter = ctx.app.get(RateLimiterService);
+    await limiter.reset(`otp:${EMAIL}`);
+    await limiter.reset(`otp:${PHONE}`);
   });
 
   async function signup(): Promise<{ accessToken: string }> {
@@ -190,22 +195,52 @@ describe('Auth (e2e)', () => {
       .expect(401);
   });
 
-  it('réinitialisation du mot de passe par OTP', async () => {
+  it('mot de passe oublié : code envoyé par e-mail, puis nouveau mot de passe', async () => {
     await signup();
-    await api()
-      .post('/api/v1/auth/otp')
-      .send({ phone: PHONE, purpose: 'PASSWORD_RESET' })
-      .expect(204);
-    const otp = ctx.sms.lastCode(PHONE);
+    await api().post('/api/v1/auth/otp').send({ email: EMAIL }).expect(204);
+    const mails = ctx.mail.sentTo(EMAIL);
+    expect(mails).toHaveLength(1);
+    expect(mails[0]!.subject).toMatch(/réinitialisation/);
+    const otp = ctx.mail.lastCode(EMAIL);
     await api()
       .post('/api/v1/auth/password-reset')
-      .send({ phone: PHONE, otp, newPassword: 'nouveaupass9' })
+      .send({ email: EMAIL, otp, newPassword: 'nouveaupass9' })
       .expect(204);
     await api().post('/api/v1/auth/login').send({ phone: PHONE, password: PASSWORD }).expect(401);
     await api()
       .post('/api/v1/auth/login')
       .send({ phone: PHONE, password: 'nouveaupass9' })
       .expect(200);
+    // Le code est à usage unique.
+    await api()
+      .post('/api/v1/auth/password-reset')
+      .send({ email: EMAIL, otp, newPassword: 'encoreautre9' })
+      .expect(401);
+  });
+
+  it('mot de passe oublié par téléphone : le code part à l’e-mail du compte', async () => {
+    await signup();
+    await api().post('/api/v1/auth/otp').send({ phone: PHONE }).expect(204);
+    const otp = ctx.mail.lastCode(EMAIL);
+    await api()
+      .post('/api/v1/auth/password-reset')
+      .send({ phone: PHONE, otp, newPassword: 'nouveaupass9' })
+      .expect(204);
+  });
+
+  it('compte inconnu : même réponse, aucun e-mail (pas d’énumération)', async () => {
+    const before = ctx.mail.messages.length;
+    await api().post('/api/v1/auth/otp').send({ email: 'inconnu@nulle-part.cm' }).expect(204);
+    expect(ctx.mail.messages.length).toBe(before);
+  });
+
+  it('limite les demandes de code (3 par quart d’heure)', async () => {
+    await signup();
+    for (let i = 0; i < 3; i += 1) {
+      await api().post('/api/v1/auth/otp').send({ email: EMAIL }).expect(204);
+    }
+    const res = await api().post('/api/v1/auth/otp').send({ email: EMAIL }).expect(429);
+    expect(res.body.code).toBe('OTP_RATE_LIMITED');
   });
 
   it('une route protégée sans token renvoie 401', async () => {

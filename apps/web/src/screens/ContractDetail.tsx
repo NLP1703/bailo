@@ -42,8 +42,8 @@ export function ContractDetail() {
   const send = async () => {
     setBusy(true);
     try {
-      await api.post(`/contracts/${c.id}/send-for-signature`, { channel: 'SMS' });
-      toast.success('Code de signature envoyé au locataire');
+      await api.post(`/contracts/${c.id}/send-for-signature`, { channel: 'EMAIL' });
+      toast.success('Code de signature envoyé par e-mail au locataire');
       reload();
     } catch (e) { toast.error(e instanceof ApiError ? e.message : 'Erreur'); }
     finally { setBusy(false); }
@@ -121,10 +121,10 @@ export function ContractDetail() {
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
             <h3 className="text-base font-semibold">Signature électronique</h3>
             <p className="mt-1 text-sm text-slate-600">
-              Saisissez le code à 6 chiffres reçu par SMS, et le nom tapé par le locataire pour mémoire.
+              Saisissez le code à 6 chiffres reçu par e-mail par le locataire, et le nom tapé par lui pour mémoire.
             </p>
             <label className="mt-3 block text-sm">
-              <span>Code OTP</span>
+              <span>Code reçu par e-mail</span>
               <input value={otp} onChange={(e) => setOtp(e.target.value)} inputMode="numeric" autoFocus
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono tracking-widest" />
             </label>

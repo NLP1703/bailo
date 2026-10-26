@@ -1,11 +1,21 @@
 import { z } from 'zod';
 import { phone, email, password, otpCode } from './common';
-import { OTP_PURPOSES } from '../enums';
 
-export const requestOtpDto = z.object({
-  phone,
-  purpose: z.enum(OTP_PURPOSES),
-});
+/**
+ * Demande d'un code de vérification, envoyé **par e-mail**. Seul usage public :
+ * le mot de passe oublié (l'inscription se fait sans code). L'utilisateur se
+ * désigne par son e-mail ou son téléphone ; le code part à l'e-mail du compte.
+ */
+export const requestOtpDto = z
+  .object({
+    email: email.optional(),
+    phone: phone.optional(),
+    purpose: z.enum(['PASSWORD_RESET']).default('PASSWORD_RESET'),
+  })
+  .refine((dto) => Boolean(dto.email) || Boolean(dto.phone), {
+    message: 'Email ou téléphone requis',
+    path: ['email'],
+  });
 export type RequestOtpDto = z.infer<typeof requestOtpDto>;
 
 export const signupDto = z.object({
@@ -43,11 +53,17 @@ export const refreshDto = z
   .default({});
 export type RefreshDto = z.infer<typeof refreshDto>;
 
-export const passwordResetDto = z.object({
-  phone,
-  otp: otpCode,
-  newPassword: password,
-});
+export const passwordResetDto = z
+  .object({
+    email: email.optional(),
+    phone: phone.optional(),
+    otp: otpCode,
+    newPassword: password,
+  })
+  .refine((dto) => Boolean(dto.email) || Boolean(dto.phone), {
+    message: 'Email ou téléphone requis',
+    path: ['email'],
+  });
 export type PasswordResetDto = z.infer<typeof passwordResetDto>;
 
 export const logoutDto = z

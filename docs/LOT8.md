@@ -1,7 +1,7 @@
 # Bailo — Lot 8 · Durcissement production
 
 Solde de la « Phase 2+ » de [`IMPROVEMENTS.md`](IMPROVEMENTS.md) : sécurité des sessions,
-performance de la maintenance quotidienne, pagination, monitoring, SMS réel, et préparation
+performance de la maintenance quotidienne, pagination, monitoring, notifications par e-mail, et préparation
 de l'infrastructure (stockage R2, PDF Chromium).
 
 ## 1. Sessions en cookie HttpOnly (1.2)
@@ -80,17 +80,30 @@ techniques (id de requête, route, compte) partent.
 - **Web** : `VITE_SENTRY_DSN` (variable de build). SDK chargé à la demande : sans DSN il n'est
   jamais téléchargé (bundle inchangé à 0,3 Ko près).
 
-## 5. SMS réel — Africa's Talking (8.1)
+## 5. Notifications par e-mail (8.1)
 
-`SMS_PROVIDER=africastalking` + `SMS_USERNAME`, `SMS_API_KEY`, `SMS_SENDER_ID` (optionnel).
-`SMS_USERNAME=sandbox` → bac à sable. Numéros nationaux camerounais normalisés en `+237…`.
-Un refus (solde, numéro invalide…) lève une erreur explicite ; le contenu (OTP) n'est jamais
-journalisé, les numéros sont masqués.
+Le SMS est abandonné : les codes de vérification partent **par e-mail**, via l'API HTTPS de
+**Brevo** ou **Resend** (`EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM`). Railway bloque le
+SMTP sortant hors offre Pro, d'où le choix d'une API.
 
-> ⚠️ Le fournisseur `console` est **interdit en production** : tant qu'il est actif sur
-> Railway, la réinitialisation de mot de passe et la signature de contrat par OTP échouent.
-> Vérifier la couverture Cameroun (MTN / Orange) et l'identifiant d'expéditeur auprès
-> d'Africa's Talking avant de basculer.
+| Parcours                | Avant                            | Après                                                                                                             |
+| ----------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Mot de passe oublié     | Route API seule, **aucun écran** | Écran `/forgot-password` (lien « Mot de passe oublié ? » sur la connexion) : e-mail → code → nouveau mot de passe |
+| Reset lancé par l'admin | Code par SMS au téléphone        | Code à l'e-mail de l'utilisateur ; bouton grisé sans e-mail ; e-mail modifiable dans la fiche                     |
+| Signature de contrat    | Code par SMS au locataire        | Code par e-mail au locataire ; nouveau champ **e-mail du locataire** (saisie à l'entrée, ajout sur la fiche)      |
+
+- `POST /auth/otp` accepte `{ email }` ou `{ phone }` : même réponse que le compte existe ou
+  non (pas d'énumération), **3 demandes par quart d'heure** et par identifiant.
+- `POST /auth/password-reset` accepte `{ email | phone, otp, newPassword }`.
+- **Faille corrigée** : à la signature d'un contrat, le compteur d'essais ratés était
+  incrémenté dans une transaction ensuite annulée — il ne montait jamais, le code pouvait être
+  tenté sans limite. Désormais compté hors transaction, blocage après `OTP_MAX_ATTEMPTS`,
+  consommation atomique du code.
+- Gabarits HTML sobres (`apps/api/src/modules/mail/mail.templates.ts`), valeurs échappées ;
+  journaux avec adresses masquées, jamais le code.
+- Migration `0016_tenant_email`. Module SMS supprimé.
+- Les **invitations** ne sont pas envoyées par e-mail : il n'existe pas encore d'écran
+  d'acceptation (`/invite/:token`), le lien mènerait nulle part.
 
 ## 6. Infrastructure
 
@@ -105,8 +118,9 @@ journalisé, les numéros sont masqués.
 
 ## Vérifications
 
-- Tests unitaires : filtre de monitoring, fournisseur SMS, validation de l'environnement.
+- Tests unitaires : filtre de monitoring, fournisseurs et gabarits e-mail, validation de l'environnement.
 - Tests e2e : auth en cookie (pose, rotation, rejeu refusé, déconnexion, migration, client
-  natif), pagination, maintenance groupée.
+  natif), mot de passe oublié par e-mail, reset admin, signature de contrat (limite d'essais),
+  pagination, maintenance groupée.
 - Proxy nginx testé contre un serveur factice (chemin, query, cookie et `Set-Cookie`
   relayés ; pas de proxy sans cible).

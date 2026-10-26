@@ -234,7 +234,8 @@
     "submit": "Sign in",
     "error": "Wrong credentials or password",
     "needIdentifier": "Enter your email or phone",
-    "noAccount": "No account yet?"
+    "noAccount": "No account yet?",
+    "forgot": "Forgot password?"
   },
   "signup": {
     "title": "Create an account",
@@ -434,7 +435,12 @@
     "blockedTitle": "{{name}} can't be deleted",
     "blockedMsg": "This tenant still occupies a unit and payments have been recorded. Record their move-out first (balance, deposit); you can archive them afterwards.",
     "blockedOk": "Record move-out",
-    "restored": "{{name}} has been restored."
+    "restored": "{{name}} has been restored.",
+    "noEmail": "No email address",
+    "addEmail": "Add an email",
+    "editEmail": "Edit",
+    "emailSaved": "Email address saved",
+    "emailInvalid": "Invalid email address"
   },
   "newEntry": {
     "title": "New entry",
@@ -721,7 +727,7 @@
     "resetBtn": "Reset password",
     "revokeAllBtn": "Revoke all sessions",
     "saved": "Changes saved.",
-    "resetSent": "An OTP code was sent to {{phone}}.",
+    "resetSent": "A reset code was sent to {{email}}.",
     "revokeOk": "{{n}} session(s) revoked.",
     "invRevoked": "Invitation revoked.",
     "inviteShareToken": "Token copied: share it with the new user.",
@@ -730,7 +736,7 @@
     "sendInvite": "Send invitation",
     "confirm": {
       "resetTitle": "Reset password for {{name}}?",
-      "resetMsg": "A 6-digit OTP code will be sent to {{phone}}. The user will use it at sign-in to choose a new password.",
+      "resetMsg": "A 6-digit code will be sent to {{email}}. The user will pick a new password via “Forgot password?” on the sign-in screen.",
       "revokeTitle": "Revoke sessions for {{name}}?",
       "revokeMsg": "All active sessions will be cut immediately. The user will have to sign in again.",
       "revokeInvTitle": "Revoke invitation for {{name}}?",
@@ -740,7 +746,10 @@
       "lastOwner": "There must always be at least one active owner.",
       "selfRole": "You cannot change your own role.",
       "selfDeactivate": "You cannot deactivate yourself."
-    }
+    },
+    "emailEdit": "Email address",
+    "emailHint": "Receives password reset codes.",
+    "resetNeedsEmail": "Add an email address to this user first."
   },
   "theme": {
     "label": "Theme",
@@ -1013,5 +1022,25 @@
   "errors": {
     "TENANT_HAS_ACTIVE_OCCUPANCY": "This tenant still occupies a unit with payments: record their move-out first.",
     "TENANT_NOT_FOUND": "Tenant not found."
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "subtitle": "Enter your account's email address and we'll send you a code.",
+    "subtitleCode": "Enter the code you received by email and your new password.",
+    "sendCode": "Get a code",
+    "sent": "If an account matches {{email}}, a 6-digit code has just been sent there (check your spam folder).",
+    "code": "Code received by email",
+    "newPassword": "New password",
+    "submit": "Change password",
+    "resend": "Send a new code",
+    "backToLogin": "Back to sign in",
+    "needEmail": "Enter your email address",
+    "codeFormat": "The code has 6 digits",
+    "passwordLength": "At least 8 characters",
+    "badCode": "Wrong or expired code: request a new one",
+    "invalid": "Check the information entered",
+    "rateLimited": "Too many requests: try again in a few minutes",
+    "error": "Something went wrong, please try again",
+    "done": "Password changed: sign in with your new one."
   }
 }

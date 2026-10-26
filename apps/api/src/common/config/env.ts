@@ -84,11 +84,13 @@ const envSchema = z
     OTP_MAX_ATTEMPTS: z.coerce.number().int().default(5),
     LOGIN_MAX_ATTEMPTS: z.coerce.number().int().default(5),
 
-    // Fournisseur SMS (OTP, signature de contrat) : console (dev) | africastalking (8.1).
-    SMS_PROVIDER: z.enum(['console', 'africastalking']).default('console'),
-    SMS_USERNAME: optionalString(z.string()), // Africa's Talking : nom d'application (« sandbox » = bac à sable)
-    SMS_API_KEY: optionalString(z.string()),
-    SMS_SENDER_ID: optionalString(z.string()), // identifiant d'expéditeur validé (optionnel)
+    // E-mails transactionnels (codes de vérification) : console (dev) | brevo | resend.
+    // Envoi par API HTTPS : Railway bloque le SMTP sortant hors offre Pro.
+    EMAIL_PROVIDER: z.enum(['console', 'brevo', 'resend']).default('console'),
+    EMAIL_API_KEY: optionalString(z.string()),
+    EMAIL_FROM: optionalString(z.string().email()), // adresse d'expéditeur vérifiée chez le fournisseur
+    EMAIL_FROM_NAME: z.string().default('Bailo'),
+    EMAIL_REPLY_TO: optionalString(z.string().email()),
 
     S3_ENDPOINT: z.string().default('http://localhost:9000'), // endpoint de SIGNATURE (navigateur)
     S3_INTERNAL_ENDPOINT: z.string().optional(), // endpoint joignable PAR LE SERVEUR (logo sur PDF)
@@ -124,11 +126,11 @@ const envSchema = z
         message: 'COOKIE_SAMESITE=none exige COOKIE_SECURE=true (HTTPS)',
       });
     }
-    if (env.SMS_PROVIDER === 'africastalking' && (!env.SMS_USERNAME || !env.SMS_API_KEY)) {
+    if (env.EMAIL_PROVIDER !== 'console' && (!env.EMAIL_API_KEY || !env.EMAIL_FROM)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['SMS_API_KEY'],
-        message: "SMS_PROVIDER=africastalking exige SMS_USERNAME et SMS_API_KEY",
+        path: ['EMAIL_API_KEY'],
+        message: `EMAIL_PROVIDER=${env.EMAIL_PROVIDER} exige EMAIL_API_KEY et EMAIL_FROM`,
       });
     }
     // En production : refuse les identifiants S3 par défaut (minioadmin) + exige HTTPS pour CORS.

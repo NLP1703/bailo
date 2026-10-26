@@ -81,8 +81,8 @@ corepack pnpm --filter @bailo/api test:e2e    # e2e (nécessite Postgres)
 ## Variables d'environnement
 
 Toutes documentées dans [`.env.example`](.env.example) : base, Redis/jobs, JWT/OTP,
-S3/MinIO/R2, SMS, Sentry, PDF/reçus, front (`VITE_*`). En production, renseigner des
-secrets forts et un vrai fournisseur SMS (`SMS_PROVIDER=africastalking`).
+S3/MinIO/R2, e-mails, Sentry, PDF/reçus, front (`VITE_*`). En production, renseigner des
+secrets forts et un vrai fournisseur d'e-mails (`EMAIL_PROVIDER=brevo` ou `resend`).
 
 ## Contraintes réglementaires
 

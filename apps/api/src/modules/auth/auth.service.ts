@@ -16,6 +16,9 @@ import { TokenService } from './token.service';
 
 /** Fenêtre glissante d'anti-force-brute sur la connexion (par téléphone/email). */
 const LOGIN_WINDOW_SEC = 15 * 60;
+/** Demandes de code « mot de passe oublié » : 3 par identifiant et par quart d'heure. */
+const OTP_REQUEST_MAX = 3;
+const OTP_REQUEST_WINDOW_SEC = 15 * 60;
 
 @Injectable()
 export class AuthService {
@@ -27,14 +30,34 @@ export class AuthService {
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
 
+  /**
+   * Mot de passe oublié : envoie un code à l'e-mail du compte désigné par son
+   * e-mail ou son téléphone. La réponse est identique que le compte existe ou non
+   * (pas d'énumération des comptes) ; sans adresse e-mail connue, rien n'est envoyé.
+   */
   async requestOtp(dto: RequestOtpDto): Promise<void> {
-    if (dto.purpose === 'SIGNUP') {
-      const existing = await this.prisma.account.findUnique({ where: { phone: dto.phone } });
-      if (existing) {
-        throw AppException.conflict('AUTH_PHONE_ALREADY_USED');
-      }
+    const identifier = dto.email ?? dto.phone!;
+    const limit = await this.rateLimiter.hit(
+      `otp:${identifier}`,
+      OTP_REQUEST_MAX,
+      OTP_REQUEST_WINDOW_SEC,
+    );
+    if (!limit.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((limit.resetAtMs - Date.now()) / 1000));
+      throw AppException.tooMany('OTP_RATE_LIMITED', retryAfter);
     }
-    await this.otp.request(dto.phone, dto.purpose);
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        active: true,
+        email: dto.email ? dto.email : { not: null },
+        ...(dto.phone && !dto.email ? { phone: dto.phone } : {}),
+      },
+      orderBy: { lastLoginAt: { sort: 'desc', nulls: 'last' } },
+      select: { phone: true, email: true },
+    });
+    if (!user?.email) return;
+    await this.otp.request({ phone: user.phone, email: user.email }, dto.purpose);
   }
 
   /** Crée le compte + son propriétaire (inscription directe, sans OTP). */
@@ -115,12 +138,17 @@ export class AuthService {
   }
 
   async resetPassword(dto: PasswordResetDto): Promise<void> {
-    const ok = await this.otp.verifyAndConsume(dto.phone, 'PASSWORD_RESET', dto.otp);
-    if (!ok) {
+    // Le code est rattaché au téléphone du compte : on le retrouve depuis l'e-mail si besoin.
+    const phone = dto.email
+      ? (await this.prisma.user.findUnique({ where: { email: dto.email }, select: { phone: true } }))
+          ?.phone
+      : dto.phone;
+    const ok = phone ? await this.otp.verifyAndConsume(phone, 'PASSWORD_RESET', dto.otp) : false;
+    if (!ok || !phone) {
       throw new AppException('AUTH_OTP_INVALID', 401);
     }
     const passwordHash = await argon2.hash(dto.newPassword);
-    const users = await this.prisma.user.findMany({ where: { phone: dto.phone } });
+    const users = await this.prisma.user.findMany({ where: { phone } });
     for (const user of users) {
       await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
       await this.tokens.revokeAllForUser(user.id);

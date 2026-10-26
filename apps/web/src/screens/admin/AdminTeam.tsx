@@ -122,13 +122,16 @@ export function AdminTeam() {
   async function resetPassword(target: AdminUserView) {
     const ok = await confirm({
       title: t('adminTeam.confirm.resetTitle', { name: target.name }),
-      message: t('adminTeam.confirm.resetMsg', { phone: target.phone }),
+      message: t('adminTeam.confirm.resetMsg', { email: target.email ?? '' }),
       confirmLabel: t('adminTeam.resetBtn'),
     });
     if (!ok) return;
     try {
-      await api.post<{ phone: string }>(`/admin/users/${target.id}/reset-password`, {});
-      toast.success(t('adminTeam.resetSent', { phone: target.phone }));
+      const { email } = await api.post<{ email: string }>(
+        `/admin/users/${target.id}/reset-password`,
+        {},
+      );
+      toast.success(t('adminTeam.resetSent', { email }));
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -404,6 +407,7 @@ function EditUserSheet({
 }) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email ?? '');
   const [role, setRole] = useState<UserRole>(user.role);
   const [active, setActive] = useState(user.active);
   const [siteIds, setSiteIds] = useState<string[]>(user.sites.map((s) => s.id));
@@ -418,6 +422,16 @@ function EditUserSheet({
         <div>
           <Label>{t('adminTeam.name')}</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div>
+          <Label>{t('adminTeam.emailEdit')}</Label>
+          <Input
+            type="email"
+            value={email}
+            placeholder="nom@exemple.com"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-slate-500">{t('adminTeam.emailHint')}</p>
         </div>
         <div>
           <Label>{t('adminTeam.role')}</Label>
@@ -469,7 +483,13 @@ function EditUserSheet({
         )}
 
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 text-sm">
-          <Button variant="secondary" size="sm" onClick={onResetPassword}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onResetPassword}
+            disabled={!user.email}
+            title={user.email ? undefined : t('adminTeam.resetNeedsEmail')}
+          >
             <KeyIcon className="h-4 w-4" />
             {t('adminTeam.resetBtn')}
           </Button>
@@ -488,6 +508,12 @@ function EditUserSheet({
             onClick={() => {
               const patch: UpdateAdminUserDto = {
                 name: name !== user.name ? name : undefined,
+                email:
+                  email.trim() === (user.email ?? '')
+                    ? undefined
+                    : email.trim()
+                      ? email.trim()
+                      : null,
                 role: role !== user.role ? role : undefined,
                 active: active !== user.active ? active : undefined,
                 siteIds:

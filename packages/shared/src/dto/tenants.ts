@@ -1,10 +1,12 @@
 import { z } from 'zod';
-import { phone } from './common';
+import { phone, email } from './common';
 
 export const createTenantDto = z.object({
   name: z.string().min(2),
   phone: phone.optional(),
   whatsapp: phone.optional(),
+  /** Adresse e-mail : reçoit le code de signature du contrat. */
+  email: email.optional(),
   idDocType: z.string().optional(),
   idDocNumber: z.string().optional(),
   idDocKey: z.string().optional(),

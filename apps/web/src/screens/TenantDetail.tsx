@@ -6,7 +6,7 @@ import { api, API, ApiError, authFetch } from '../lib/api';
 import { formatDate, formatFcfa } from '../lib/format';
 import { signedUrl } from '../lib/upload';
 import { SignedImage } from '../components/SignedImage';
-import { Card, Badge, Button, StatTile, ProgressBar, type Tone, PageSkeleton } from '../components/ui';
+import { Card, Badge, Button, Input, StatTile, ProgressBar, type Tone, PageSkeleton } from '../components/ui';
 import { useConfirm } from '../components/Confirm';
 import { useToast } from '../components/Toast';
 import { TenantInsightsCard } from '../components/TenantInsightsCard';
@@ -48,6 +48,7 @@ interface TimelineOccupancy {
 }
 interface Tenant {
   id: string; name: string; phone: string | null; whatsapp: string | null;
+  email: string | null;
   occupation: string | null; photoKey: string | null; idDocKey: string | null;
   idDocType: string | null; idDocNumber: string | null;
   emergencyName: string | null; emergencyPhone: string | null;
@@ -294,6 +295,12 @@ export function TenantDetail() {
             {tenant.whatsapp && tenant.whatsapp !== tenant.phone ? ` · WhatsApp ${tenant.whatsapp}` : ''}
             {tenant.occupation ? ` · ${tenant.occupation}` : ''}
           </p>
+          <TenantEmail
+            tenantId={tenant.id}
+            email={tenant.email}
+            disabled={tenant.archived}
+            onSaved={load}
+          />
           {(tenant.idDocType || tenant.idDocNumber || tenant.idDocKey) && (
             <p className="mt-1 text-sm text-slate-500">
               {tenant.idDocType ?? t('tenant.idDoc')}
@@ -513,5 +520,89 @@ export function TenantDetail() {
         </section>
       ))}
     </div>
+  );
+}
+
+/**
+ * Adresse e-mail du locataire, modifiable sur place : elle reçoit le code de
+ * signature du contrat (les notifications passent par e-mail).
+ */
+function TenantEmail({
+  tenantId,
+  email,
+  disabled,
+  onSaved,
+}: {
+  tenantId: string;
+  email: string | null;
+  disabled: boolean;
+  onSaved: () => void;
+}) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(email ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const next = value.trim();
+    // Pas d'effacement depuis l'interface : un champ vide annule simplement la saisie.
+    if (!next) {
+      setEditing(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)) {
+      toast.error(t('tenant.emailInvalid'));
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.patch(`/tenants/${tenantId}`, { email: next });
+      toast.success(t('tenant.emailSaved'));
+      setEditing(false);
+      onSaved();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : t('confirm.genericError'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="mt-2 flex max-w-md flex-wrap items-center gap-2">
+        <Input
+          type="email"
+          value={value}
+          placeholder="locataire@exemple.com"
+          onChange={(e) => setValue(e.target.value)}
+          className="min-w-0 flex-1"
+          autoFocus
+        />
+        <Button size="sm" busy={saving} onClick={() => void save()}>
+          {t('common.save')}
+        </Button>
+        <Button size="sm" variant="secondary" onClick={() => setEditing(false)}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+      <span>{email ?? t('tenant.noEmail')}</span>
+      {!disabled && (
+        <button
+          type="button"
+          className="font-medium text-brand hover:underline"
+          onClick={() => {
+            setValue(email ?? '');
+            setEditing(true);
+          }}
+        >
+          {email ? t('tenant.editEmail') : t('tenant.addEmail')}
+        </button>
+      )}
+    </p>
   );
 }

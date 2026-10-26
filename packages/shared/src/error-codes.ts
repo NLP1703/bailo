@@ -14,6 +14,9 @@ export const ERROR_CODES = {
   AUTH_EMAIL_ALREADY_USED: 'Cette adresse email est déjà utilisée',
   AUTH_SESSION_EXPIRED: 'Session expirée, veuillez vous reconnecter',
   LOGIN_RATE_LIMITED: 'Trop de tentatives, réessayez plus tard',
+  OTP_RATE_LIMITED: 'Trop de demandes de code, réessayez dans quelques minutes',
+  USER_EMAIL_REQUIRED: "Cet utilisateur n'a pas d'adresse e-mail : ajoutez-en une pour lui envoyer un code",
+  TENANT_EMAIL_REQUIRED: "Le locataire n'a pas d'adresse e-mail : ajoutez-la sur sa fiche pour lui envoyer le code",
 
   // Billing / quotas
   SITE_QUOTA_EXCEEDED: "Limite de cités de l'offre atteinte",

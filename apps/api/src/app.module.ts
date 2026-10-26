@@ -12,7 +12,7 @@ import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
 import { RolesGuard } from './common/auth/roles.guard';
 import { SubscriptionGuard } from './common/auth/subscription.guard';
 import { BillingModule } from './common/billing/billing.module';
-import { SmsModule } from './modules/sms/sms.module';
+import { MailModule } from './modules/mail/mail.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -52,7 +52,7 @@ import { AdminModule } from './modules/admin/admin.module';
     BillingModule,
     TenancyModule,
     AuditModule,
-    SmsModule,
+    MailModule,
     PdfModule,
     FinanceModule,
     AuthModule,

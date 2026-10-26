@@ -19,8 +19,8 @@ export const createContractDto = z.object({
 export type CreateContractDto = z.infer<typeof createContractDto>;
 
 export const sendForSignatureDto = z.object({
-  /** Canal de l'OTP de signature. */
-  channel: z.enum(['SMS', 'WHATSAPP']).default('SMS'),
+  /** Canal du code de signature : e-mail uniquement (les anciennes valeurs sont tolérées). */
+  channel: z.enum(['EMAIL', 'SMS', 'WHATSAPP']).default('EMAIL'),
 });
 export type SendForSignatureDto = z.infer<typeof sendForSignatureDto>;
 

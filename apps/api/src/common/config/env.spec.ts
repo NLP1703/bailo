@@ -23,18 +23,24 @@ describe('configuration (env)', () => {
   afterEach(() => resetEnvCache());
 
   it('traite les variables vides (compose / Railway) comme absentes', () => {
-    const env = load({ SENTRY_DSN: '', SMS_USERNAME: '', SMS_API_KEY: '  ' });
+    const env = load({ SENTRY_DSN: '', EMAIL_FROM: '', EMAIL_API_KEY: '  ' });
     expect(env.SENTRY_DSN).toBeUndefined();
-    expect(env.SMS_USERNAME).toBeUndefined();
-    expect(env.SMS_API_KEY).toBeUndefined();
+    expect(env.EMAIL_FROM).toBeUndefined();
+    expect(env.EMAIL_API_KEY).toBeUndefined();
   });
 
-  it("exige les identifiants Africa's Talking quand ce fournisseur est choisi", () => {
-    expect(() => load({ SMS_PROVIDER: 'africastalking' })).toThrow(/SMS_USERNAME/);
-    expect(
-      load({ SMS_PROVIDER: 'africastalking', SMS_USERNAME: 'bailo', SMS_API_KEY: 'k' })
-        .SMS_PROVIDER,
-    ).toBe('africastalking');
+  it('exige la clé et l’expéditeur quand un fournisseur e-mail réel est choisi', () => {
+    expect(() => load({ EMAIL_PROVIDER: 'brevo' })).toThrow(/EMAIL_API_KEY et EMAIL_FROM/);
+    expect(() =>
+      load({ EMAIL_PROVIDER: 'resend', EMAIL_API_KEY: 'k', EMAIL_FROM: 'pas-un-email' }),
+    ).toThrow(/EMAIL_FROM/);
+    const env = load({
+      EMAIL_PROVIDER: 'brevo',
+      EMAIL_API_KEY: 'k',
+      EMAIL_FROM: 'bailo@example.cm',
+    });
+    expect(env.EMAIL_PROVIDER).toBe('brevo');
+    expect(env.EMAIL_FROM_NAME).toBe('Bailo');
   });
 
   it('refuse SameSite=None sans cookie Secure', () => {
