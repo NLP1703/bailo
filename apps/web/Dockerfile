@@ -30,6 +30,8 @@ FROM nginx:alpine AS runtime
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 # Exécuté par l'entrypoint nginx avant le démarrage : génère le proxy /api.
 COPY apps/web/docker/40-bailo-api-proxy.sh /docker-entrypoint.d/40-bailo-api-proxy.sh
-RUN chmod 755 /docker-entrypoint.d/40-bailo-api-proxy.sh
+# Référencement : adresse publique, robots.txt, sitemap.xml, vérification Search Console.
+COPY apps/web/docker/50-bailo-seo.sh /docker-entrypoint.d/50-bailo-seo.sh
+RUN chmod 755 /docker-entrypoint.d/40-bailo-api-proxy.sh /docker-entrypoint.d/50-bailo-seo.sh
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
 EXPOSE 80

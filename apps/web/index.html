@@ -5,10 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0f766e" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <title>Bailo</title>
+
+    <!-- Référencement. « __SITE_URL__ » est remplacé au démarrage du conteneur par
+         l'adresse publique du site (docker/50-bailo-seo.sh). -->
+    <title>Bailo — Gestion locative pour cités, cités étudiantes et immeubles au Cameroun</title>
+    <meta
+      name="description"
+      content="Encaissez les loyers, émettez des reçus avec QR code, suivez les impayés et tenez votre comptabilité OHADA. Bailo, la gestion locative pensée pour le Cameroun — gratuit jusqu'à 5 chambres, même hors ligne."
+    />
+    <meta name="application-name" content="Bailo" />
+    <link rel="canonical" href="__SITE_URL__/" />
+    <!--__GOOGLE_SITE_VERIFICATION__-->
+
+    <!-- Aperçu de partage (WhatsApp, Facebook, LinkedIn, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bailo" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:title" content="Bailo — Gérez vos cités sans cahier, sans Excel" />
+    <meta
+      property="og:description"
+      content="Loyers, reçus avec QR code, impayés et comptabilité OHADA pour cités, cités étudiantes et immeubles. Gratuit jusqu'à 5 chambres."
+    />
+    <meta property="og:image" content="__SITE_URL__/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Bailo, gestion locative : étudiants et gérante devant une résidence"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bailo — Gérez vos cités sans cahier, sans Excel" />
+    <meta
+      name="twitter:description"
+      content="Loyers, reçus avec QR code, impayés et comptabilité OHADA pour cités et immeubles au Cameroun."
+    />
+    <meta name="twitter:image" content="__SITE_URL__/og-image.jpg" />
+
+    <!-- Données structurées : faits produit uniquement (aucune note ni avis inventé). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Bailo",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Gestion locative",
+        "operatingSystem": "Web, Android, iOS (application web installable)",
+        "inLanguage": ["fr", "en"],
+        "description": "Gestion locative pour cités, cités étudiantes et immeubles : encaissements, reçus avec QR code vérifiable, impayés, relances WhatsApp et comptabilité OHADA, utilisable hors ligne.",
+        "areaServed": { "@type": "Country", "name": "Cameroun" },
+        "offers": {
+          "@type": "Offer",
+          "name": "Découverte",
+          "price": "0",
+          "priceCurrency": "XAF",
+          "description": "Jusqu'à 5 chambres, sans carte bancaire"
+        }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Résumé statique, lisible sans JavaScript (moteurs de recherche, réseau lent).
+           React remplace ce contenu dès que l'application démarre. -->
+      <main
+        style="
+          max-width: 720px;
+          margin: 0 auto;
+          padding: 48px 20px;
+          font-family:
+            system-ui,
+            -apple-system,
+            'Segoe UI',
+            Roboto,
+            sans-serif;
+          color: #0f172a;
+          line-height: 1.6;
+        "
+      >
+        <p style="font-weight: 700; color: #0f766e; font-size: 20px; margin: 0">Bailo</p>
+        <h1 style="font-size: 32px; line-height: 1.15; margin: 16px 0">
+          Gérez vos cités sans cahier, sans Excel.
+        </h1>
+        <p>
+          Bailo centralise encaissements, reçus, impayés et comptabilité OHADA pour les
+          propriétaires et gérants de cités, cités étudiantes et immeubles au Cameroun. Du téléphone
+          au PC, hors ligne compris.
+        </p>
+        <h2 style="font-size: 20px; margin-top: 32px">Ce que fait Bailo</h2>
+        <ul>
+          <li>Encaissement des loyers en un geste, avances et paiements partiels compris.</li>
+          <li>Reçus numérotés avec QR code vérifiable par le locataire.</li>
+          <li>Suivi des impayés et relances WhatsApp.</li>
+          <li>Comptabilité OHADA et export pour votre comptable.</li>
+          <li>Plan des chambres, caisse du gardien, équipe et journal d'audit.</li>
+          <li>Fonctionne sans réseau : les paiements partent dès le retour de la connexion.</li>
+        </ul>
+        <h2 style="font-size: 20px; margin-top: 32px">Pour qui ?</h2>
+        <p>
+          Propriétaires et bailleurs, gérants et gardiens. Les étudiants et locataires reçoivent
+          leurs reçus et rappels sans avoir à créer de compte.
+        </p>
+        <p>
+          <strong>Gratuit jusqu'à 5 chambres</strong>, sans carte bancaire.
+          <a href="/signup" style="color: #0f766e">Créer un compte</a> ·
+          <a href="/login" style="color: #0f766e">Se connecter</a> ·
+          <a href="/privacy" style="color: #0f766e">Confidentialité</a>
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -24,6 +24,7 @@ import {
   WhatsAppIcon,
   type IconProps,
 } from '../../components/icons';
+import { usePageMeta } from '../../lib/page-meta';
 import { PublicShell } from './PublicShell';
 import {
   Counter,
@@ -65,6 +66,8 @@ const FEATURES: { icon: ComponentType<IconProps>; key: string }[] = [
 ];
 
 export function Landing() {
+  const { t } = useTranslation();
+  usePageMeta(t('public.seo.title'), t('public.seo.description'));
   return (
     <PublicShell>
       <Hero />

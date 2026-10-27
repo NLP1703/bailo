@@ -147,7 +147,7 @@
     "arrears": "Locataires en retard de paiement et montants restant dus.",
     "collect": "Enregistrez un paiement et générez le reçu en un instant.",
     "cash": "Journal des encaissements et remises d'espèces.",
-    "reminders": "Rappels à envoyer aujourd'hui par WhatsApp ou SMS.",
+    "reminders": "Rappels à envoyer aujourd'hui par WhatsApp.",
     "settings": "Profil du compte, cités, utilisateurs et préférences.",
     "plans": "Votre offre actuelle, votre consommation et les offres disponibles."
   },
@@ -517,7 +517,7 @@
     },
     "feat": {
       "whatsapp": "Relances WhatsApp automatiques",
-      "sms": "Relances SMS",
+      "sms": "Relances WhatsApp",
       "allReminderStages": "Toutes les étapes de relance (J-3, J0, J+5, J+15, Fin d'avance)",
       "penaltiesAuto": "Pénalités de retard automatiques",
       "advancedReports": "Rapports avancés + export comptable",
@@ -821,7 +821,7 @@
       },
       "arrears": {
         "title": "Impayés sous contrôle",
-        "body": "Liste triée par ancienneté, alertes de relance (SMS/WhatsApp), paliers configurables par cité."
+        "body": "Liste triée par ancienneté, alertes de relance (WhatsApp), paliers configurables par cité."
       },
       "receipt": {
         "title": "Reçus avec QR vérifiable",
@@ -898,7 +898,7 @@
       "paidDesc": "Pour les bailleurs qui gèrent plusieurs cités ou qui veulent les relances WhatsApp automatiques, les pénalités, les rapports avancés.",
       "paidList": {
         "p1": "Chambres illimitées",
-        "p2": "Relances SMS / WhatsApp automatisées",
+        "p2": "Relances WhatsApp automatisées",
         "p3": "Pénalités de retard automatiques",
         "p4": "Multi-bailleurs (profil Gérant)"
       },
@@ -958,7 +958,7 @@
       "offline": "Fonctionne hors ligne",
       "secure": "Hébergé en Europe",
       "multisite": "Multi-sites",
-      "whatsapp": "Relances SMS / WhatsApp"
+      "whatsapp": "Relances WhatsApp"
     },
     "stats": {
       "setup": "pour être opérationnel",
@@ -985,6 +985,12 @@
         "body": "Un reçu vérifiable par QR code à chaque paiement et des rappels clairs — sans compte à créer.",
         "alt": "Trois étudiants souriants, sac au dos"
       }
+    },
+    "seo": {
+      "title": "Bailo — Gestion locative pour cités, cités étudiantes et immeubles au Cameroun",
+      "description": "Encaissez les loyers, émettez des reçus avec QR code, suivez les impayés et tenez votre comptabilité OHADA. Bailo, la gestion locative pensée pour le Cameroun — gratuit jusqu'à 5 chambres, même hors ligne.",
+      "privacyTitle": "Politique de confidentialité — Bailo",
+      "privacyDescription": "Comment Bailo protège les données des bailleurs et des locataires : hébergement, sécurité, cloisonnement des comptes et droits des utilisateurs."
     }
   },
   "privacy": {
@@ -1005,7 +1011,7 @@
     },
     "sharing": {
       "title": "4. Partage avec des tiers",
-      "body": "Nous ne vendons jamais vos données. Elles sont confiées uniquement aux prestataires strictement nécessaires au fonctionnement du service : hébergeur (Railway, Europe), fournisseur SMS (le jour où vous l'activerez), fournisseur Mobile Money (MTN ou Orange, uniquement pour les paiements que vous initiez). Chaque prestataire est tenu à des engagements de confidentialité et de sécurité."
+      "body": "Nous ne vendons jamais vos données. Elles sont confiées uniquement aux prestataires strictement nécessaires au fonctionnement du service : hébergeur (Railway, Europe), Google (Gmail), uniquement pour envoyer les e-mails contenant vos codes de vérification, fournisseur Mobile Money (MTN ou Orange, uniquement pour les paiements que vous initiez). Chaque prestataire est tenu à des engagements de confidentialité et de sécurité."
     },
     "retention": {
       "title": "5. Durée de conservation",

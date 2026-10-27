@@ -142,7 +142,7 @@
     "arrears": "Tenants behind on rent and amounts still owed.",
     "collect": "Record a payment and issue the receipt instantly.",
     "cash": "Collections log and cash hand-overs.",
-    "reminders": "Reminders to send today via WhatsApp or SMS.",
+    "reminders": "Reminders to send today via WhatsApp.",
     "settings": "Account profile, sites, users and preferences.",
     "plans": "Your current plan, usage and available plans."
   },
@@ -512,7 +512,7 @@
     },
     "feat": {
       "whatsapp": "Automated WhatsApp reminders",
-      "sms": "SMS reminders",
+      "sms": "WhatsApp reminders",
       "allReminderStages": "All reminder stages (D-3, D0, D+5, D+15, End of advance)",
       "penaltiesAuto": "Automated late penalties",
       "advancedReports": "Advanced reports + accounting export",
@@ -816,7 +816,7 @@
       },
       "arrears": {
         "title": "Arrears under control",
-        "body": "List sorted by age, reminder alerts (SMS/WhatsApp), stages configurable per residence."
+        "body": "List sorted by age, reminder alerts (WhatsApp), stages configurable per residence."
       },
       "receipt": {
         "title": "Receipts with verifiable QR",
@@ -893,7 +893,7 @@
       "paidDesc": "For landlords managing several residences or who want automatic WhatsApp reminders, late fees, advanced reports.",
       "paidList": {
         "p1": "Unlimited rooms",
-        "p2": "Automated SMS / WhatsApp reminders",
+        "p2": "Automated WhatsApp reminders",
         "p3": "Automatic late fees",
         "p4": "Multi-landlord (Manager profile)"
       },
@@ -953,7 +953,7 @@
       "offline": "Works offline",
       "secure": "Hosted in Europe",
       "multisite": "Multi-site",
-      "whatsapp": "SMS / WhatsApp reminders"
+      "whatsapp": "WhatsApp reminders"
     },
     "stats": {
       "setup": "to get up and running",
@@ -980,6 +980,12 @@
         "body": "A QR-verifiable receipt for every payment and clear reminders — no account needed.",
         "alt": "Three smiling students with backpacks"
       }
+    },
+    "seo": {
+      "title": "Bailo — Rental management for residences, student housing and buildings in Cameroon",
+      "description": "Collect rent, issue QR-verified receipts, track arrears and keep OHADA accounts. Bailo, rental management built for Cameroon — free up to 5 rooms, even offline.",
+      "privacyTitle": "Privacy policy — Bailo",
+      "privacyDescription": "How Bailo protects landlord and tenant data: hosting, security, account isolation and user rights."
     }
   },
   "privacy": {
@@ -1000,7 +1006,7 @@
     },
     "sharing": {
       "title": "4. Sharing with third parties",
-      "body": "We never sell your data. It is entrusted only to providers strictly necessary to run the service: hosting (Railway, Europe), SMS provider (when you activate it), Mobile Money provider (MTN or Orange, only for payments you initiate). Each provider is bound by confidentiality and security commitments."
+      "body": "We never sell your data. It is entrusted only to providers strictly necessary to run the service: hosting (Railway, Europe), Google (Gmail), only to send the emails containing your verification codes, Mobile Money provider (MTN or Orange, only for payments you initiate). Each provider is bound by confidentiality and security commitments."
     },
     "retention": {
       "title": "5. Retention",

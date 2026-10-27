@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '../../lib/page-meta';
 import { PublicShell } from './PublicShell';
 import { Reveal } from '../../components/Reveal';
 import { ShieldIcon, ChevronRightIcon } from '../../components/icons';
@@ -14,6 +15,7 @@ import { ShieldIcon, ChevronRightIcon } from '../../components/icons';
  */
 export function Privacy() {
   const { t } = useTranslation();
+  usePageMeta(t('public.seo.privacyTitle'), t('public.seo.privacyDescription'));
   const updated = new Date('2026-10-20').toLocaleDateString('fr-FR', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
