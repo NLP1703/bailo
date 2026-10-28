@@ -1,0 +1,35 @@
+{
+  "name": "@bailo/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Application mobile Bailo (Expo) pour les bailleurs et leurs équipes",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@bailo/sync": "workspace:*",
+    "expo": "~58.0.20",
+    "expo-constants": "~58.0.13",
+    "expo-crypto": "~58.0.7",
+    "expo-linking": "~58.0.14",
+    "expo-local-authentication": "~58.0.2",
+    "expo-network": "~58.0.4",
+    "expo-router": "~58.0.27",
+    "expo-secure-store": "~58.0.2",
+    "expo-sqlite": "~58.0.14",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3"
+  }
+}

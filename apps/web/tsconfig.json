@@ -10,7 +10,15 @@
     "allowImportingTsExtensions": false,
     "noEmit": true,
     "declaration": false,
-    "types": ["vite/client", "vite-plugin-pwa/client"]
+    "types": ["vite/client", "vite-plugin-pwa/client"],
+    // L'app mobile (React 19) partage le dépôt : les types des bibliothèques
+    // (react-router…) doivent résoudre React 18, celui du site.
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
+    }
   },
   "include": ["src"]
 }

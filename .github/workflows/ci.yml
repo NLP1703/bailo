@@ -79,6 +79,7 @@ jobs:
       - run: pnpm --filter @bailo/api prisma:generate
       - run: pnpm --filter @bailo/api prisma:deploy
       - run: pnpm --filter @bailo/shared test
+      - run: pnpm --filter @bailo/sync test
       - run: pnpm --filter @bailo/api test
       # Parcours complets (auth par cookie, paiements, isolation, pagination…) sur le Postgres du job.
       - run: pnpm --filter @bailo/api test:e2e

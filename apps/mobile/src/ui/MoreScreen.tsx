@@ -1,0 +1,90 @@
+import type { RejectedOperation } from '@bailo/sync';
+import { useCallback, useEffect, useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { useSession } from '../lib/session';
+import { getSync } from '../sync/engine';
+import { useSyncState } from '../sync/useSync';
+import { PrimaryButton, Screen, styles, SyncBanner, Title } from './components';
+import { colors } from './theme';
+
+const ROLE_LABEL = { OWNER: 'Propriétaire', MANAGER: 'Gérant', CARETAKER: 'Gardien' } as const;
+
+function formatTime(ms: number | null): string {
+  if (!ms) return 'jamais';
+  return new Date(ms).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+/** Compte, état de la synchronisation et opérations à corriger (T16, RGM6). */
+export function MoreScreen() {
+  const { user, signOut } = useSession();
+  const sync = useSyncState();
+  const [toFix, setToFix] = useState<RejectedOperation[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    void getSync()
+      .then(({ outbox }) => outbox.listToFix())
+      .then(setToFix)
+      .catch(() => setToFix([]));
+  }, []);
+  useEffect(load, [load, sync.pendingCount]);
+
+  const syncNow = async () => {
+    if (!user?.siteId) return;
+    setBusy(true);
+    try {
+      const { engine } = await getSync();
+      await engine.syncNow(user.siteId);
+      load();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={{ gap: 16, paddingBottom: 32 }}>
+        <SyncBanner />
+        <Title subtitle={user ? `${ROLE_LABEL[user.role]} · ${user.accountName}` : undefined}>
+          {user?.name ?? 'Mon compte'}
+        </Title>
+        <View style={styles.card}>
+          <Text style={styles.label}>Synchronisation</Text>
+          <Text style={styles.cardText}>
+            Dernière réussite : {formatTime(sync.lastSuccessAt)}
+            {'\n'}En attente d’envoi : {sync.pendingCount}
+          </Text>
+          <View style={{ marginTop: 12 }}>
+            <PrimaryButton
+              label="Synchroniser maintenant"
+              tone="outline"
+              onPress={syncNow}
+              busy={busy}
+            />
+          </View>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.label}>À corriger · {toFix.length}</Text>
+          {toFix.length === 0 ? (
+            <Text style={styles.cardText}>Aucune opération refusée.</Text>
+          ) : (
+            toFix.map((item) => (
+              <View
+                key={item.op.opId}
+                style={{ paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}
+              >
+                <Text style={{ fontWeight: '600', color: colors.text }}>{item.op.type}</Text>
+                <Text style={{ color: colors.danger }}>{item.message}</Text>
+              </View>
+            ))
+          )}
+        </View>
+        <PrimaryButton
+          label="Se déconnecter de ce téléphone"
+          tone="danger"
+          onPress={() => void signOut()}
+        />
+      </ScrollView>
+    </Screen>
+  );
+}

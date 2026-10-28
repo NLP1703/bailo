@@ -13,14 +13,14 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 
 ## Où en est-on
 
-| Lot                           | Contenu                                                                        | État         |
-| ----------------------------- | ------------------------------------------------------------------------------ | ------------ |
-| LM1 Cadrage (sem. 1–2)        | Décisions, protocole de synchronisation, écrans, appareils de test, maquettes  | **En cours** |
-| LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | À venir      |
-| LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | À venir      |
-| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | À venir      |
-| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | À venir      |
-| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir      |
+| Lot                           | Contenu                                                                        | État                     |
+| ----------------------------- | ------------------------------------------------------------------------------ | ------------------------ |
+| LM1 Cadrage (sem. 1–2)        | Décisions, protocole de synchronisation, écrans, appareils de test, maquettes  | Livré (retours attendus) |
+| LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | **En cours**             |
+| LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | À venir                  |
+| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | À venir                  |
+| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | À venir                  |
+| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                  |
 
 ## Documents de cadrage (LM1)
 
@@ -37,5 +37,33 @@ Messaging), expo-camera, expo-image-manipulator, expo-local-authentication,
 expo-secure-store, Sentry. Les schémas Zod et les types viennent de `packages/shared`,
 comme pour le web, et l'application parle à la même API NestJS (`apps/api`).
 
-Le projet Expo lui-même sera créé au début de LM2, une fois les décisions et le protocole
-validés.
+La navigation utilise Expo Router (bâti sur React Navigation, recommandé par Expo SDK 58).
+
+## Lancer l'application (développement)
+
+Depuis la racine du dépôt :
+
+```bash
+pnpm install
+pnpm --filter @bailo/mobile start
+```
+
+Scannez le QR code avec l'application **Expo Go** sur un téléphone Android (même réseau
+Wi-Fi que le PC). Par défaut l'app parle à l'API en ligne
+(`https://bailo-web-production.up.railway.app/api/v1`) ; pour une API locale :
+`EXPO_PUBLIC_API_URL=http://<IP du PC>:3000/api/v1`.
+
+Dans Expo Go, la base locale n'est **pas** chiffrée (SQLCipher n'y existe pas) : c'est
+signalé dans la console et réservé au développement. Les versions installables (EAS) la
+chiffrent ; une version de production sans chiffrement refuse de démarrer.
+
+## Organisation du code
+
+| Dossier                | Rôle                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `src/app/`             | Écrans (Expo Router) : connexion, PIN, déverrouillage, onglets par profil                        |
+| `src/lib/`             | Configuration, client API (jetons, renouvellement), trousseau, PIN, session                      |
+| `src/db/`              | Base SQLite chiffrée, file d'opérations et données reçues                                        |
+| `src/sync/`            | Branchement du moteur `@bailo/sync` : réseau, déclencheurs, état                                 |
+| `src/ui/`              | Thème, composants, clavier PIN                                                                   |
+| `../../packages/sync/` | Moteur de synchronisation, indépendant de React Native, testé (`pnpm --filter @bailo/sync test`) |

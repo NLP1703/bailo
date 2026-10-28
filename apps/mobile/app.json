@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Bailo",
+    "slug": "bailo",
+    "scheme": "bailo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "cm.bailo.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F766E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "ios": {
+      "bundleIdentifier": "cm.bailo.app",
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      ["expo-sqlite", { "useSQLCipher": true }],
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Bailo utilise Face ID pour déverrouiller l'application." }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "apiUrl": "https://bailo-web-production.up.railway.app/api/v1"
+    }
+  }
+}
