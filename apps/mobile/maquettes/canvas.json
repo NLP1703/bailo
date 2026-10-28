@@ -1,0 +1,49 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-28T14:12:00Z" },
+  "title": "Maquettes Bailo mobile — écrans terrain M1",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 300, "w": 390, "h": 844, "title": "T1 · Connexion et déverrouillage", "radius": 28 },
+    "T03-Chambres.dc.html": { "x": 470, "y": 300, "w": 390, "h": 844, "title": "T3 · Plan des chambres", "radius": 28 },
+    "T04-Fiche-chambre.dc.html": { "x": 940, "y": 300, "w": 390, "h": 844, "title": "T4 · Fiche chambre", "radius": 28 },
+    "T07-Encaisser.dc.html": { "x": 1410, "y": 300, "w": 390, "h": 844, "title": "T7 · Encaisser (hors-ligne)", "radius": 28 },
+    "T08-Ma-caisse.dc.html": { "x": 1880, "y": 300, "w": 390, "h": 844, "title": "T8 · Ma caisse et remise", "radius": 28 },
+    "T10-Releves.dc.html": { "x": 2350, "y": 300, "w": 390, "h": 844, "title": "T10 · Tournée de relevés", "radius": 28 },
+    "T11-Pannes.dc.html": { "x": 2820, "y": 300, "w": 390, "h": 844, "title": "T11 · Signaler une panne", "radius": 28 },
+    "T16-A-corriger.dc.html": { "x": 3290, "y": 300, "w": 390, "h": 844, "title": "T16 · Alertes et à corriger", "radius": 28 },
+    "T02-Accueil.dc.html": { "x": 0, "y": 1544, "w": 390, "h": 844, "title": "T2 · Accueil gérant", "radius": 28 },
+    "T05-Locataire.dc.html": { "x": 470, "y": 1544, "w": 390, "h": 844, "title": "T5 · Fiche locataire", "radius": 28 },
+    "T06-Nouvelle-entree.dc.html": { "x": 940, "y": 1544, "w": 390, "h": 844, "title": "T6 · Nouvelle entrée (étape 2/3)", "radius": 28 },
+    "T09-Relances.dc.html": { "x": 1410, "y": 1544, "w": 390, "h": 844, "title": "T9 · Relances du jour", "radius": 28 },
+    "T12-Depense.dc.html": { "x": 1880, "y": 1544, "w": 390, "h": 844, "title": "T12 · Nouvelle dépense", "radius": 28 },
+    "T13-Vue-ensemble.dc.html": { "x": 0, "y": 2788, "w": 390, "h": 844, "title": "T13 · Vue d'ensemble multi-sites", "radius": 28 },
+    "T14-Remise-caisse.dc.html": { "x": 470, "y": 2788, "w": 390, "h": 844, "title": "T14 · Remise de caisse à confirmer", "radius": 28 },
+    "T15-Equipe.dc.html": { "x": 940, "y": 2788, "w": 390, "h": 844, "title": "T15 · Équipe et appareils", "radius": 28 }
+  },
+  "order": [
+    "Main.dc.html",
+    "T03-Chambres.dc.html",
+    "T04-Fiche-chambre.dc.html",
+    "T07-Encaisser.dc.html",
+    "T08-Ma-caisse.dc.html",
+    "T10-Releves.dc.html",
+    "T11-Pannes.dc.html",
+    "T16-A-corriger.dc.html",
+    "T02-Accueil.dc.html",
+    "T05-Locataire.dc.html",
+    "T06-Nouvelle-entree.dc.html",
+    "T09-Relances.dc.html",
+    "T12-Depense.dc.html",
+    "T13-Vue-ensemble.dc.html",
+    "T14-Remise-caisse.dc.html",
+    "T15-Equipe.dc.html"
+  ],
+  "notes": {
+    "rowGardien": { "x": 0, "y": 40, "text": "Gardien et écrans communs", "kind": "title1", "maxW": 3680 },
+    "rowGerant": { "x": 0, "y": 1284, "text": "Gérant", "kind": "title1", "maxW": 2270 },
+    "rowProprio": { "x": 0, "y": 2528, "text": "Propriétaire", "kind": "title1", "maxW": 1330 }
+  },
+  "designSystems": []
+}

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bailo — Accueil gérant</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#0f172a}
+.svgi{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;color:#475569;border:0;background:none;font-family:inherit}
+.kpi{background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.k1{font-size:12px;color:#475569}
+.k2{font-size:20px;font-weight:700}
+.go{background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;text-decoration:none;color:#0f172a}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f8fafc; display: flex; flex-direction: column">
+<div style="background: #ffffff; padding: 18px 20px 14px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center">
+<div>
+<p style="margin: 0; font-size: 13px; color: #475569">Bonjour Christelle · Gérante</p>
+<button style="margin-top: 2px; border: 0; background: none; padding: 0; font-family: inherit; font-size: 20px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px">Cité Les Palmiers<svg class="svgi" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+</div>
+<span style="font-size: 12px; font-weight: 600; color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 999px">Synchronisé</span>
+</div>
+<div style="flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div class="kpi"><span class="k1">Encaissé aujourd'hui</span><span class="k2">45 000</span><span class="k1">3 paiements</span></div>
+<div class="kpi"><span class="k1">Encaissé en octobre</span><span class="k2">255 000</span><span class="k1">sur 330 000 attendus</span></div>
+<div class="kpi"><span class="k1">Reste à encaisser (oct.)</span><span class="k2" style="color: #b45309">75 000</span><span class="k1">5 chambres</span></div>
+<div class="kpi"><span class="k1">Occupation</span><span class="k2">22 / 24</span><span class="k1">92 %</span></div>
+</div>
+<a href="#" class="go"><span style="width: 40px; height: 40px; border-radius: 12px; background: #fee2e2; color: #b91c1c; display: flex; align-items: center; justify-content: center"><svg class="svgi" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span style="flex: 1"><b style="font-size: 15px">3 chambres en retard</b><br><span style="font-size: 13px; color: #475569">90 000 FCFA d'impayés</span></span><svg class="svgi" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+<a href="#" class="go"><span style="width: 40px; height: 40px; border-radius: 12px; background: #ccfbf1; color: #0f766e; display: flex; align-items: center; justify-content: center"><svg class="svgi" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span><span style="flex: 1"><b style="font-size: 15px">Relances du jour</b><br><span style="font-size: 13px; color: #475569">4 rappels à J−3 · 2 retards à J+5</span></span><svg class="svgi" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+<a href="#" class="go"><span style="width: 40px; height: 40px; border-radius: 12px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center"><svg class="svgi" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.5-2.5z"/></svg></span><span style="flex: 1"><b style="font-size: 15px">2 pannes ouvertes</b><br><span style="font-size: 13px; color: #475569">dont 1 urgente (B03, fuite d'eau)</span></span><svg class="svgi" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+</div>
+<nav style="display: flex; background: #ffffff; border-top: 1px solid #e2e8f0; height: 76px; align-items: center">
+<button class="tab" style="color: #0f766e; font-weight: 600"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6h-6v6H4z"/></svg>Accueil</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Chambres</button>
+<button class="tab" style="color: #0f172a; font-weight: 600"><span style="width: 52px; height: 52px; margin-top: -26px; border-radius: 50%; background: #0f766e; color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px #ffffff"><svg class="svgi" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span>Encaisser</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Relances</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>Plus</button>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

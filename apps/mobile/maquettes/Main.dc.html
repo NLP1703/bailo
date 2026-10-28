@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bailo — Déverrouillage</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#0f172a}
+.key{height:64px;border-radius:16px;background:#ffffff;border:1px solid #e2e8f0;font-size:24px;font-weight:600;color:#0f172a;font-family:inherit}
+.svgi{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f8fafc; display: flex; flex-direction: column; align-items: center; padding: 72px 28px 40px; gap: 28px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="width: 64px; height: 64px; border-radius: 18px; background: #0f766e; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700">B</div>
+<p style="margin: 0; font-size: 15px; color: #475569">Bonjour Abdou · Gardien</p>
+<p style="margin: 0; font-size: 13px; color: #475569">Cité Les Palmiers</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 16px">
+<h1 style="margin: 0; font-size: 22px; font-weight: 700">Entrez votre code PIN</h1>
+<div style="display: flex; gap: 18px" aria-label="2 chiffres saisis sur 4">
+<span style="width: 16px; height: 16px; border-radius: 50%; background: #0f766e"></span>
+<span style="width: 16px; height: 16px; border-radius: 50%; background: #0f766e"></span>
+<span style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid #94a3b8; box-sizing: border-box"></span>
+<span style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid #94a3b8; box-sizing: border-box"></span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%">
+<button class="key">1</button><button class="key">2</button><button class="key">3</button>
+<button class="key">4</button><button class="key">5</button><button class="key">6</button>
+<button class="key">7</button><button class="key">8</button><button class="key">9</button>
+<button class="key" aria-label="Empreinte digitale" style="color: #0f766e; display: flex; align-items: center; justify-content: center"><svg class="svgi" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3a6 6 0 0 1-1.5 4"/><path d="M8.5 10.5a3.5 3.5 0 0 1 7 0v3.5a9 9 0 0 1-1 4"/><path d="M5.5 15a12 12 0 0 1-.5-3.5 7 7 0 0 1 14 0v2"/><path d="M7 5.5a8 8 0 0 1 10 0"/></svg></button>
+<button class="key">0</button>
+<button class="key" aria-label="Effacer" style="display: flex; align-items: center; justify-content: center"><svg class="svgi" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11v12H9l-6-6z"/><path d="M13 10l4 4M17 10l-4 4"/></svg></button>
+</div>
+<a href="#" style="font-size: 15px; color: #0f766e; font-weight: 600; text-decoration: none">Code oublié ? Se connecter avec le mot de passe</a>
+<p style="margin: auto 0 0; font-size: 12px; color: #475569; text-align: center">5 essais au plus, puis retour au mot de passe.<br>Le PIN ne fonctionne que sur ce téléphone.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

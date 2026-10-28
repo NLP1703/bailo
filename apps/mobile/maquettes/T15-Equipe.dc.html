@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bailo — Équipe et appareils</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#0f172a}
+.svgi{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:#475569;border:0;background:none;font-family:inherit}
+.mem{background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.stat{font-size:13px;color:#475569}
+.warn{font-size:13px;font-weight:600;padding:6px 10px;border-radius:10px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f8fafc; display: flex; flex-direction: column">
+<div style="background: #ffffff; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center">
+<div><h1 style="margin: 0; font-size: 22px; font-weight: 700">Équipe</h1><p style="margin: 2px 0 0; font-size: 13px; color: #475569">Activité d'aujourd'hui</p></div>
+<button style="height: 44px; padding: 0 14px; border-radius: 12px; border: 0; background: #0f766e; color: #ffffff; font-size: 14px; font-weight: 600; font-family: inherit">Inviter</button>
+</div>
+<div style="flex: 1; padding: 14px 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<div class="mem">
+<div style="display: flex; gap: 12px; align-items: center"><span class="av" style="background: #ccfbf1; color: #115e59">CF</span><div style="flex: 1"><b style="font-size: 15px">Christelle Fouda</b><p style="margin: 2px 0 0" class="stat">Gérante · Cité Les Palmiers</p></div><span style="font-size: 12px; color: #15803d; font-weight: 600">à jour</span></div>
+<p style="margin: 0" class="stat">3 encaissements (45 000) · 1 relance · 1 dépense</p>
+</div>
+<div class="mem">
+<div style="display: flex; gap: 12px; align-items: center"><span class="av" style="background: #e0e7ff; color: #3730a3">AB</span><div style="flex: 1"><b style="font-size: 15px">Abdou Bello</b><p style="margin: 2px 0 0" class="stat">Gardien · Cité Les Palmiers</p></div><span style="font-size: 12px; color: #475569">il y a 3 h</span></div>
+<p style="margin: 0" class="stat">1 encaissement · 12 relevés · remise de 80 000 déclarée</p>
+<span class="warn" style="background: #fee2e2; color: #7f1d1d">1 opération à corriger · 1 en attente d'envoi</span>
+<div style="border-top: 1px solid #f1f5f9; padding-top: 8px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px"><span>Tecno Spark 10 · actif il y a 3 h</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px"><span>itel A70 · dernière activité il y a 12 j</span><button style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1.5px solid #b91c1c; background: #ffffff; color: #b91c1c; font-size: 13px; font-weight: 600; font-family: inherit">Déconnecter</button></div>
+</div>
+</div>
+<div class="mem">
+<div style="display: flex; gap: 12px; align-items: center"><span class="av" style="background: #fef3c7; color: #78350f">SN</span><div style="flex: 1"><b style="font-size: 15px">Samuel Nana</b><p style="margin: 2px 0 0" class="stat">Gardien · Résidence Bonamoussadi</p></div><span style="font-size: 12px; color: #475569">il y a 2 j</span></div>
+<span class="warn" style="background: #fef3c7; color: #78350f">Pas synchronisé depuis plus de 48 h · 4 opérations en attente sur son téléphone</span>
+<a href="#" style="font-size: 14px; font-weight: 600; color: #0f766e; text-decoration: none">Appeler Samuel</a>
+</div>
+</div>
+<nav style="display: flex; background: #ffffff; border-top: 1px solid #e2e8f0; height: 72px">
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Vue d'ensemble</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Chambres</button>
+<button class="tab" style="color: #0f766e; font-weight: 600"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>Équipe</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Alertes</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>Plus</button>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

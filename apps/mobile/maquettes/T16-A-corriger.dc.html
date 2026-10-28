@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bailo — Alertes et à corriger</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#0f172a}
+.svgi{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;color:#475569;border:0;background:none;font-family:inherit}
+.sec{margin:6px 0 0;font-size:13px;font-weight:600;color:#475569}
+.small{height:40px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f8fafc; display: flex; flex-direction: column">
+<div style="background: #ffffff; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px">
+<button aria-label="Retour" style="width: 44px; height: 44px; border: 0; background: none; color: #0f172a; display: flex; align-items: center; justify-content: center; margin-left: -10px"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+<h1 style="margin: 0; font-size: 22px; font-weight: 700">Alertes</h1>
+</div>
+<div style="flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+<p class="sec">À CORRIGER · 1</p>
+<div style="background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: 15px">Paiement A06 · 15 000 FCFA</b><span style="font-size: 12px; color: #475569">saisi le 26/10</span></div>
+<p style="margin: 0; font-size: 14px; color: #7f1d1d">Refusé par le serveur : la chambre A06 est libre depuis le 20/10 (locataire sorti).</p>
+<div style="display: flex; gap: 8px">
+<button class="small" style="border: 0; background: #0f766e; color: #ffffff">Corriger la chambre</button>
+<button class="small" style="border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155">Abandonner</button>
+</div>
+<p style="margin: 0; font-size: 12px; color: #475569">Visible aussi par le propriétaire. Rien n'est supprimé sans votre action.</p>
+</div>
+<p class="sec">REÇUS DÉFINITIFS À ENVOYER · 2</p>
+<div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 6px 16px">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0"><div><p style="margin: 0; font-size: 14px; font-weight: 600">Reçu n° 2026-0412 · B07</p><p style="margin: 2px 0 0; font-size: 12px; color: #475569">remplace le provisoire PROV-7K2Q-18</p></div><button class="small" style="border: 1.5px solid #0f766e; background: #ffffff; color: #0f766e">WhatsApp</button></div>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid #f1f5f9"><div><p style="margin: 0; font-size: 14px; font-weight: 600">Reçu n° 2026-0411 · A03</p><p style="margin: 2px 0 0; font-size: 12px; color: #475569">remplace le provisoire PROV-7K2Q-17</p></div><button class="small" style="border: 1.5px solid #0f766e; background: #ffffff; color: #0f766e">WhatsApp</button></div>
+</div>
+<p class="sec">NOTIFICATIONS</p>
+<div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 6px 16px">
+<div style="padding: 10px 0"><p style="margin: 0; font-size: 14px">Votre remise du 21/10 (60 000 FCFA) a été confirmée.</p><p style="margin: 2px 0 0; font-size: 12px; color: #475569">22/10 · 08:14</p></div>
+<div style="padding: 10px 0; border-top: 1px solid #f1f5f9"><p style="margin: 0; font-size: 14px">Tournée d'eau prévue le 01/11 : 30 compteurs.</p><p style="margin: 2px 0 0; font-size: 12px; color: #475569">21/10 · 18:00</p></div>
+</div>
+</div>
+<nav style="display: flex; background: #ffffff; border-top: 1px solid #e2e8f0; height: 72px">
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Chambres</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Encaisser</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-4"/></svg>Compteurs</button>
+<button class="tab"><svg class="svgi" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.5-2.5z"/></svg>Pannes</button>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
