@@ -14,7 +14,6 @@ import {
   TagIcon,
   SettingsIcon,
   ShieldIcon,
-  WrenchIcon,
   ReceiptIcon,
   BookIcon,
   type IconProps,
@@ -43,7 +42,7 @@ export interface NavEntry {
 }
 
 export interface NavSection {
-  key: 'pilotage' | 'rental' | 'finance' | 'ops' | 'admin';
+  key: 'pilotage' | 'rental' | 'finance' | 'admin';
   labelKey: string;
   items: NavEntry[];
 }
@@ -78,13 +77,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/expenses', labelKey: 'nav.expenses', Icon: ReceiptIcon, roles: MGMT, keywords: 'depenses charges travaux taxes' },
       { to: '/accounting', labelKey: 'nav.accounting', Icon: BookIcon, roles: MGMT, keywords: 'ohada syscohada comptabilite export csv journal' },
       { to: '/reminders', labelKey: 'nav.reminders', Icon: BellIcon, keywords: 'whatsapp sms rappel' },
-    ],
-  },
-  {
-    key: 'ops',
-    labelKey: 'nav.section.ops',
-    items: [
-      { to: '/maintenance', labelKey: 'nav.maintenance', Icon: WrenchIcon, keywords: 'ticket reparation fuite plombier electricien' },
     ],
   },
   {
@@ -129,7 +121,7 @@ const DETAIL_ROUTES: { pattern: RegExp; section: NavSection['key']; parent?: str
   { pattern: /^\/contracts\/new$/, section: 'rental', parent: '/contracts', labelKey: 'nav.crumb.contractNew' },
   { pattern: /^\/contracts\/[^/]+$/, section: 'rental', parent: '/contracts', labelKey: 'nav.crumb.contract' },
   { pattern: /^\/inspections$/, section: 'rental', parent: '/tenants', labelKey: 'nav.crumb.inspections' },
-  { pattern: /^\/meters$/, section: 'ops', parent: '/rooms', labelKey: 'nav.crumb.meters' },
+  { pattern: /^\/meters$/, section: 'rental', parent: '/rooms', labelKey: 'nav.crumb.meters' },
   { pattern: /^\/sites\/(?!new$)[^/]+$/, section: 'admin', parent: '/settings', labelKey: 'nav.crumb.site' },
   { pattern: /^\/admin\/[a-z-]+$/, section: 'admin', parent: '/admin', labelKey: 'nav.admin' },
   { pattern: /^\/profile$/, section: 'admin', labelKey: 'nav.profile' },

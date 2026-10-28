@@ -31,7 +31,6 @@ import { Contracts } from '../screens/Contracts';
 import { ContractNew } from '../screens/ContractNew';
 import { ContractDetail } from '../screens/ContractDetail';
 import { Inspections } from '../screens/Inspections';
-import { Maintenance } from '../screens/Maintenance';
 import { Expenses } from '../screens/Expenses';
 import { Meters } from '../screens/Meters';
 import { Accounting } from '../screens/Accounting';
@@ -134,7 +133,6 @@ function AuthedApp() {
         <Route path="contracts/new" element={<ContractNew />} />
         <Route path="contracts/:id" element={<ContractDetail />} />
         <Route path="inspections" element={<Inspections />} />
-        <Route path="maintenance" element={<Maintenance />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="meters" element={<Meters />} />
         <Route path="accounting" element={<Accounting />} />
