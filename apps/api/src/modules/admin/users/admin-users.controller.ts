@@ -100,12 +100,22 @@ export class AdminUsersController {
   }
 
   @Post('invitations')
-  @ApiOperation({ summary: 'Créer une invitation (OTP + jeton)' })
+  @ApiOperation({ summary: 'Créer une invitation (envoyée par e-mail)' })
   async createInvitation(
     @CurrentUser() ctx: RequestContext,
     @Body(new ZodValidationPipe(createInvitationDto)) dto: CreateInvitationDto,
   ): Promise<InvitationView> {
     return this.service.createInvitation(ctx, dto);
+  }
+
+  @Post('invitations/:id/resend')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Renvoyer l'e-mail d'une invitation (nouveau lien, 72 h)" })
+  async resendInvitation(
+    @CurrentUser() ctx: RequestContext,
+    @Param('id', new ZodValidationPipe(uuid)) id: string,
+  ): Promise<InvitationView> {
+    return this.service.resendInvitation(ctx, id);
   }
 
   @Delete('invitations/:id')

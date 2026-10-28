@@ -43,13 +43,14 @@ elif [ -n "$token" ]; then
   echo "bailo-seo: GOOGLE_SITE_VERIFICATION invalide — ignorée"
 fi
 
-# 3) robots.txt : tout est explorable sauf l'API et les pages de vérification de reçu.
-#    Les écrans privés (connexion, application) portent l'en-tête « X-Robots-Tag: noindex » (nginx).
+# 3) robots.txt : tout est explorable sauf l'API, la vérification de reçu et les invitations.
+#    Les écrans privés (connexion, application, invitations) portent l'en-tête « X-Robots-Tag: noindex » (nginx).
 {
   echo 'User-agent: *'
   echo 'Allow: /'
   echo 'Disallow: /api/'
   echo 'Disallow: /r/'
+  echo 'Disallow: /invite/'
   if [ -n "$site" ]; then echo "Sitemap: ${site}/sitemap.xml"; fi
 } > "$HTML_DIR/robots.txt"
 

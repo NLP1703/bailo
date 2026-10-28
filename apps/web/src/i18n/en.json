@@ -730,7 +730,6 @@
     "resetSent": "A reset code was sent to {{email}}.",
     "revokeOk": "{{n}} session(s) revoked.",
     "invRevoked": "Invitation revoked.",
-    "inviteShareToken": "Token copied: share it with the new user.",
     "phoneLabel": "Phone",
     "emailLabel": "Email (optional)",
     "sendInvite": "Send invitation",
@@ -749,7 +748,11 @@
     },
     "emailEdit": "Email address",
     "emailHint": "Receives password reset codes.",
-    "resetNeedsEmail": "Add an email address to this user first."
+    "resetNeedsEmail": "Add an email address to this user first.",
+    "inviteEmailLabel": "Email (the invitation is sent there)",
+    "inviteEmailSent": "Invitation emailed to {{email}}.",
+    "inviteEmailFailed": "The email could not be sent: the invitation link was copied, share it manually.",
+    "resendBtn": "Resend"
   },
   "theme": {
     "label": "Theme",
@@ -1068,5 +1071,21 @@
     "rateLimited": "Too many requests: try again in a few minutes",
     "error": "Something went wrong, please try again",
     "done": "Password changed: sign in with your new one."
+  },
+  "invite": {
+    "title": "Join the team",
+    "subtitle": "Hello {{name}}: {{account}} invites you as {{role}}. Choose your password to activate your access.",
+    "loginWith": "You will sign in with {{email}} (or your phone number).",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "submit": "Activate my access",
+    "expires": "Invitation valid until {{date}}.",
+    "passwordLength": "The password must be at least 8 characters long.",
+    "mismatch": "The two passwords do not match.",
+    "conflict": "An account already exists with this email or phone number. Ask your landlord to check the invitation.",
+    "error": "Something went wrong. Please try again in a moment.",
+    "invalidTitle": "Invalid invitation link",
+    "invalidText": "This link has expired, was revoked or has already been used. Ask your landlord to resend the invitation.",
+    "toLogin": "I already have an account: sign in"
   }
 }

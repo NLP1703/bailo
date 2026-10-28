@@ -2,16 +2,21 @@ import { createHash, randomBytes } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
+  GoneException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import type { Prisma, UserRole as PrismaUserRole } from '@prisma/client';
 import type {
+  AcceptInvitationDto,
   AdminUserListQuery,
   AdminUserView,
   CreateAdminUserDto,
   CreateInvitationDto,
+  InvitationPreview,
   InvitationView,
   PaginatedResult,
   UpdateAdminUserDto,
@@ -25,6 +30,14 @@ import { OtpService } from '../../auth/otp.service';
 import { TokenService } from '../../auth/token.service';
 import type { RequestContext } from '../../../common/tenancy/request-context';
 import { AppException } from '../../../common/http/app.exception';
+import { APP_ENV, publicAppUrl, type AppEnv } from '../../../common/config/env';
+import { MAIL_PROVIDER, maskEmail, type MailProvider } from '../../mail/mail.provider';
+import { invitationMail } from '../../mail/mail.templates';
+
+/** Durée de validité d'une invitation renvoyée (heures). */
+const RESEND_TTL_HOURS = 72;
+
+const hashToken = (raw: string): string => createHash('sha256').update(raw).digest('hex');
 
 /**
  * Gestion de l'équipe côté Admin (OWNER uniquement, @Roles au contrôleur).
@@ -43,12 +56,16 @@ import { AppException } from '../../../common/http/app.exception';
  */
 @Injectable()
 export class AdminUsersService {
+  private readonly logger = new Logger(AdminUsersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly billing: BillingService,
     private readonly audit: AuditService,
     private readonly otp: OtpService,
     private readonly tokens: TokenService,
+    @Inject(MAIL_PROVIDER) private readonly mail: MailProvider,
+    @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
 
   // ─── Liste paginée ─────────────────────────────────────────────────────────
@@ -269,12 +286,12 @@ export class AdminUsersService {
   ): Promise<InvitationView> {
     await this.billing.assertUserQuota(ctx.accountId, 1);
     await this.assertSitesBelongToAccount(ctx.accountId, dto.siteIds);
+    await this.assertIdentityAvailable(ctx.accountId, dto.email, dto.phone);
 
     // Jeton opaque, haché avec SHA-256 (préférable à argon2 ici : besoin de
-    // lookup par égalité). Le clair n'est jamais stocké, le serveur le renvoie
-    // UNE SEULE FOIS dans la réponse de création.
+    // lookup par égalité). Le clair n'est jamais stocké : il part dans l'e-mail
+    // et n'est renvoyé à l'OWNER qu'une seule fois (lien de secours à copier).
     const rawToken = randomBytes(32).toString('base64url');
-    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
     const expiresAt = new Date(Date.now() + dto.ttlHours * 3_600_000);
 
     const invitation = await this.prisma.$transaction(async (tx) => {
@@ -286,7 +303,7 @@ export class AdminUsersService {
           phone: dto.phone,
           role: dto.role as PrismaUserRole,
           siteIds: dto.siteIds,
-          tokenHash,
+          tokenHash: hashToken(rawToken),
           expiresAt,
           createdBy: ctx.userId,
         },
@@ -301,6 +318,7 @@ export class AdminUsersService {
           name: inv.name,
           role: inv.role,
           phone: inv.phone,
+          email: inv.email,
           siteIds: dto.siteIds,
           expiresAt: inv.expiresAt,
         },
@@ -308,14 +326,128 @@ export class AdminUsersService {
       return inv;
     });
 
-    // Pas d'envoi automatique : il n'existe pas encore d'écran d'acceptation
-    // (/invite/:token). Le jeton et l'URL sont renvoyés à l'OWNER, qui les partage
-    // par le canal de son choix.
+    return this.withLink(invitation, rawToken, await this.sendInvitationMail(invitation, rawToken));
+  }
 
-    const view = this.toInvitationView(invitation);
-    view.token = rawToken;
-    view.acceptUrl = `/invite/${rawToken}`;
-    return view;
+  /**
+   * Renvoie l'e-mail d'une invitation en attente. Le jeton précédent n'étant
+   * jamais stocké en clair, un nouveau est généré (l'ancien lien cesse de
+   * fonctionner) et la validité repart pour 72 h.
+   */
+  async resendInvitation(ctx: RequestContext, id: string): Promise<InvitationView> {
+    const inv = await this.prisma.invitation.findFirst({ where: { id, accountId: ctx.accountId } });
+    if (!inv) {
+      throw new NotFoundException({
+        code: ADMIN_USER_ERRORS.INVITATION_NOT_FOUND,
+        message: 'Invitation introuvable',
+      });
+    }
+    if (inv.usedAt || inv.revokedAt) {
+      throw new GoneException({
+        code: ADMIN_USER_ERRORS.INVITATION_INVALID,
+        message: 'Cette invitation a déjà été acceptée ou révoquée',
+      });
+    }
+    if (!inv.email) {
+      throw new BadRequestException({
+        code: ADMIN_USER_ERRORS.INVITATION_EMAIL_REQUIRED,
+        message: "Cette invitation n'a pas d'adresse e-mail : révoquez-la et invitez à nouveau avec un e-mail",
+      });
+    }
+
+    const rawToken = randomBytes(32).toString('base64url');
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.invitation.update({
+        where: { id },
+        data: {
+          tokenHash: hashToken(rawToken),
+          expiresAt: new Date(Date.now() + RESEND_TTL_HOURS * 3_600_000),
+        },
+      });
+      await this.audit.log(tx, {
+        accountId: ctx.accountId,
+        actorId: ctx.userId,
+        entity: 'invitation',
+        entityId: id,
+        action: 'UPDATE',
+        reason: 'INVITATION_RESENT',
+        before: { expiresAt: inv.expiresAt },
+        after: { expiresAt: u.expiresAt },
+      });
+      return u;
+    });
+
+    return this.withLink(updated, rawToken, await this.sendInvitationMail(updated, rawToken));
+  }
+
+  // ─── Acceptation publique (lien reçu par e-mail) ─────────────────────────
+
+  /** Aperçu d'une invitation valide, pour la page /invite/:token. */
+  async previewInvitation(rawToken: string): Promise<InvitationPreview> {
+    const inv = await this.findValidInvitation(rawToken);
+    return {
+      name: inv.name,
+      email: inv.email,
+      role: inv.role as UserRole,
+      accountName: inv.account.name,
+      expiresAt: inv.expiresAt.toISOString(),
+    };
+  }
+
+  /**
+   * Accepte une invitation : crée l'utilisateur avec le mot de passe choisi,
+   * consomme l'invitation (une seule fois) et renvoie de quoi ouvrir la session.
+   */
+  async acceptInvitation(
+    rawToken: string,
+    dto: AcceptInvitationDto,
+  ): Promise<{ id: string; accountId: string; role: PrismaUserRole }> {
+    const inv = await this.findValidInvitation(rawToken);
+    await this.billing.assertUserQuota(inv.accountId, 1);
+    await this.assertIdentityAvailable(inv.accountId, inv.email, inv.phone);
+
+    const requested = Array.isArray(inv.siteIds) ? (inv.siteIds as string[]) : [];
+    // Un site supprimé entre-temps est simplement ignoré.
+    const sites = requested.length
+      ? await this.prisma.site.findMany({
+          where: { id: { in: requested }, accountId: inv.accountId },
+          select: { id: true },
+        })
+      : [];
+    const passwordHash = await argon2.hash(dto.password);
+
+    return this.prisma.$transaction(async (tx) => {
+      // Consommation atomique : deux clics simultanés ne créent qu'un compte.
+      const consumed = await tx.invitation.updateMany({
+        where: { id: inv.id, usedAt: null, revokedAt: null, expiresAt: { gt: new Date() } },
+        data: { usedAt: new Date() },
+      });
+      if (consumed.count !== 1) throw this.invalidInvitation();
+
+      const user = await tx.user.create({
+        data: {
+          accountId: inv.accountId,
+          name: inv.name,
+          email: inv.email,
+          phone: inv.phone,
+          passwordHash,
+          role: inv.role,
+          createdBy: inv.createdBy,
+          invitedAt: inv.createdAt,
+          sites: { create: sites.map((s) => ({ siteId: s.id })) },
+        },
+      });
+      await this.audit.log(tx, {
+        accountId: inv.accountId,
+        actorId: user.id,
+        entity: 'user',
+        entityId: user.id,
+        action: 'CREATE',
+        reason: 'INVITATION_ACCEPTED',
+        after: { name: user.name, role: user.role, phone: user.phone, invitationId: inv.id },
+      });
+      return { id: user.id, accountId: user.accountId, role: user.role };
+    });
   }
 
   async revokeInvitation(ctx: RequestContext, id: string): Promise<InvitationView> {
@@ -348,6 +480,93 @@ export class AdminUsersService {
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  private async findValidInvitation(rawToken: string) {
+    const inv = await this.prisma.invitation.findUnique({
+      where: { tokenHash: hashToken(rawToken) },
+      include: { account: { select: { name: true } } },
+    });
+    if (!inv || inv.usedAt || inv.revokedAt || inv.expiresAt <= new Date()) {
+      throw this.invalidInvitation();
+    }
+    return inv;
+  }
+
+  private invalidInvitation(): GoneException {
+    return new GoneException({
+      code: ADMIN_USER_ERRORS.INVITATION_INVALID,
+      message: "Ce lien d'invitation n'est plus valable (expiré, révoqué ou déjà utilisé)",
+    });
+  }
+
+  /** L'e-mail est unique sur tout Bailo ; le numéro, au sein du compte. */
+  private async assertIdentityAvailable(
+    accountId: string,
+    email: string | null | undefined,
+    phone: string,
+  ): Promise<void> {
+    if (email) {
+      const taken = await this.prisma.user.count({ where: { email } });
+      if (taken) {
+        throw new ConflictException({
+          code: ADMIN_USER_ERRORS.EMAIL_TAKEN,
+          message: 'Cette adresse e-mail est déjà utilisée par un compte Bailo',
+        });
+      }
+    }
+    const phoneTaken = await this.prisma.user.count({ where: { accountId, phone } });
+    if (phoneTaken) {
+      throw new ConflictException({
+        code: ADMIN_USER_ERRORS.PHONE_TAKEN,
+        message: "Ce numéro est déjà celui d'un membre de votre équipe",
+      });
+    }
+  }
+
+  /** Envoie l'e-mail d'invitation ; un échec d'envoi ne bloque pas (lien de secours). */
+  private async sendInvitationMail(
+    inv: { accountId: string; name: string; email: string | null; role: PrismaUserRole; expiresAt: Date },
+    rawToken: string,
+  ): Promise<boolean> {
+    if (!inv.email) return false;
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { id: inv.accountId },
+        select: { name: true },
+      });
+      await this.mail.send(
+        invitationMail(inv.email, {
+          name: inv.name,
+          accountName: account?.name ?? 'Votre bailleur',
+          role: inv.role,
+          url: this.acceptUrl(rawToken),
+          expiresAt: inv.expiresAt,
+        }),
+      );
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        `Invitation non envoyée à ${maskEmail(inv.email)} : ${(error as Error).message}`,
+      );
+      return false;
+    }
+  }
+
+  private acceptUrl(rawToken: string): string {
+    return `${publicAppUrl(this.env)}/invite/${rawToken}`;
+  }
+
+  private withLink(
+    inv: Parameters<AdminUsersService['toInvitationView']>[0],
+    rawToken: string,
+    emailSent: boolean,
+  ): InvitationView {
+    const view = this.toInvitationView(inv);
+    view.token = rawToken;
+    view.acceptUrl = this.acceptUrl(rawToken);
+    view.emailSent = emailSent;
+    return view;
+  }
 
   private async assertSitesBelongToAccount(accountId: string, siteIds: string[]): Promise<void> {
     if (siteIds.length === 0) return;

@@ -23,7 +23,7 @@ import {
   NativeSelect,
   PageSkeleton,
 } from '../../components/ui';
-import { KeyIcon, LogOutIcon, PencilIcon, UserPlusIcon, UsersIcon, XIcon } from '../../components/icons';
+import { KeyIcon, LogOutIcon, MailIcon, PencilIcon, UserPlusIcon, UsersIcon, XIcon } from '../../components/icons';
 
 interface Site {
   id: string;
@@ -34,8 +34,8 @@ interface Site {
  * Admin → Équipe (OWNER uniquement).
  * Liste paginée + filtres (rôle, actif, recherche), édition inline d'un
  * utilisateur (rôle, actif, sites assignés), réinitialisation du mot de passe
- * (envoi d'un OTP SMS), révocation forcée des sessions, formulaire
- * d'invitation. Les réponses d'erreur de l'API portent un code applicatif
+ * (code envoyé par e-mail), révocation forcée des sessions, invitation
+ * par e-mail (lien d'activation) avec renvoi. Les réponses d'erreur de l'API portent un code applicatif
  * (ADMIN_USER_LAST_OWNER…) qu'on affiche en toast dédié.
  */
 export function AdminTeam() {
@@ -156,6 +156,26 @@ export function AdminTeam() {
     }
   }
 
+  async function resendInvitation(inv: InvitationView) {
+    try {
+      const view = await api.post<InvitationView>(`/admin/invitations/${inv.id}/resend`, {});
+      announceInvitation(view);
+      void loadInvitations();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  /** Confirme l'envoi ; si l'e-mail n'a pas pu partir, copie le lien à partager à la main. */
+  function announceInvitation(view: InvitationView) {
+    if (view.emailSent) {
+      toast.success(t('adminTeam.inviteEmailSent', { email: view.email }));
+    } else if (view.acceptUrl) {
+      navigator.clipboard?.writeText(view.acceptUrl).catch(() => undefined);
+      toast.error(t('adminTeam.inviteEmailFailed'));
+    }
+  }
+
   async function revokeInvitation(inv: InvitationView) {
     const ok = await confirm({
       title: t('adminTeam.confirm.revokeInvTitle', { name: inv.name }),
@@ -234,9 +254,15 @@ export function AdminTeam() {
                     {i.name} · {t(`profile.role.${i.role}`)}
                   </span>
                   <span className="block truncate text-xs text-slate-500">
-                    {i.phone} · {t('adminTeam.expiresOn', { date: formatDate(i.expiresAt) })}
+                    {i.email ?? i.phone} · {t('adminTeam.expiresOn', { date: formatDate(i.expiresAt) })}
                   </span>
                 </span>
+                {i.email && (
+                  <Button variant="ghost" size="sm" onClick={() => void resendInvitation(i)}>
+                    <MailIcon className="h-4 w-4" />
+                    {t('adminTeam.resendBtn')}
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => void revokeInvitation(i)}>
                   <XIcon className="h-4 w-4" />
                   {t('adminTeam.revokeBtn')}
@@ -340,12 +366,7 @@ export function AdminTeam() {
             setShowInvite(false);
             void loadInvitations();
             void load();
-            // On montre le jeton généré au propriétaire : il devra le partager
-            // au nouvel utilisateur (le SMS d'activation sera branché au Lot 6).
-            if (view.token) {
-              toast.success(t('adminTeam.inviteShareToken'));
-              navigator.clipboard?.writeText(view.token).catch(() => undefined);
-            }
+            announceInvitation(view);
           }}
         />
       )}
@@ -561,7 +582,7 @@ function InviteSheet({
       const body: CreateInvitationDto = {
         name,
         phone: phoneValue,
-        email: emailValue || undefined,
+        email: emailValue.trim(),
         role,
         siteIds,
         ttlHours: 72,
@@ -593,7 +614,7 @@ function InviteSheet({
             />
           </div>
           <div>
-            <Label>{t('adminTeam.emailLabel')}</Label>
+            <Label>{t('adminTeam.inviteEmailLabel')}</Label>
             <Input
               value={emailValue}
               onChange={(e) => setEmail(e.target.value)}
@@ -634,7 +655,7 @@ function InviteSheet({
           <Button
             className="h-12 sm:h-10"
             busy={busy}
-            disabled={!name || !phoneValue}
+            disabled={!name || !phoneValue || !/^\S+@\S+\.\S+$/.test(emailValue.trim())}
             onClick={() => void submit()}
           >
             {t('adminTeam.sendInvite')}

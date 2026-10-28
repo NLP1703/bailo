@@ -42,6 +42,7 @@ Dans **Variables**, ajouter :
 | `CORS_ORIGIN` | `https://bailo-web-production-xxxx.up.railway.app` *(l'URL web — à mettre à jour après l'étape 3)* |
 | `PUBLIC_API_URL` | `https://bailo-api-production-xxxx.up.railway.app` *(l'URL de ce service)* |
 | `PUBLIC_RECEIPT_BASE` | `https://bailo-web-production-xxxx.up.railway.app/r` |
+| `PUBLIC_APP_URL` | `https://bailo-web-production-xxxx.up.railway.app` *(facultatif : adresse du site dans les liens d'invitation envoyés par e-mail ; à défaut, la 1re origine de `CORS_ORIGIN`)* |
 | `JWT_ACCESS_SECRET` | généré via `openssl rand -base64 48` (≥ 32 car) |
 | `JWT_REFRESH_SECRET` | généré via `openssl rand -base64 48` (≥ 32 car) |
 | `COOKIE_SECRET` | généré via `openssl rand -base64 32` |

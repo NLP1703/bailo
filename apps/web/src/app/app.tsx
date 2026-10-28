@@ -31,6 +31,7 @@ import { Contracts } from '../screens/Contracts';
 import { ContractNew } from '../screens/ContractNew';
 import { ContractDetail } from '../screens/ContractDetail';
 import { Inspections } from '../screens/Inspections';
+import { InviteAccept } from '../screens/InviteAccept';
 import { Expenses } from '../screens/Expenses';
 import { Meters } from '../screens/Meters';
 import { Accounting } from '../screens/Accounting';
@@ -55,6 +56,15 @@ export function App() {
     return (
       <Routes>
         <Route path="/r/:id" element={<Verify />} />
+      </Routes>
+    );
+  }
+
+  // Lien d'invitation reçu par e-mail : accessible avec ou sans session.
+  if (location.pathname.startsWith('/invite/')) {
+    return (
+      <Routes>
+        <Route path="/invite/:token" element={<InviteAccept />} />
       </Routes>
     );
   }

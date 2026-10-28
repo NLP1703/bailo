@@ -110,6 +110,9 @@ const envSchema = z
 
     // Base publique des liens de vérification de reçu (QR code) — F6.4.
     PUBLIC_RECEIPT_BASE: z.string().default('http://localhost:5173/r'),
+    // Adresse publique du site web (liens envoyés par e-mail : invitations…).
+    // À défaut, la première origine de CORS_ORIGIN est utilisée.
+    PUBLIC_APP_URL: optionalString(z.string().url()),
     // URL publique de l'API — utilisée par les callbacks webhooks (MoMo/OM).
     PUBLIC_API_URL: z.string().default('http://localhost:3000'),
     // puppeteer : Chromium (repli HTML s'il est absent) | html : rendu HTML direct.
@@ -176,6 +179,12 @@ const envSchema = z
   });
 
 export type AppEnv = z.infer<typeof envSchema>;
+
+/** Adresse publique du site web, sans « / » final (PUBLIC_APP_URL, sinon 1re origine CORS). */
+export function publicAppUrl(env: Pick<AppEnv, 'PUBLIC_APP_URL' | 'CORS_ORIGIN'>): string {
+  const first = env.CORS_ORIGIN.split(',').map((o) => o.trim()).find(Boolean);
+  return (env.PUBLIC_APP_URL ?? first ?? 'http://localhost:5173').replace(/\/+$/, '');
+}
 
 export const APP_ENV = Symbol('APP_ENV');
 

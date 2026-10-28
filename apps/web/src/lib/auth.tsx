@@ -15,6 +15,8 @@ interface AuthContextValue {
   loading: boolean;
   login: (credentials: LoginDto) => Promise<void>;
   signup: (dto: SignupDto) => Promise<void>;
+  /** Accepte une invitation reçue par e-mail et ouvre la session du nouveau membre. */
+  acceptInvitation: (token: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   /** Recharge /me (offre, lecture seule…) sans recharger la page. */
   refreshMe: () => Promise<void>;
@@ -101,6 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await openSession(await api.post<AuthSession>('/auth/signup', dto));
   };
 
+  const acceptInvitation = async (token: string, password: string): Promise<void> => {
+    await openSession(
+      await api.post<AuthSession>(`/auth/invitations/${encodeURIComponent(token)}/accept`, { password }),
+    );
+  };
+
   const logout = async (): Promise<void> => {
     try {
       // Le cookie HttpOnly accompagne la requête : l'API révoque le refresh et l'efface.
@@ -118,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refreshMe }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, acceptInvitation, logout, refreshMe }}>
       {children}
     </AuthContext.Provider>
   );

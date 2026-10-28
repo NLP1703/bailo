@@ -15,8 +15,10 @@ import { createTestApp, resetDb, seedAccount, seedUser, type TestContext } from 
  *  - Garde-fou SELF_ROLE_CHANGE : l'OWNER ne peut pas modifier son propre rôle.
  *  - Révocation effective des sessions : la désactivation révoque les refresh
  *    tokens actifs ; une rotation subséquente répond 401.
- *  - Invitation : création → listée → révocable, et le jeton n'est jamais
- *    stocké en clair (le hash SHA-256 est vérifié).
+ *  - Invitation : création → e-mail envoyé avec le lien → listée → révocable,
+ *    et le jeton n'est jamais stocké en clair (le hash SHA-256 est vérifié).
+ *  - Acceptation : aperçu public, choix du mot de passe, session ouverte,
+ *    lien à usage unique ; le renvoi invalide l'ancien lien.
  */
 
 const NATIVE = { 'X-Bailo-Client': 'native' };
@@ -160,7 +162,7 @@ describe('Admin — équipe & sessions (e2e)', () => {
     await api().post('/api/v1/auth/refresh').set(NATIVE).send({ refreshToken: rt2 }).expect(401);
   });
 
-  it('invitation : création renvoie un token, listée, puis révocable', async () => {
+  it('invitation : création envoie l’e-mail, listée, puis révocable', async () => {
     await seedAccount(ctx.prisma, {
       name: 'A',
       phone: '690000130',
@@ -168,14 +170,27 @@ describe('Admin — équipe & sessions (e2e)', () => {
     });
     const owner = (await login('690000130', 'passOwner1')).at;
 
+    // L'adresse e-mail est obligatoire : c'est le canal d'envoi.
+    await api()
+      .post('/api/v1/admin/invitations')
+      .set({ Authorization: `Bearer ${owner}` })
+      .send({ name: 'Jean', phone: '690000131', role: 'CARETAKER' })
+      .expect(400);
+
     const created = await api()
       .post('/api/v1/admin/invitations')
       .set({ Authorization: `Bearer ${owner}` })
-      .send({ name: 'Jean', phone: '690000131', role: 'CARETAKER', ttlHours: 48 })
+      .send({ name: 'Jean', phone: '690000131', email: 'jean@invite-test.cm', role: 'CARETAKER', ttlHours: 48 })
       .expect(201);
     expect(created.body.token).toBeTruthy();
     expect(typeof created.body.token).toBe('string');
-    expect(created.body.acceptUrl).toContain(created.body.token);
+    expect(created.body.acceptUrl).toContain(`/invite/${created.body.token}`);
+    expect(created.body.emailSent).toBe(true);
+
+    // L'e-mail part vers l'invité et contient le lien d'activation.
+    const mails = ctx.mail.sentTo('jean@invite-test.cm');
+    expect(mails).toHaveLength(1);
+    expect(mails[0]!.text).toContain(created.body.acceptUrl);
 
     // Le token n'est JAMAIS stocké en clair : seule l'empreinte SHA-256 l'est.
     const row = await ctx.prisma.invitation.findUnique({ where: { id: created.body.id } });
@@ -197,6 +212,78 @@ describe('Admin — équipe & sessions (e2e)', () => {
       .expect(200);
     const row2 = await ctx.prisma.invitation.findUnique({ where: { id: created.body.id } });
     expect(row2?.revokedAt).toBeTruthy();
+  });
+
+  it('invitation : acceptation publique, lien à usage unique, renvoi', async () => {
+    const { accountId } = await seedAccount(ctx.prisma, {
+      name: 'Cité Soleil',
+      phone: '690000150',
+      password: 'passOwner1',
+    });
+    const site = await ctx.prisma.site.create({ data: { accountId, name: 'Bloc A', type: 'CITE' } });
+    const owner = (await login('690000150', 'passOwner1')).at;
+    const auth = { Authorization: `Bearer ${owner}` };
+
+    const first = await api()
+      .post('/api/v1/admin/invitations')
+      .set(auth)
+      .send({ name: 'Paul', phone: '690000151', email: 'paul@invite-test.cm', role: 'MANAGER', siteIds: [site.id] })
+      .expect(201);
+
+    // Renvoi : nouveau lien, l'ancien cesse de fonctionner.
+    const resent = await api()
+      .post(`/api/v1/admin/invitations/${first.body.id}/resend`)
+      .set(auth)
+      .expect(200);
+    expect(resent.body.token).not.toBe(first.body.token);
+    expect(resent.body.emailSent).toBe(true);
+    expect(ctx.mail.sentTo('paul@invite-test.cm')).toHaveLength(2);
+    await api().get(`/api/v1/auth/invitations/${first.body.token}`).expect(410);
+
+    const token = resent.body.token as string;
+    const preview = await api().get(`/api/v1/auth/invitations/${token}`).expect(200);
+    expect(preview.body).toMatchObject({ name: 'Paul', role: 'MANAGER', accountName: 'Cité Soleil' });
+
+    // Mot de passe trop court refusé.
+    await api().post(`/api/v1/auth/invitations/${token}/accept`).send({ password: 'court' }).expect(400);
+
+    const accepted = await api()
+      .post(`/api/v1/auth/invitations/${token}/accept`)
+      .set(NATIVE)
+      .send({ password: 'nouveauMdp1' })
+      .expect(200);
+    expect(accepted.body.accessToken).toBeTruthy();
+
+    const user = await ctx.prisma.user.findFirst({
+      where: { accountId, phone: '690000151' },
+      include: { sites: true },
+    });
+    expect(user).toMatchObject({ role: 'MANAGER', email: 'paul@invite-test.cm' });
+    expect(user?.invitedAt).toBeTruthy();
+    expect(user?.sites.map((s) => s.siteId)).toEqual([site.id]);
+
+    // Le nouveau gérant se connecte avec le mot de passe choisi.
+    await api().post('/api/v1/auth/login').send({ phone: '690000151', password: 'nouveauMdp1' }).expect(200);
+
+    // Lien à usage unique.
+    await api().post(`/api/v1/auth/invitations/${token}/accept`).send({ password: 'autreMdp12' }).expect(410);
+    await api().post(`/api/v1/admin/invitations/${first.body.id}/resend`).set(auth).expect(410);
+
+    // Une invitation révoquée n'est plus acceptable.
+    const other = await api()
+      .post('/api/v1/admin/invitations')
+      .set(auth)
+      .send({ name: 'Marc', phone: '690000152', email: 'marc@invite-test.cm', role: 'CARETAKER' })
+      .expect(201);
+    await api().delete(`/api/v1/admin/invitations/${other.body.id}`).set(auth).expect(200);
+    await api().get(`/api/v1/auth/invitations/${other.body.token}`).expect(410);
+
+    // E-mail déjà pris par un compte Bailo : refus dès l'invitation.
+    await api()
+      .post('/api/v1/admin/invitations')
+      .set(auth)
+      .send({ name: 'Paul bis', phone: '690000153', email: 'paul@invite-test.cm', role: 'CARETAKER' })
+      .expect(409);
   });
 
   it('isole deux comptes : un OWNER ne peut pas lire ni modifier les users d’un autre', async () => {

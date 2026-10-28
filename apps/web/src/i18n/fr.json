@@ -735,7 +735,6 @@
     "resetSent": "Un code de réinitialisation a été envoyé à {{email}}.",
     "revokeOk": "{{n}} session(s) révoquée(s).",
     "invRevoked": "Invitation révoquée.",
-    "inviteShareToken": "Jeton copié : partagez-le avec le nouvel utilisateur.",
     "phoneLabel": "Téléphone",
     "emailLabel": "Email (facultatif)",
     "sendInvite": "Envoyer l'invitation",
@@ -754,7 +753,11 @@
     },
     "emailEdit": "Adresse e-mail",
     "emailHint": "Reçoit les codes de réinitialisation du mot de passe.",
-    "resetNeedsEmail": "Ajoutez d'abord une adresse e-mail à cet utilisateur."
+    "resetNeedsEmail": "Ajoutez d'abord une adresse e-mail à cet utilisateur.",
+    "inviteEmailLabel": "Email (l'invitation y sera envoyée)",
+    "inviteEmailSent": "Invitation envoyée par e-mail à {{email}}.",
+    "inviteEmailFailed": "L'e-mail n'a pas pu partir : le lien d'invitation a été copié, partagez-le à la main.",
+    "resendBtn": "Renvoyer"
   },
   "theme": {
     "label": "Thème",
@@ -1073,5 +1076,21 @@
     "rateLimited": "Trop de demandes : réessayez dans quelques minutes",
     "error": "Une erreur est survenue, réessayez",
     "done": "Mot de passe modifié : connectez-vous avec le nouveau."
+  },
+  "invite": {
+    "title": "Rejoindre l'équipe",
+    "subtitle": "Bonjour {{name}} : {{account}} vous invite en tant que {{role}}. Choisissez votre mot de passe pour activer votre accès.",
+    "loginWith": "Vous vous connecterez avec {{email}} (ou votre numéro de téléphone).",
+    "password": "Mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "submit": "Activer mon accès",
+    "expires": "Invitation valable jusqu'au {{date}}.",
+    "passwordLength": "Le mot de passe doit contenir au moins 8 caractères.",
+    "mismatch": "Les deux mots de passe ne correspondent pas.",
+    "conflict": "Un compte existe déjà avec cet e-mail ou ce numéro. Demandez à votre bailleur de vérifier l'invitation.",
+    "error": "Une erreur est survenue. Réessayez dans un instant.",
+    "invalidTitle": "Lien d'invitation invalide",
+    "invalidText": "Ce lien a expiré, a été révoqué ou a déjà servi. Demandez à votre bailleur de vous renvoyer l'invitation.",
+    "toLogin": "J'ai déjà un compte : se connecter"
   }
 }

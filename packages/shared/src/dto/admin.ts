@@ -212,7 +212,8 @@ export type UpdateAdminUserDto = z.infer<typeof updateAdminUserDto>;
 
 export const createInvitationDto = z.object({
   name: z.string().trim().min(2).max(80),
-  email: email.optional(),
+  /** L'invitation est envoyée par e-mail : l'adresse est obligatoire. */
+  email,
   phone,
   role: invitableRole,
   siteIds: z.array(uuid).default([]),
@@ -234,9 +235,25 @@ export interface InvitationView {
   revokedAt: string | null;
   /** Jeton en clair, servi UNIQUEMENT à la création (jamais relu depuis la base). */
   token?: string;
-  /** URL d'activation prête à partager, servie uniquement à la création. */
+  /** URL d'activation prête à partager, servie uniquement à la création / au renvoi. */
   acceptUrl?: string;
+  /** true si l'e-mail d'invitation est bien parti (création / renvoi uniquement). */
+  emailSent?: boolean;
 }
+
+// ─── Acceptation publique d'une invitation (lien reçu par e-mail) ─────────────
+
+/** Aperçu affiché sur la page /invite/:token, avant de choisir son mot de passe. */
+export interface InvitationPreview {
+  name: string;
+  email: string | null;
+  role: UserRole;
+  accountName: string;
+  expiresAt: string;
+}
+
+export const acceptInvitationDto = z.object({ password });
+export type AcceptInvitationDto = z.infer<typeof acceptInvitationDto>;
 
 /** Codes d'erreur applicatifs pour les règles d'intégrité de l'équipe. */
 export const ADMIN_USER_ERRORS = {
@@ -245,6 +262,14 @@ export const ADMIN_USER_ERRORS = {
   SELF_DEACTIVATE: 'ADMIN_USER_SELF_DEACTIVATE',
   USER_NOT_FOUND: 'ADMIN_USER_NOT_FOUND',
   INVITATION_NOT_FOUND: 'ADMIN_INVITATION_NOT_FOUND',
+  /** Lien d'invitation expiré, révoqué ou déjà utilisé. */
+  INVITATION_INVALID: 'ADMIN_INVITATION_INVALID',
+  /** Adresse e-mail déjà utilisée par un autre compte Bailo. */
+  EMAIL_TAKEN: 'ADMIN_USER_EMAIL_TAKEN',
+  /** Numéro déjà utilisé par un membre de l'équipe. */
+  PHONE_TAKEN: 'ADMIN_USER_PHONE_TAKEN',
+  /** Invitation sans adresse e-mail : impossible de l'envoyer. */
+  INVITATION_EMAIL_REQUIRED: 'ADMIN_INVITATION_EMAIL_REQUIRED',
 } as const;
 
 // ─── Section d'onglets Admin (interface web) ──────────────────────────────────
