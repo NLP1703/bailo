@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../lib/api';
-import { useSession } from '../lib/session';
+import { DeviceLimitError, useSession } from '../lib/session';
+import type { RegisteredDevice } from '../sync/engine';
 import { PrimaryButton, Screen, styles, Title } from '../ui/components';
 import { colors } from '../ui/theme';
 
@@ -12,8 +13,9 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [devices, setDevices] = useState<RegisteredDevice[] | null>(null);
 
-  const submit = async () => {
+  const submit = async (replaceDeviceId?: string) => {
     setError(null);
     if (!identifier.trim() || password.length < 8) {
       setError(
@@ -23,9 +25,11 @@ export default function SignIn() {
     }
     setBusy(true);
     try {
-      await signIn(identifier, password);
+      await signIn(identifier, password, replaceDeviceId);
     } catch (e) {
-      if (e instanceof ApiError && (e.status === 401 || e.status === 400)) {
+      if (e instanceof DeviceLimitError) {
+        setDevices(e.devices);
+      } else if (e instanceof ApiError && (e.status === 401 || e.status === 400)) {
         setError('Identifiant ou mot de passe incorrect.');
       } else if (e instanceof ApiError && e.status === 429) {
         setError('Trop d’essais. Patientez quelques minutes.');
@@ -85,7 +89,7 @@ export default function SignIn() {
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
-            onSubmitEditing={submit}
+            onSubmitEditing={() => void submit()}
           />
         </View>
         {error ? (
@@ -93,7 +97,24 @@ export default function SignIn() {
             {error}
           </Text>
         ) : null}
-        <PrimaryButton label="Se connecter" onPress={submit} busy={busy} />
+        {devices ? (
+          <View style={[styles.card, { gap: 10 }]}>
+            <Text style={styles.label}>Deux téléphones sont déjà actifs sur ce compte</Text>
+            <Text style={styles.cardText}>
+              Choisissez celui à déconnecter pour utiliser celui-ci :
+            </Text>
+            {devices.map((d) => (
+              <PrimaryButton
+                key={d.id}
+                tone="outline"
+                label={`Déconnecter ${d.model ?? d.platform} (vu le ${new Date(d.lastSeenAt).toLocaleDateString('fr-FR')})`}
+                onPress={() => void submit(d.id)}
+                busy={busy}
+              />
+            ))}
+          </View>
+        ) : null}
+        <PrimaryButton label="Se connecter" onPress={() => void submit()} busy={busy} />
         <Text style={[styles.subtitle, { textAlign: 'center' }]}>
           Les comptes sont créés par le bailleur. Mot de passe oublié : depuis le site Bailo.
         </Text>

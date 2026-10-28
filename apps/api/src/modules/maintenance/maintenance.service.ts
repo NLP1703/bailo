@@ -9,11 +9,16 @@ import type {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
+import { SiteAccessService } from '../../common/tenancy/site-access.service';
 import { listMaybePaginated } from '../../common/http/paginate';
 
 @Injectable()
 export class MaintenanceService {
-  constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+    private readonly access: SiteAccessService,
+  ) {}
 
   async list(ctx: RequestContext, q: TicketListQuery) {
     const where = {
@@ -37,6 +42,14 @@ export class MaintenanceService {
   }
 
   async create(ctx: RequestContext, dto: CreateTicketDto): Promise<MaintenanceTicket> {
+    await this.access.assertSiteAccess(ctx, dto.siteId);
+    if (dto.unitId) {
+      const unit = await this.prisma.unit.findFirst({
+        where: { id: dto.unitId, accountId: ctx.accountId },
+        select: { siteId: true },
+      });
+      if (!unit || unit.siteId !== dto.siteId) throw new NotFoundException('Chambre introuvable sur ce site');
+    }
     return this.prisma.$transaction(async (tx) => {
       const t = await tx.maintenanceTicket.create({
         data: {

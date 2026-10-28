@@ -228,15 +228,21 @@ modification plus récente.
 
 ## 11. Appareils, sessions et déconnexion (RGM10 à RGM12)
 
-- À la première connexion, le téléphone s'enregistre (`POST /auth/device`) et reçoit son
-  `deviceId`. Deux appareils actifs au plus par compte : au-delà, l'utilisateur choisit
-  lequel déconnecter.
-- **Déconnexion à distance** par le propriétaire : l'appareil est marqué révoqué. À sa
-  prochaine connexion au serveur, il reçoit un jeton limité à `POST /sync/push`, valable
-  uniquement pour les opérations créées **avant** la révocation ; il envoie ce qu'il a en
-  file, puis efface sa base locale et revient à l'écran de connexion (RGM12). Un téléphone
-  volé qui ne se reconnecte jamais ne peut rien lire : base chiffrée, clé dans le Keystore,
-  PIN.
+- À chaque connexion par mot de passe, le téléphone s'enregistre (`POST /auth/device`) avec
+  son identifiant (créé une fois, gardé dans le trousseau). Deux appareils actifs au plus par
+  utilisateur : au-delà, l'API répond `409 DEVICE_LIMIT_REACHED` avec la liste, l'utilisateur
+  choisit lequel déconnecter et l'app renvoie la demande avec `replaceDeviceId`.
+- Chaque requête porte `X-Bailo-Device`. Un téléphone inconnu du serveur reçoit
+  `409 SYNC_DEVICE_UNKNOWN` et se réenregistre automatiquement.
+- **Déconnexion à distance** (`DELETE /auth/devices/:id`, propriétaire ou l'utilisateur
+  lui-même, tracée dans le journal) : l'appareil est marqué révoqué. À son envoi suivant,
+  le serveur accepte les opérations créées **avant** la révocation, refuse les autres
+  (`SYNC_DEVICE_REVOKED`) et répond `deviceRevoked: true` ; la réception lui est refusée
+  (`403 SYNC_DEVICE_REVOKED`). L'app envoie alors ce qu'elle a, efface sa base locale et
+  revient à l'écran de connexion (RGM12). Un téléphone volé qui ne se reconnecte jamais ne
+  peut rien lire : base chiffrée, clé dans le Keystore, PIN.
+- Limite connue : les jetons de session ne sont pas liés à l'appareil ; la révocation prend
+  effet à la synchronisation suivante, pas à la seconde.
 - **Alerte à 48 h (RGM7)** : chaque envoi et chaque réception transmettent `pendingCount` et
   `oldestPendingAt`. Une tâche serveur alerte le propriétaire si un appareil a signalé des
   opérations en attente depuis plus de 48 h, ou n'a plus donné de nouvelles depuis 48 h alors
@@ -281,3 +287,22 @@ lisible, puis demande la mise à jour.
 **Recette (appareil de référence, mode avion) :** 20 paiements saisis hors-ligne puis
 synchronisés, avec coupure en pleine synchronisation → 20 paiements au serveur, aucun
 doublon (critère n°1 du cahier).
+
+## 15. État de l'implémentation (LM2)
+
+Fait et couvert par `apps/api/test/sync-mobile.e2e.spec.ts` (17 tests) :
+
+- `POST /sync/push` multi-types (`payment`, `meterReading`, `ticket`, `expense`,
+  `cashHandover`), traité dans l'ordre de `seq`, tracé dans `sync_operation` ; renvoi =
+  `duplicate` sans rien réappliquer ; opération restée « en cours » plus de 2 min →
+  `SYNC_NEEDS_REVIEW` ; refus : type inconnu, contenu invalide, rôle, site retiré, site
+  incohérent, date hors limites, compte en lecture seule, index de compteur en baisse (RG19).
+- `GET /sync/pull?siteId&cursor&limit` : instantané par site, pagination par
+  (horodatage, id) sans doublon ni trou, curseur final avec marge de 2 min, suppressions,
+  remise à zéro (`resetRequired`). L'ancien format du site web reste accepté.
+- Appareils : enregistrement, limite de 2, remplacement, liste, déconnexion à distance.
+- Contrôles d'accès au site ajoutés aux relevés, pannes et dépenses (aussi par le web).
+
+Reste pour plus tard : refus en cascade `DEPENDENCY_REJECTED` (aucune opération actuelle ne
+dépend d'une autre), alerte serveur à 48 h (LM4), réponse `426` aux vieilles versions (avant
+la publication), photos (§ 6, LM3).

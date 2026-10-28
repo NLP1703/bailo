@@ -10,8 +10,22 @@ import {
 } from 'react';
 import { AppState } from 'react-native';
 import { deleteDatabase } from '../db/database';
-import { getSync, resetSync } from '../sync/engine';
-import { api, login, logoutRemote, onExpired, refreshSession } from './api';
+import {
+  getDeviceId,
+  getSync,
+  registerDevice,
+  resetSync,
+  type RegisteredDevice,
+} from '../sync/engine';
+import { configureTransport } from '../sync/transport';
+import { api, ApiError, login, logoutRemote, onExpired, refreshSession } from './api';
+
+/** Deux téléphones déjà actifs : l'utilisateur choisit lequel déconnecter (RGM10). */
+export class DeviceLimitError extends Error {
+  constructor(readonly devices: RegisteredDevice[]) {
+    super('Deux téléphones sont déjà actifs sur ce compte.');
+  }
+}
 import { LOCK_AFTER_MS } from './config';
 import { checkPin, clearPin, hasPin, setPin, unlockWithBiometrics } from './pin';
 import { getSecret, setSecret, wipeSession } from './secure';
@@ -36,7 +50,7 @@ interface SessionValue {
   user: SessionUser | null;
   /** Message à afficher sur l'écran de connexion (session expirée, trop d'erreurs de PIN). */
   notice: string | null;
-  signIn(identifier: string, password: string): Promise<void>;
+  signIn(identifier: string, password: string, replaceDeviceId?: string): Promise<void>;
   choosePin(pin: string): Promise<void>;
   unlock(pin: string): Promise<{ ok: boolean; remaining: number }>;
   unlockBiometric(): Promise<boolean>;
@@ -98,9 +112,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  // Session refusée par le serveur (appareil déconnecté à distance, compte désactivé).
+  // Session refusée par le serveur (compte désactivé) ou téléphone déconnecté à distance.
   useEffect(() => {
     onExpired(() => void signOut('Votre session a pris fin. Reconnectez-vous.'));
+    configureTransport({
+      onDeviceRevoked: () =>
+        void signOut(
+          'Ce téléphone a été déconnecté par le propriétaire. Ses données ont été effacées.',
+        ),
+      register: () => registerDevice(),
+    });
+    void getDeviceId();
   }, [signOut]);
 
   // Verrouillage après 5 minutes en arrière-plan (RGM11).
@@ -116,14 +138,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => sub.remove();
   }, []);
 
-  const signIn = useCallback(async (identifier: string, password: string) => {
-    await login(identifier, password);
-    const me = await fetchUser();
-    await setSecret('user', JSON.stringify(me));
-    setUser(me);
-    setNotice(null);
-    setStatus('choosePin');
-  }, []);
+  const signIn = useCallback(
+    async (identifier: string, password: string, replaceDeviceId?: string) => {
+      await login(identifier, password);
+      try {
+        await registerDevice(replaceDeviceId);
+      } catch (error) {
+        if (error instanceof ApiError && error.code === 'DEVICE_LIMIT_REACHED') {
+          const devices =
+            (error.details as { devices?: RegisteredDevice[] } | undefined)?.devices ?? [];
+          await logoutRemote();
+          throw new DeviceLimitError(devices);
+        }
+        throw error;
+      }
+      const me = await fetchUser();
+      await setSecret('user', JSON.stringify(me));
+      setUser(me);
+      setNotice(null);
+      setStatus('choosePin');
+    },
+    [],
+  );
 
   const choosePin = useCallback(async (pin: string) => {
     await setPin(pin);

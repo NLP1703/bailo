@@ -43,6 +43,7 @@ import { CurrencyModule } from './modules/currency/currency.module';
 import { InsightsModule } from './modules/insights/insights.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DevicesModule } from './modules/devices/devices.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { AdminModule } from './modules/admin/admin.module';
     InsightsModule,
     AccountingModule,
     AdminModule,
+    DevicesModule,
   ],
   providers: [
     // Ordre significatif : authentification, rôles, puis état d'abonnement.

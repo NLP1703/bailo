@@ -9,11 +9,16 @@ import type {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
+import { SiteAccessService } from '../../common/tenancy/site-access.service';
 import { toDate } from '../../common/time/to-date';
 
 @Injectable()
 export class MetersService {
-  constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+    private readonly access: SiteAccessService,
+  ) {}
 
   async create(ctx: RequestContext, dto: CreateMeterDto): Promise<Meter> {
     const unit = await this.prisma.unit.findUnique({ where: { id: dto.unitId }, select: { accountId: true } });
@@ -61,10 +66,19 @@ export class MetersService {
       include: { unit: { select: { id: true, siteId: true } } },
     });
     if (!meter || meter.accountId !== ctx.accountId) throw new NotFoundException();
+    await this.access.assertSiteAccess(ctx, meter.unit.siteId);
     const prev = await this.prisma.meterReading.findFirst({
       where: { meterId: dto.meterId },
       orderBy: { readAt: 'desc' },
     });
+    // RG19 : un index inférieur au précédent est une erreur de saisie (ou un compteur
+    // changé, à déclarer comme nouveau compteur) — jamais une consommation nulle silencieuse.
+    if (prev && dto.value < prev.value) {
+      throw new BadRequestException({
+        code: 'METER_INDEX_DECREASED',
+        message: `Index inférieur au précédent (${prev.value}). Vérifiez le compteur.`,
+      });
+    }
     const consumption = prev ? Math.max(0, dto.value - prev.value) : 0;
     const amount = consumption * meter.unitPrice;
     const readAt = dto.readAt ? toDate(dto.readAt) : new Date();

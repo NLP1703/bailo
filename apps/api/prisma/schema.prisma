@@ -282,6 +282,9 @@ model Account {
   paymentIntents     PaymentIntent[]
   exchangeRates      ExchangeRate[]
   anomalies          Anomaly[]
+  devices            Device[]
+  syncOperations     SyncOperation[]
+  syncTombstones     SyncTombstone[]
 
   @@map("account")
 }
@@ -304,6 +307,7 @@ model User {
   account       Account        @relation(fields: [accountId], references: [id])
   sites         UserSite[]
   refreshTokens RefreshToken[]
+  devices       Device[]
 
   // Un numéro est unique à l'intérieur d'un compte (deux comptes peuvent avoir le même gardien logiquement,
   // mais un même numéro ne se connecte qu'à un compte : voir résolution à la connexion dans la doc auth).
@@ -1076,4 +1080,75 @@ model Anomaly {
   @@index([accountId, resolvedAt])
   @@index([kind])
   @@map("anomaly")
+}
+
+// ─── Application mobile : appareils et synchronisation hors-ligne ─────────────
+// Protocole : apps/mobile/docs/02-protocole-synchronisation.md
+
+// Téléphone d'un membre de l'équipe (RGM10 à RGM12). `deviceKey` est l'identifiant
+// créé par l'application ; un même téléphone peut servir à deux comptes successifs.
+model Device {
+  id              String    @id @default(uuid())
+  accountId       String
+  userId          String
+  deviceKey       String
+  platform        String
+  model           String?
+  appVersion      String?
+  pushToken       String?
+  lastSeenAt      DateTime  @default(now())
+  pendingCount    Int       @default(0)
+  oldestPendingAt DateTime?
+  revokedAt       DateTime?
+  revokedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceKey])
+  @@index([accountId])
+  @@map("device")
+}
+
+// Trace de chaque opération reçue d'un téléphone : garantit qu'elle n'est appliquée
+// qu'une fois (RGM1) et garde les refus visibles (RGM6).
+model SyncOperation {
+  opId            String   @id
+  accountId       String
+  userId          String
+  deviceKey       String?
+  type            String
+  v               Int
+  siteId          String
+  seq             Int
+  status          String // PROCESSING | APPLIED | REJECTED
+  errorCode       String?
+  message         String?
+  entityId        String?
+  clientCreatedAt DateTime
+  receivedAt      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, status])
+  @@index([userId, receivedAt])
+  @@map("sync_operation")
+}
+
+// Suppressions définitives à répercuter sur les téléphones (§ 7). `tableName` = '*'
+// signale une remise à zéro du compte : les téléphones rechargent tout.
+model SyncTombstone {
+  id        String   @id @default(uuid())
+  accountId String
+  tableName String
+  entityId  String
+  deletedAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, deletedAt])
+  @@map("sync_tombstone")
 }

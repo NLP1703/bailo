@@ -71,6 +71,7 @@ export async function createTestApp(): Promise<TestContext> {
 export async function resetDb(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
+      "sync_operation","sync_tombstone","device",
       "audit_log","reminder","allocation","payment","charge","occupancy",
       "cash_handover","expense","guarantor","tenant","unit","block","site",
       "template","receipt_sequence","refresh_token","otp_code","user_site",

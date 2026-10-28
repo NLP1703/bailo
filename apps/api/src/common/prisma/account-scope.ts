@@ -22,6 +22,9 @@ export const ACCOUNT_SCOPED_MODELS: ReadonlySet<string> = new Set([
   'Template',
   'ReceiptSequence',
   'AuditLog',
+  'Device',
+  'SyncOperation',
+  'SyncTombstone',
 ]);
 
 function withAccount(

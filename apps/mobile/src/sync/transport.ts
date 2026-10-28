@@ -1,5 +1,33 @@
 import type { PullPage, PushRequest, PushResponse, SyncTransport } from '@bailo/sync';
-import { api } from '../lib/api';
+import { api, ApiError } from '../lib/api';
+
+let onRevoked: (() => void) | null = null;
+let reRegister: (() => Promise<unknown>) | null = null;
+
+/**
+ * Branchements fournis par la session : que faire si le propriétaire a déconnecté ce
+ * téléphone (RGM12), et comment le réenregistrer si le serveur ne le connaît pas.
+ */
+export function configureTransport(handlers: {
+  onDeviceRevoked: () => void;
+  register: () => Promise<unknown>;
+}): void {
+  onRevoked = handlers.onDeviceRevoked;
+  reRegister = handlers.register;
+}
+
+async function withDevice<T>(call: () => Promise<T>): Promise<T> {
+  try {
+    return await call();
+  } catch (error) {
+    if (error instanceof ApiError && error.code === 'SYNC_DEVICE_UNKNOWN' && reRegister) {
+      await reRegister();
+      return call();
+    }
+    if (error instanceof ApiError && error.code === 'SYNC_DEVICE_REVOKED') onRevoked?.();
+    throw error;
+  }
+}
 
 /** Ancienne réponse de `/sync/pull` (avant la version par site du protocole). */
 interface LegacyPull {
@@ -19,13 +47,18 @@ const LEGACY_TABLES = [
 ] as const;
 
 /**
- * Accès réseau du moteur. Tant que l'API n'a pas la version par site de `/sync/pull`
- * (prochaine étape de LM2), la réponse actuelle est convertie en une page unique.
- * Côté envoi, une API qui ne connaît pas encore le format multi-types ne renvoie aucun
- * résultat : le moteur le traite comme une erreur passagère et garde la file intacte.
+ * Accès réseau du moteur. Une API plus ancienne qui renverrait l'instantané du compte
+ * (sans `changes`) est convertie en une page unique.
  */
 export const transport: SyncTransport = {
-  push: (request: PushRequest) => api.post<PushResponse>('/sync/push', request),
+  async push(request: PushRequest): Promise<PushResponse> {
+    const response = await withDevice(() =>
+      api.post<PushResponse & { deviceRevoked?: boolean }>('/sync/push', request),
+    );
+    // Les saisies d'avant la déconnexion viennent de partir : l'app peut s'effacer.
+    if (response.deviceRevoked) setTimeout(() => onRevoked?.(), 0);
+    return response;
+  },
 
   async pull(siteId: string, cursor: string | null): Promise<PullPage> {
     const query = new URLSearchParams({ siteId });
@@ -33,7 +66,9 @@ export const transport: SyncTransport = {
       query.set('cursor', cursor);
       query.set('since', cursor);
     }
-    const data = await api.get<PullPage | LegacyPull>(`/sync/pull?${query.toString()}`);
+    const data = await withDevice(() =>
+      api.get<PullPage | LegacyPull>(`/sync/pull?${query.toString()}`),
+    );
     if ('changes' in data && 'cursor' in data) return data as PullPage;
     const legacy = data as LegacyPull;
     const changes: Record<string, unknown[]> = {};

@@ -7,6 +7,7 @@ export class ApiError extends Error {
     readonly status: number,
     message: string,
     readonly code?: string,
+    readonly details?: unknown,
   ) {
     super(message);
   }
@@ -20,8 +21,14 @@ interface AuthSession {
 
 /** Jeton d'accès : en mémoire seulement, jamais écrit sur le disque. */
 let accessToken: string | null = null;
+let deviceKey: string | null = null;
 let refreshing: Promise<boolean> | null = null;
 let onSessionExpired: (() => void) | null = null;
+
+/** Identifiant de ce téléphone, joint à chaque requête (contrôle des appareils déconnectés). */
+export function setDeviceKey(id: string | null): void {
+  deviceKey = id;
+}
 
 export function setAccessToken(token: string | null): void {
   accessToken = token;
@@ -39,6 +46,7 @@ function headers(extra?: Record<string, string>): Record<string, string> {
     'X-Bailo-Client': 'native',
     'X-Bailo-App-Version': APP_VERSION,
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    ...(deviceKey ? { 'X-Bailo-Device': deviceKey } : {}),
     ...extra,
   };
 }
@@ -46,11 +54,11 @@ function headers(extra?: Record<string, string>): Record<string, string> {
 async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204) return undefined as T;
   const body = (await res.json().catch(() => null)) as
-    | (T & { code?: string; message?: string | string[] })
+    | (T & { code?: string; message?: string | string[]; details?: unknown })
     | null;
   if (!res.ok) {
     const message = Array.isArray(body?.message) ? body.message.join(', ') : body?.message;
-    throw new ApiError(res.status, message ?? `Erreur ${res.status}`, body?.code);
+    throw new ApiError(res.status, message ?? `Erreur ${res.status}`, body?.code, body?.details);
   }
   return body as T;
 }
