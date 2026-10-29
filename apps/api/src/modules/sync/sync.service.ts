@@ -40,7 +40,7 @@ const ALLOWED_ROLES: Record<SyncOperationType, readonly UserRole[]> = {
   'meterReading.create': ['OWNER', 'MANAGER', 'CARETAKER'],
   'ticket.create': ['OWNER', 'MANAGER', 'CARETAKER'],
   'expense.create': ['OWNER', 'MANAGER'],
-  'cashHandover.create': ['OWNER', 'MANAGER'],
+  'cashHandover.create': ['OWNER', 'MANAGER', 'CARETAKER'],
 };
 
 /** Opération restée « en cours » plus longtemps : on ne sait plus si elle a été appliquée (§ 5). */
@@ -67,6 +67,7 @@ const PULL_TABLES = [
   'meter_readings',
   'tickets',
   'expenses',
+  'cash_handovers',
 ] as const;
 type PullTable = (typeof PULL_TABLES)[number];
 
@@ -611,6 +612,19 @@ export class SyncService {
               { status: { in: ['OPEN', 'ASSIGNED', 'IN_PROGRESS'] } },
               { updatedAt: { gte: new Date(now - 30 * DAY) } },
             ],
+          },
+          orderBy,
+          take,
+        });
+      case 'cash_handovers':
+        // Remises de l'utilisateur lui-même (écran « Ma caisse ») : elles ne dépendent pas
+        // du site, seulement de l'encaisseur.
+        return this.prisma.cashHandover.findMany({
+          where: {
+            ...base,
+            accountId,
+            collectorId: ctx.userId,
+            createdAt: { gte: new Date(now - 120 * DAY) },
           },
           orderBy,
           take,

@@ -61,6 +61,10 @@ export class CashService {
 
   /** Remise de caisse : montant attendu (espèces valides de la période) vs remis (écart). */
   async createHandover(ctx: RequestContext, dto: CreateHandoverDto) {
+    assertOwnCash(ctx, dto.collectorId);
+    // Déclarée par l'encaisseur lui-même : à confirmer par le propriétaire (settledAt nul).
+    // Enregistrée par le propriétaire ou le gérant qui reçoit l'argent : remise faite.
+    const selfDeclared = dto.collectorId === ctx.userId && ctx.role !== 'OWNER';
     const periodStart = toDate(dto.periodStart);
     const periodEnd = toDate(dto.periodEnd);
 
@@ -87,7 +91,7 @@ export class CashService {
           handedAmount: dto.handedAmount,
           variance,
           note: dto.note,
-          settledAt: new Date(),
+          settledAt: selfDeclared ? null : new Date(),
         },
       });
       await this.audit.log(tx, {

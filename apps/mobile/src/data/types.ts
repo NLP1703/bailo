@@ -133,6 +133,20 @@ export interface ExpenseRow {
   spentAt: string;
 }
 
+export interface CashHandoverRow {
+  id: string;
+  collectorId: string;
+  periodStart: string;
+  periodEnd: string;
+  expectedAmount: number;
+  handedAmount: number;
+  variance: number;
+  note: string | null;
+  /** Nul tant que le propriétaire n'a pas confirmé une remise déclarée (T14). */
+  settledAt: string | null;
+  createdAt: string;
+}
+
 /** Tables locales d'un site. */
 export interface SiteTables {
   sites: SiteRow[];
@@ -142,11 +156,12 @@ export interface SiteTables {
   guarantors: GuarantorRow[];
   occupancies: OccupancyRow[];
   charges: ChargeRow[];
-  payments: PaymentRow[];
+  payments: Array<PaymentRow & PendingMarker>;
   meters: MeterRow[];
-  meter_readings: MeterReadingRow[];
-  tickets: TicketRow[];
-  expenses: ExpenseRow[];
+  meter_readings: Array<MeterReadingRow & PendingMarker>;
+  tickets: Array<TicketRow & PendingMarker>;
+  expenses: Array<ExpenseRow & PendingMarker>;
+  cash_handovers: Array<CashHandoverRow & PendingMarker>;
 }
 
 /** Saisie faite sur ce téléphone et pas encore confirmée par le serveur. */

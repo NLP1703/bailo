@@ -1,9 +1,5 @@
-import { Placeholder } from '../../ui/components';
+import { PannesScreen } from '../../screens/PannesScreen';
 
-export default function Screen() {
-  return (
-    <Placeholder title="Pannes" lot="LM3">
-      Signalement avec photos, urgence et chambre concernée (maquette T11).
-    </Placeholder>
-  );
+export default function Pannes() {
+  return <PannesScreen />;
 }

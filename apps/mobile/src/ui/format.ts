@@ -32,7 +32,7 @@ export function shortDate(iso: string): string {
 
 /** Montant sans l'unité, pour les cases du plan : « 30 000 ». */
 export function amountShort(amount: number): string {
-  return formatFcfa(amount).replace(' FCFA', '');
+  return formatFcfa(amount).replace(/\s*FCFA$/u, '');
 }
 
 export const PAYMENT_MODE_LABELS: Record<PaymentMode, string> = {

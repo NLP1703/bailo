@@ -37,6 +37,7 @@ const ENTITY_TABLE: Record<string, string> = {
   'ticket.create': 'tickets',
   'expense.create': 'expenses',
   'meterReading.create': 'meter_readings',
+  'cashHandover.create': 'cash_handovers',
 };
 
 interface OutboxRow {

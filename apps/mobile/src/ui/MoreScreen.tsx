@@ -1,11 +1,44 @@
 import type { RejectedOperation } from '@bailo/sync';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router, type Href } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
 import { useSyncState } from '../sync/useSync';
 import { PrimaryButton, Screen, styles, SyncBanner, Title } from './components';
-import { colors } from './theme';
+import { colors, touch } from './theme';
+
+type Role = 'OWNER' | 'MANAGER' | 'CARETAKER';
+
+/** Écrans de terrain ouverts depuis « Plus » (le gardien les a dans ses onglets). */
+const LINKS: Array<{
+  href: Href;
+  label: string;
+  icon: 'wallet-outline' | 'speedometer-outline' | 'construct-outline' | 'receipt-outline';
+  roles?: Role[];
+}> = [
+  { href: '/caisse', label: 'Ma caisse', icon: 'wallet-outline', roles: ['MANAGER', 'CARETAKER'] },
+  {
+    href: '/releves',
+    label: 'Relevés de compteurs',
+    icon: 'speedometer-outline',
+    roles: ['MANAGER', 'CARETAKER'],
+  },
+  { href: '/pannes', label: 'Pannes', icon: 'construct-outline' },
+  {
+    href: '/depense',
+    label: 'Nouvelle dépense',
+    icon: 'receipt-outline',
+    roles: ['OWNER', 'MANAGER'],
+  },
+];
+
+const linkStyle = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: touch.button },
+  border: { borderTopWidth: 1, borderTopColor: colors.border },
+  text: { flex: 1, fontSize: 16, color: colors.text },
+});
 
 const ROLE_LABEL = { OWNER: 'Propriétaire', MANAGER: 'Gérant', CARETAKER: 'Gardien' } as const;
 
@@ -48,6 +81,20 @@ export function MoreScreen() {
         <Title subtitle={user ? `${ROLE_LABEL[user.role]} · ${user.accountName}` : undefined}>
           {user?.name ?? 'Mon compte'}
         </Title>
+        <View style={[styles.card, { paddingVertical: 4 }]}>
+          {LINKS.filter((l) => !l.roles || (user && l.roles.includes(user.role))).map((l, i) => (
+            <Pressable
+              key={l.label}
+              onPress={() => router.push(l.href)}
+              accessibilityRole="button"
+              style={[linkStyle.row, i > 0 && linkStyle.border]}
+            >
+              <Ionicons name={l.icon} size={22} color={colors.brand} />
+              <Text style={linkStyle.text}>{l.label}</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </Pressable>
+          ))}
+        </View>
         <View style={styles.card}>
           <Text style={styles.label}>Synchronisation</Text>
           <Text style={styles.cardText}>

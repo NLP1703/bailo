@@ -7,6 +7,7 @@ import type {
   PaymentRow,
   PendingMarker,
   SiteTables,
+  TicketRow,
   UnitView,
 } from './types';
 
@@ -74,9 +75,73 @@ export function withPending(tables: SiteTables, queue: QueuedOp[]): SiteTables {
     }
   }
 
+  // Autres saisies : visibles tout de suite dans leurs listes, marquées « en attente ».
+  const readings = [...tables.meter_readings];
+  const tickets = [...tables.tickets];
+  const expenses = [...tables.expenses];
+  const handovers = [...tables.cash_handovers];
+  for (const op of queue) {
+    const p = op.payload as Record<string, unknown>;
+    if (op.type === 'meterReading.create') {
+      const meterId = String(p.meterId);
+      const previous = readings
+        .filter((r) => r.meterId === meterId)
+        .sort((a, b) => b.readAt.localeCompare(a.readAt))[0];
+      const value = Number(p.value);
+      readings.push({
+        id: op.opId,
+        meterId,
+        readAt: typeof p.readAt === 'string' ? p.readAt : op.createdAt,
+        value,
+        consumption: previous ? Math.max(0, value - previous.value) : 0,
+        pending: true,
+      });
+    } else if (op.type === 'ticket.create') {
+      tickets.push({
+        id: op.opId,
+        siteId: op.siteId,
+        unitId: typeof p.unitId === 'string' ? p.unitId : null,
+        title: String(p.title ?? ''),
+        description: typeof p.description === 'string' ? p.description : null,
+        priority: (p.priority as TicketRow['priority']) ?? 'NORMAL',
+        status: 'OPEN',
+        reportedAt: op.createdAt,
+        pending: true,
+      });
+    } else if (op.type === 'expense.create') {
+      expenses.push({
+        id: op.opId,
+        siteId: op.siteId,
+        category: String(p.category ?? 'OTHER'),
+        label: String(p.label ?? ''),
+        amount: Number(p.amount ?? 0),
+        spentAt: String(p.spentAt ?? op.createdAt),
+        pending: true,
+      });
+    } else if (op.type === 'cashHandover.create') {
+      handovers.push({
+        id: op.opId,
+        collectorId: String(p.collectorId ?? ''),
+        periodStart: String(p.periodStart ?? op.createdAt),
+        periodEnd: String(p.periodEnd ?? op.createdAt),
+        expectedAmount: 0,
+        handedAmount: Number(p.handedAmount ?? 0),
+        variance: 0,
+        note: typeof p.note === 'string' ? p.note : null,
+        settledAt: null,
+        createdAt: op.createdAt,
+        pending: true,
+      });
+    }
+  }
+
   return {
     ...tables,
     payments,
+    meter_readings: readings,
+    tickets,
+    expenses,
+    cash_handovers: handovers,
     charges: tables.charges.map((c) => (extraPaid.has(c.id) ? { ...c, paid: paidOf(c) } : c)),
   };
 }

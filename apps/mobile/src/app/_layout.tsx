@@ -53,6 +53,10 @@ function RootNavigator() {
       <Stack.Protected guard={ready}>
         <Stack.Screen name="chambre/[id]" />
         <Stack.Screen name="encaisser" />
+        <Stack.Screen name="caisse" />
+        <Stack.Screen name="releves" />
+        <Stack.Screen name="pannes" />
+        <Stack.Screen name="depense" />
       </Stack.Protected>
       <Stack.Screen name="index" />
     </Stack>

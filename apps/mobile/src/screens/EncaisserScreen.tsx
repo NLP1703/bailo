@@ -123,7 +123,7 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
           ...(mode !== 'ESPECES' && reference.trim() ? { reference: reference.trim() } : {}),
         },
       });
-      void engine.flush();
+      void engine.syncNow(siteId);
       setDone({
         opId: op.opId,
         unitCode: view.unit.code,
@@ -208,9 +208,21 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <SyncBanner />
         {!standalone ? (
-          <Text style={s.title} accessibilityRole="header">
-            Encaisser
-          </Text>
+          <View style={s.titleRow}>
+            <Text style={[s.title, { flex: 1 }]} accessibilityRole="header">
+              Encaisser
+            </Text>
+            {user?.role !== 'OWNER' ? (
+              <Pressable
+                onPress={() => router.push('/caisse')}
+                accessibilityRole="button"
+                style={s.cashLink}
+              >
+                <Ionicons name="wallet-outline" size={20} color={colors.brand} />
+                <Text style={s.change}>Ma caisse</Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
         {user?.readOnly ? (
           <View style={[s.card, { backgroundColor: colors.warningSoft, borderColor: '#FDE68A' }]}>
@@ -367,6 +379,17 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ground },
   content: { padding: 20, gap: 12, paddingBottom: 40 },
   title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  cashLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: touch.min,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.brand,
+  },
   label: { fontSize: 14, fontWeight: '600', color: colors.textSecondary, marginTop: 4 },
   input: {
     minHeight: touch.button,

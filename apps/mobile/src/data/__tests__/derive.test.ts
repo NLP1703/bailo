@@ -84,6 +84,7 @@ function tables(charges: ChargeRow[], extra: Partial<SiteTables> = {}): SiteTabl
     meter_readings: [],
     tickets: [],
     expenses: [],
+    cash_handovers: [],
     ...extra,
   };
 }

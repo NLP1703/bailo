@@ -503,6 +503,51 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(charges(afterVoid.pages).find((c) => c.id === oldest.id)?.paid).toBe(0);
   });
 
+  it('le gardien déclare sa propre remise de caisse, à confirmer, et la reçoit', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.caretaker);
+    const me = await ctx.prisma.user.findFirstOrThrow({ where: { phone: '690000002' } });
+    const owner = await ctx.prisma.user.findFirstOrThrow({ where: { phone: '690000001' } });
+    const start = new Date(Date.now() - 86_400_000).toISOString();
+    const pay = op('payment.create', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      amount: 12000,
+      mode: 'ESPECES',
+    });
+    const mine = op('cashHandover.create', f.siteA.id, {
+      collectorId: me.id,
+      periodStart: start,
+      periodEnd: new Date(Date.now() + 1000).toISOString(),
+      handedAmount: 10000,
+    });
+    const notMine = op('cashHandover.create', f.siteA.id, {
+      collectorId: owner.id,
+      periodStart: start,
+      periodEnd: new Date().toISOString(),
+      handedAmount: 1,
+    });
+    const res = await push(f.caretaker, deviceId, [pay, mine, notMine]).expect(200);
+    expect(res.body.results.map((r: { status: string }) => r.status)).toEqual([
+      'applied',
+      'applied',
+      'rejected',
+    ]);
+
+    const handover = await ctx.prisma.cashHandover.findUniqueOrThrow({
+      where: { id: res.body.results[1].entityId },
+    });
+    expect(handover).toMatchObject({
+      expectedAmount: 12000,
+      handedAmount: 10000,
+      variance: -2000,
+      settledAt: null,
+    });
+
+    const { pages } = await pullAll(f.caretaker, deviceId, f.siteA.id, null);
+    const rows = pages.flatMap((p) => p.changes.cash_handovers ?? []);
+    expect(rows.map((r) => r.id)).toEqual([handover.id]);
+  });
+
   it('un locataire supprimé est signalé aux téléphones (pierre tombale)', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.owner);

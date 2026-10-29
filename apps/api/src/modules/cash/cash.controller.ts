@@ -28,9 +28,11 @@ export class CashController {
     return this.cash.journal(ctx, query);
   }
 
+  // Le gardien déclare sa propre remise (application mobile, T8) ; elle reste à confirmer
+  // par le propriétaire. Le propriétaire et le gérant enregistrent celles qu'ils reçoivent.
   @Post('handovers')
-  @Roles('OWNER', 'MANAGER')
-  @ApiOperation({ summary: 'Enregistrer une remise de caisse' })
+  @Roles('OWNER', 'MANAGER', 'CARETAKER')
+  @ApiOperation({ summary: 'Enregistrer ou déclarer une remise de caisse' })
   async createHandover(
     @CurrentUser() ctx: RequestContext,
     @Body(new ZodValidationPipe(createHandoverDto)) dto: CreateHandoverDto,

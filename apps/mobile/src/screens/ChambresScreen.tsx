@@ -3,7 +3,15 @@ import type { UnitColor } from '@bailo/shared';
 import { diffDays } from '@bailo/shared';
 import { router } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSiteData } from '../data/useSiteData';
 import type { UnitView } from '../data/types';
 import { Screen, SyncBanner } from '../ui/components';
@@ -43,6 +51,10 @@ export function ChambresScreen({ headerAction }: { headerAction?: ReactNode }) {
   const [block, setBlock] = useState<string | null>(null);
   const [status, setStatus] = useState<StatusFilter>('ALL');
   const site = tables.sites[0];
+  // Quatre cases par ligne (maquette T3) : largeur calculée, les pourcentages ne tenant
+  // pas compte de l'espacement entre cases.
+  const { width } = useWindowDimensions();
+  const tileWidth = Math.floor((Math.min(width, 600) - 40 - 3 * 8) / 4);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -173,7 +185,7 @@ export function ChambresScreen({ headerAction }: { headerAction?: ReactNode }) {
                     accessibilityLabel={`Chambre ${v.unit.code}, ${c.label}${v.tenant ? `, ${v.tenant.name}` : ''}`}
                     style={({ pressed }) => [
                       s.tile,
-                      { backgroundColor: c.bg },
+                      { width: tileWidth, backgroundColor: c.bg },
                       pressed && { opacity: 0.8 },
                     ]}
                   >
@@ -252,7 +264,6 @@ const s = StyleSheet.create({
   blockTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 1, color: colors.textSecondary },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tile: {
-    width: '23.5%',
     minHeight: 64,
     borderRadius: 12,
     paddingVertical: 10,

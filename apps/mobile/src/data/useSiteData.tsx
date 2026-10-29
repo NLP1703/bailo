@@ -32,6 +32,7 @@ const TABLES: Array<keyof SiteTables> = [
   'meter_readings',
   'tickets',
   'expenses',
+  'cash_handovers',
 ];
 
 export interface SiteData {
