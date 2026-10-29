@@ -469,6 +469,56 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(second.pages.flatMap((p) => p.changes.payments ?? [])).toHaveLength(1);
   });
 
+  it('chaque échéance porte le montant payé, mis à jour après paiement puis annulation', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.owner);
+    type ChargeRow = { id: string; amount: number; paid: number; dueDate: string };
+    const charges = (pages: Array<{ changes: Record<string, unknown[]> }>) =>
+      pages.flatMap((p) => (p.changes.charges ?? []) as ChargeRow[]);
+
+    const first = await pullAll(f.owner, deviceId, f.siteA.id, null);
+    const oldest = charges(first.pages).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0]!;
+    expect(oldest.paid).toBe(0);
+
+    const pay = op('payment.create', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      amount: 7000,
+      mode: 'ESPECES',
+    });
+    const pushed = await push(f.owner, deviceId, [pay]).expect(200);
+    const afterPay = await pullAll(f.owner, deviceId, f.siteA.id, first.cursor);
+    expect(charges(afterPay.pages).find((c) => c.id === oldest.id)?.paid).toBe(7000);
+
+    // Hors de la marge du curseur : seule une échéance « touchée » revient.
+    await ctx.prisma.charge.updateMany({ data: { updatedAt: new Date(Date.now() - 3_600_000) } });
+    const quiet = await pullAll(f.owner, deviceId, f.siteA.id, afterPay.cursor);
+    expect(charges(quiet.pages)).toHaveLength(0);
+
+    await api()
+      .post(`/api/v1/payments/${pushed.body.results[0].entityId}/void`)
+      .set(auth(f.owner))
+      .send({ reason: 'Erreur de saisie' })
+      .expect(201);
+    const afterVoid = await pullAll(f.owner, deviceId, f.siteA.id, quiet.cursor);
+    expect(charges(afterVoid.pages).find((c) => c.id === oldest.id)?.paid).toBe(0);
+  });
+
+  it('un locataire supprimé est signalé aux téléphones (pierre tombale)', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.owner);
+    const jean = (
+      await api().post('/api/v1/tenants').set(auth(f.owner)).send({ name: 'Jean' }).expect(201)
+    ).body as { id: string };
+    const first = await pullAll(f.owner, deviceId, f.siteA.id, null);
+    await api().delete(`/api/v1/tenants/${jean.id}`).set(auth(f.owner)).expect(200);
+    const res = await api()
+      .get(`/api/v1/sync/pull?siteId=${f.siteA.id}&cursor=${first.cursor}`)
+      .set(auth(f.owner))
+      .set('X-Bailo-Device', deviceId)
+      .expect(200);
+    expect(res.body.tombstones.tenants).toContain(jean.id);
+  });
+
   it('remise à zéro du compte : le téléphone doit tout recharger', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.owner);

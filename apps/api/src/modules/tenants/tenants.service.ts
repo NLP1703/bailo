@@ -424,6 +424,17 @@ export class TenantsService {
       const occupancyIds = (
         await tx.occupancy.findMany({ where: { tenantId: id }, select: { id: true } })
       ).map((o) => o.id);
+      const chargeIds = occupancyIds.length
+        ? (
+            await tx.charge.findMany({
+              where: { occupancyId: { in: occupancyIds } },
+              select: { id: true },
+            })
+          ).map((c) => c.id)
+        : [];
+      const guarantorIds = (
+        await tx.guarantor.findMany({ where: { tenantId: id }, select: { id: true } })
+      ).map((g) => g.id);
       if (occupancyIds.length) {
         const chargeWhere = { occupancyId: { in: occupancyIds } };
         await tx.reminder.deleteMany({ where: { charge: chargeWhere } });
@@ -432,6 +443,19 @@ export class TenantsService {
         await tx.occupancy.deleteMany({ where: { id: { in: occupancyIds } } });
       }
       await tx.tenant.delete({ where: { id } });
+
+      // Suppressions à répercuter sur les téléphones (réception mobile, § 7).
+      const gone: Array<[string, string[]]> = [
+        ['tenants', [id]],
+        ['guarantors', guarantorIds],
+        ['occupancies', occupancyIds],
+        ['charges', chargeIds],
+      ];
+      await tx.syncTombstone.createMany({
+        data: gone.flatMap(([tableName, ids]) =>
+          ids.map((entityId) => ({ accountId: ctx.accountId, tableName, entityId })),
+        ),
+      });
 
       await this.audit.log(tx, {
         accountId: ctx.accountId,

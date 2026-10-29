@@ -1,9 +1,5 @@
-import { Placeholder } from '../../ui/components';
+import { ChambresScreen } from '../../screens/ChambresScreen';
 
-export default function Screen() {
-  return (
-    <Placeholder title="Chambres" lot="LM3">
-      Plan des chambres et fiches de chaque site (maquettes T3 et T4).
-    </Placeholder>
-  );
+export default function Chambres() {
+  return <ChambresScreen />;
 }

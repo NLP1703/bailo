@@ -8,9 +8,11 @@
     "start": "expo start",
     "android": "expo run:android",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@bailo/shared": "workspace:*",
     "@bailo/sync": "workspace:*",
     "@expo/vector-icons": "^15.0.2",
     "expo": "~58.0.20",
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^2.1.0"
   }
 }

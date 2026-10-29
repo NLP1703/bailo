@@ -149,6 +149,13 @@ export class PaymentsService {
       );
     }
 
+    // Les échéances réglées changent de solde : on les marque modifiées pour que les
+    // téléphones les reçoivent à nouveau (réception incrémentale sur updatedAt).
+    await touchCharges(
+      tx,
+      lines.map((l) => l.chargeId),
+    );
+
     await this.audit.log(tx, {
       accountId: params.accountId,
       actorId: params.actorId,
@@ -193,6 +200,14 @@ export class PaymentsService {
         after: { status: 'VOIDED' },
         reason: dto.reason,
       });
+      const touched = await tx.allocation.findMany({
+        where: { paymentId },
+        select: { chargeId: true },
+      });
+      await touchCharges(
+        tx,
+        touched.map((a) => a.chargeId),
+      );
       return updated;
     });
   }
@@ -241,4 +256,13 @@ function isUniqueViolation(error: unknown, field: string): boolean {
     (error as { code?: string }).code === 'P2002' &&
     JSON.stringify((error as { meta?: unknown }).meta ?? '').includes(field)
   );
+}
+
+/** Marque des échéances comme modifiées (leur solde a changé) sans toucher à leur contenu. */
+async function touchCharges(tx: Prisma.TransactionClient, chargeIds: string[]): Promise<void> {
+  if (chargeIds.length === 0) return;
+  await tx.charge.updateMany({
+    where: { id: { in: [...new Set(chargeIds)] } },
+    data: { updatedAt: new Date() },
+  });
 }

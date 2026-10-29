@@ -1,9 +1,7 @@
-import { Placeholder } from '../../ui/components';
+import { useLocalSearchParams } from 'expo-router';
+import { EncaisserScreen } from '../../screens/EncaisserScreen';
 
-export default function Screen() {
-  return (
-    <Placeholder title="Encaisser" lot="LM3">
-      Encaissement hors-ligne avec reçu provisoire partagé par WhatsApp (maquette T7).
-    </Placeholder>
-  );
+export default function Encaisser() {
+  const { unitId } = useLocalSearchParams<{ unitId?: string }>();
+  return <EncaisserScreen unitId={unitId} />;
 }

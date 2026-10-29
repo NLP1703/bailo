@@ -562,17 +562,27 @@ export class SyncService {
           orderBy,
           take,
         });
-      case 'charges':
-        return this.prisma.charge.findMany({
+      case 'charges': {
+        // Chaque échéance porte ce qui est déjà payé dessus (paiements valides) : le
+        // téléphone en déduit le reste dû, le statut (RG7, RG10) et l'affectation (RG5).
+        const rows = await this.prisma.charge.findMany({
           where: {
             ...base,
             accountId,
             occupancy: inSite,
             OR: [{ status: { notIn: ['PAID', 'CANCELLED'] } }, { dueDate: { gte: recent } }],
           },
+          include: {
+            allocations: { where: { payment: { status: 'VALID' } }, select: { amount: true } },
+          },
           orderBy,
           take,
         });
+        return rows.map(({ allocations, ...charge }) => ({
+          ...charge,
+          paid: allocations.reduce((sum, a) => sum + a.amount, 0),
+        }));
+      }
       case 'payments':
         return this.prisma.payment.findMany({
           where: { ...base, accountId, occupancy: inSite, paidAt: { gte: recent } },

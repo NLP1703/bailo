@@ -1,21 +1,44 @@
-import { View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Alert, Pressable } from 'react-native';
 import { useSession } from '../../lib/session';
-import { Placeholder, PrimaryButton } from '../../ui/components';
+import { ChambresScreen } from '../../screens/ChambresScreen';
+import { getSync } from '../../sync/engine';
+import { colors, touch } from '../../ui/theme';
 
-/** Le gardien n'a pas d'onglet « Plus » : sa déconnexion est ici en attendant le menu de compte (LM3). */
+/**
+ * Le gardien n'a pas d'onglet « Plus » : son compte (synchronisation, déconnexion) est
+ * dans un menu en haut du plan des chambres (spécification des écrans).
+ */
 export default function Chambres() {
-  const { signOut } = useSession();
+  const { user, signOut } = useSession();
+  const openMenu = () =>
+    Alert.alert(user?.name ?? 'Mon compte', 'Gardien', [
+      {
+        text: 'Synchroniser maintenant',
+        onPress: () => {
+          if (user?.siteId) void getSync().then(({ engine }) => engine.syncNow(user.siteId!));
+        },
+      },
+      { text: 'Se déconnecter', style: 'destructive', onPress: () => void signOut() },
+      { text: 'Fermer', style: 'cancel' },
+    ]);
   return (
-    <Placeholder
-      title="Chambres"
-      lot="LM3"
-      footer={
-        <View style={{ marginTop: 8 }}>
-          <PrimaryButton label="Se déconnecter" tone="outline" onPress={() => void signOut()} />
-        </View>
+    <ChambresScreen
+      headerAction={
+        <Pressable
+          onPress={openMenu}
+          accessibilityRole="button"
+          accessibilityLabel="Mon compte"
+          style={{
+            width: touch.min,
+            height: touch.min,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="person-circle-outline" size={32} color={colors.brand} />
+        </Pressable>
       }
-    >
-      Plan des chambres en grille colorée et fiches, consultables hors-ligne (maquettes T3 et T4).
-    </Placeholder>
+    />
   );
 }

@@ -54,8 +54,7 @@ function headers(extra?: Record<string, string>): Record<string, string> {
 async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204) return undefined as T;
   const body = (await res.json().catch(() => null)) as
-    | (T & { code?: string; message?: string | string[]; details?: unknown })
-    | null;
+    (T & { code?: string; message?: string | string[]; details?: unknown }) | null;
   if (!res.ok) {
     const message = Array.isArray(body?.message) ? body.message.join(', ') : body?.message;
     throw new ApiError(res.status, message ?? `Erreur ${res.status}`, body?.code, body?.details);

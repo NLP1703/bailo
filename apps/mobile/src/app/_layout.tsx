@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../lib/session';
+import { SiteDataProvider } from '../data/useSiteData';
 import { SyncProvider } from '../sync/useSync';
 import { colors } from '../ui/theme';
 
@@ -48,6 +49,11 @@ function RootNavigator() {
       <Stack.Protected guard={ready && user?.role === 'OWNER'}>
         <Stack.Screen name="proprio" />
       </Stack.Protected>
+      {/* Écrans communs aux rôles, ouverts par-dessus les onglets. */}
+      <Stack.Protected guard={ready}>
+        <Stack.Screen name="chambre/[id]" />
+        <Stack.Screen name="encaisser" />
+      </Stack.Protected>
       <Stack.Screen name="index" />
     </Stack>
   );
@@ -58,8 +64,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SessionProvider>
         <SyncProvider>
-          <StatusBar style="dark" />
-          <RootNavigator />
+          <SiteDataProvider>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </SiteDataProvider>
         </SyncProvider>
       </SessionProvider>
     </SafeAreaProvider>
