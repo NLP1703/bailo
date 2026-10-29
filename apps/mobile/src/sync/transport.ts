@@ -62,10 +62,7 @@ export const transport: SyncTransport = {
 
   async pull(siteId: string, cursor: string | null): Promise<PullPage> {
     const query = new URLSearchParams({ siteId });
-    if (cursor) {
-      query.set('cursor', cursor);
-      query.set('since', cursor);
-    }
+    if (cursor) query.set('cursor', cursor);
     const data = await withDevice(() =>
       api.get<PullPage | LegacyPull>(`/sync/pull?${query.toString()}`),
     );

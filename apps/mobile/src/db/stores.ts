@@ -9,6 +9,28 @@ import type {
 } from '@bailo/sync';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+/**
+ * Toutes les écritures passent par cette file, une à la fois, sur la connexion principale.
+ * `withExclusiveTransactionAsync` ouvrirait une seconde connexion qui ne reçoit pas la clé
+ * SQLCipher (« file is not a database ») ; et une écriture lancée pendant une transaction
+ * ouverte sur la même connexion en ferait partie, donc disparaîtrait avec elle en cas
+ * d'annulation. D'où la sérialisation explicite.
+ */
+let writes: Promise<unknown> = Promise.resolve();
+
+function serialized<T>(work: () => Promise<T>): Promise<T> {
+  const run = writes.then(work);
+  writes = run.catch(() => undefined);
+  return run;
+}
+
+function transaction(
+  db: SQLiteDatabase,
+  work: (txn: SQLiteDatabase) => Promise<void>,
+): Promise<void> {
+  return serialized(() => db.withTransactionAsync(() => work(db)));
+}
+
 /** Table locale où ranger l'entité renvoyée par le serveur après une création. */
 const ENTITY_TABLE: Record<string, string> = {
   'payment.create': 'payments',
@@ -50,26 +72,30 @@ export class SqliteOutboxStore implements OutboxStore {
   constructor(private readonly db: SQLiteDatabase) {}
 
   async nextSeq(): Promise<number> {
-    const row = await this.db.getFirstAsync<{ value: string }>(
-      `INSERT INTO meta (key, value) VALUES ('seq', '1')
-       ON CONFLICT(key) DO UPDATE SET value = CAST(value AS INTEGER) + 1
-       RETURNING value`,
+    const row = await serialized(() =>
+      this.db.getFirstAsync<{ value: string }>(
+        `INSERT INTO meta (key, value) VALUES ('seq', '1')
+         ON CONFLICT(key) DO UPDATE SET value = CAST(value AS INTEGER) + 1
+         RETURNING value`,
+      ),
     );
     return Number(row?.value ?? 1);
   }
 
   async enqueue(op: QueuedOperation): Promise<void> {
-    await this.db.runAsync(
-      `INSERT OR IGNORE INTO outbox (op_id, seq, type, v, site_id, created_at, payload, base, attempts)
+    await serialized(() =>
+      this.db.runAsync(
+        `INSERT OR IGNORE INTO outbox (op_id, seq, type, v, site_id, created_at, payload, base, attempts)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-      op.opId,
-      op.seq,
-      op.type,
-      op.v,
-      op.siteId,
-      op.createdAt,
-      JSON.stringify(op.payload ?? null),
-      op.base ? JSON.stringify(op.base) : null,
+        op.opId,
+        op.seq,
+        op.type,
+        op.v,
+        op.siteId,
+        op.createdAt,
+        JSON.stringify(op.payload ?? null),
+        op.base ? JSON.stringify(op.base) : null,
+      ),
     );
   }
 
@@ -99,7 +125,7 @@ export class SqliteOutboxStore implements OutboxStore {
   ): Promise<void> {
     const table = ENTITY_TABLE[op.type];
     const entity = result.entity as { id?: unknown } | undefined;
-    await this.db.withExclusiveTransactionAsync(async (txn) => {
+    await transaction(this.db, async (txn) => {
       await txn.runAsync('DELETE FROM outbox WHERE op_id = ?', op.opId);
       if (table && entity && typeof entity.id === 'string') {
         await txn.runAsync(
@@ -114,7 +140,7 @@ export class SqliteOutboxStore implements OutboxStore {
   }
 
   async moveToFix(rejected: RejectedOperation): Promise<void> {
-    await this.db.withExclusiveTransactionAsync(async (txn) => {
+    await transaction(this.db, async (txn) => {
       await txn.runAsync('DELETE FROM outbox WHERE op_id = ?', rejected.op.opId);
       await txn.runAsync(
         `INSERT OR REPLACE INTO to_fix (op_id, op, error_code, message, rejected_at)
@@ -129,11 +155,13 @@ export class SqliteOutboxStore implements OutboxStore {
   }
 
   async recordAttempt(opId: string, attempts: number, error: string): Promise<void> {
-    await this.db.runAsync(
-      'UPDATE outbox SET attempts = ?, last_error = ? WHERE op_id = ?',
-      attempts,
-      error,
-      opId,
+    await serialized(() =>
+      this.db.runAsync(
+        'UPDATE outbox SET attempts = ?, last_error = ? WHERE op_id = ?',
+        attempts,
+        error,
+        opId,
+      ),
     );
   }
 
@@ -167,7 +195,7 @@ export class SqlitePullStore implements PullStore {
   }
 
   async applyPage(siteId: string, page: PullPage): Promise<void> {
-    await this.db.withExclusiveTransactionAsync(async (txn) => {
+    await transaction(this.db, async (txn) => {
       for (const [table, rows] of Object.entries(page.changes)) {
         for (const row of rows) {
           const id = (row as { id?: unknown }).id;
@@ -195,7 +223,7 @@ export class SqlitePullStore implements PullStore {
   }
 
   async reset(siteId: string): Promise<void> {
-    await this.db.withExclusiveTransactionAsync(async (txn) => {
+    await transaction(this.db, async (txn) => {
       await txn.runAsync('DELETE FROM records WHERE site_id = ?', siteId);
       await txn.runAsync('DELETE FROM cursors WHERE site_id = ?', siteId);
     });

@@ -41,21 +41,37 @@ La navigation utilise Expo Router (bâti sur React Navigation, recommandé par E
 
 ## Lancer l'application (développement)
 
-Depuis la racine du dépôt :
+L'app utilise SQLCipher (base chiffrée), absent d'Expo Go : il faut une **version de
+développement** compilée, sur l'émulateur Android ou un téléphone branché en USB.
+
+Prérequis (une fois) : Android Studio, puis dans le SDK : `platform-tools`, `emulator`,
+`platforms;android-37.0`, `build-tools;37.0.0`, `ndk;27.1.12297006`, `cmake;3.31.6` et
+une image système (`system-images;android-36;google_apis;x86_64`). Variables
+`ANDROID_HOME` (le SDK) et `JAVA_HOME` (le Java d'Android Studio, dossier `jbr`).
 
 ```bash
 pnpm install
-pnpm --filter @bailo/mobile start
+pnpm --filter @bailo/mobile android   # compile, installe sur l'émulateur, lance Metro
 ```
 
-Scannez le QR code avec l'application **Expo Go** sur un téléphone Android (même réseau
-Wi-Fi que le PC). Par défaut l'app parle à l'API en ligne
-(`https://bailo-web-production.up.railway.app/api/v1`) ; pour une API locale :
-`EXPO_PUBLIC_API_URL=http://<IP du PC>:3000/api/v1`.
+La première compilation prend 10 à 20 minutes ; ensuite, une modification du code se
+recharge en direct. Par défaut l'app parle à l'API en ligne ; pour l'API locale lancée
+sur le PC : `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000/api/v1` (adresse du PC vue depuis
+l'émulateur) ou `http://<IP du PC>:3000/api/v1` depuis un vrai téléphone.
 
-Dans Expo Go, la base locale n'est **pas** chiffrée (SQLCipher n'y existe pas) : c'est
-signalé dans la console et réservé au développement. Les versions installables (EAS) la
-chiffrent ; une version de production sans chiffrement refuse de démarrer.
+### Particularités Windows
+
+Les chemins de la compilation native dépassent vite la limite de 260 caractères :
+
+1. À la racine du dépôt, un fichier `.npmrc` contenant `virtual-store-dir-max-length=40`
+   (noms courts dans `node_modules/.pnpm`), puis `pnpm install`.
+2. Dans `apps/mobile/android/local.properties` (créé par la première compilation) :
+   `cmake.dir=C:\\Users\\<vous>\\AppData\\Local\\Android\\Sdk\\cmake\\3.31.6`.
+   Le ninja de CMake 3.22.1 (celui par défaut) ne gère pas les chemins longs.
+3. Les chemins longs doivent être autorisés dans Windows (`LongPathsEnabled`).
+
+En développement, si la base n'est pas chiffrée (Expo Go), c'est signalé dans la
+console ; une version de production sans chiffrement refuse de démarrer.
 
 ## Organisation du code
 

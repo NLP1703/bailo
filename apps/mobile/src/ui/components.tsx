@@ -83,7 +83,9 @@ export function SyncBanner() {
     >
       <Text style={styles.bannerText}>{text}</Text>
       {offline && lastError ? (
-        <Text style={styles.bannerSmall}>Nouvel essai automatique.</Text>
+        <Text style={styles.bannerSmall}>
+          {__DEV__ ? `Nouvel essai automatique. (${lastError})` : 'Nouvel essai automatique.'}
+        </Text>
       ) : null}
     </View>
   );
