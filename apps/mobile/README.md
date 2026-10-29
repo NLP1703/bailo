@@ -13,14 +13,14 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 
 ## Où en est-on
 
-| Lot                           | Contenu                                                                        | État                     |
-| ----------------------------- | ------------------------------------------------------------------------------ | ------------------------ |
-| LM1 Cadrage (sem. 1–2)        | Décisions, protocole de synchronisation, écrans, appareils de test, maquettes  | Livré (retours attendus) |
-| LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | Livré (API + app)        |
-| LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | À venir                  |
-| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | À venir                  |
-| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | À venir                  |
-| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                  |
+| Lot                           | Contenu                                                                        | État                         |
+| ----------------------------- | ------------------------------------------------------------------------------ | ---------------------------- |
+| LM1 Cadrage (sem. 1–2)        | Décisions, protocole de synchronisation, écrans, appareils de test, maquettes  | Livré (retours attendus)     |
+| LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | Livré (API + app)            |
+| LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | **En cours** (voir plus bas) |
+| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | À venir                      |
+| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | À venir                      |
+| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                      |
 
 ## Documents de cadrage (LM1)
 
@@ -72,6 +72,30 @@ Les chemins de la compilation native dépassent vite la limite de 260 caractère
 
 En développement, si la base n'est pas chiffrée (Expo Go), c'est signalé dans la
 console ; une version de production sans chiffrement refuse de démarrer.
+
+## LM3 : état
+
+« Testé » : déroulé sur l'émulateur avec l'API locale et les comptes de démo, y compris
+sans réseau. « Écrit » : code et tests unitaires faits, essai sur l'émulateur à faire.
+
+| Écran                  | État                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| T2 Accueil du gérant   | Écrit                                                                          |
+| T3 Plan des chambres   | Testé (couleurs RG18, filtres bloc et statut, recherche)                       |
+| T4 Fiche chambre       | Testé                                                                          |
+| T5 Fiche locataire     | Écrit                                                                          |
+| T7 Encaisser           | Testé (affectation RG5, reçu provisoire WhatsApp) ; photo de la preuve à venir |
+| T8 Ma caisse           | Testé (remise déclarée, à confirmer par le propriétaire en LM4)                |
+| T9 Relances du jour    | Écrit (envoi WhatsApp ou SMS, marqué sur le téléphone)                         |
+| T10 Tournée de relevés | Testé (contrôle RG19) ; photo du compteur à venir                              |
+| T11 Pannes             | Testé ; photos à venir                                                         |
+| T12 Nouvelle dépense   | Écrit ; photo du justificatif à venir                                          |
+| T16 À corriger         | Écrit (refaire ou abandonner)                                                  |
+| T6 Nouvelle entrée     | **À faire** : création d'occupation hors-ligne et photo de la pièce d'identité |
+
+Reste aussi pour finir LM3 : l'envoi des photos (§ 6 du protocole : file d'envoi
+séparée, compression, reprise), puis la recette des parcours PM1 à PM5 sur un vrai
+téléphone d'entrée de gamme.
 
 ## Organisation du code
 
