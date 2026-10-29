@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { Alert, Pressable } from 'react-native';
 import { useSession } from '../../lib/session';
 import { ChambresScreen } from '../../screens/ChambresScreen';
@@ -19,6 +20,7 @@ export default function Chambres() {
           if (user?.siteId) void getSync().then(({ engine }) => engine.syncNow(user.siteId!));
         },
       },
+      { text: 'À corriger', onPress: () => router.push('/a-corriger') },
       { text: 'Se déconnecter', style: 'destructive', onPress: () => void signOut() },
       { text: 'Fermer', style: 'cancel' },
     ]);

@@ -15,7 +15,12 @@ type Role = 'OWNER' | 'MANAGER' | 'CARETAKER';
 const LINKS: Array<{
   href: Href;
   label: string;
-  icon: 'wallet-outline' | 'speedometer-outline' | 'construct-outline' | 'receipt-outline';
+  icon:
+    | 'wallet-outline'
+    | 'speedometer-outline'
+    | 'construct-outline'
+    | 'receipt-outline'
+    | 'notifications-outline';
   roles?: Role[];
 }> = [
   { href: '/caisse', label: 'Ma caisse', icon: 'wallet-outline', roles: ['MANAGER', 'CARETAKER'] },
@@ -26,6 +31,7 @@ const LINKS: Array<{
     roles: ['MANAGER', 'CARETAKER'],
   },
   { href: '/pannes', label: 'Pannes', icon: 'construct-outline' },
+  { href: '/relances', label: 'Relances du jour', icon: 'notifications-outline', roles: ['OWNER'] },
   {
     href: '/depense',
     label: 'Nouvelle dépense',
@@ -110,22 +116,21 @@ export function MoreScreen() {
             />
           </View>
         </View>
-        <View style={styles.card}>
+        <Pressable
+          onPress={() => router.push('/a-corriger')}
+          accessibilityRole="button"
+          style={[
+            styles.card,
+            toFix.length > 0 && { borderColor: '#FECACA', backgroundColor: '#FEF2F2' },
+          ]}
+        >
           <Text style={styles.label}>À corriger · {toFix.length}</Text>
-          {toFix.length === 0 ? (
-            <Text style={styles.cardText}>Aucune opération refusée.</Text>
-          ) : (
-            toFix.map((item) => (
-              <View
-                key={item.op.opId}
-                style={{ paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}
-              >
-                <Text style={{ fontWeight: '600', color: colors.text }}>{item.op.type}</Text>
-                <Text style={{ color: colors.danger }}>{item.message}</Text>
-              </View>
-            ))
-          )}
-        </View>
+          <Text style={[styles.cardText, toFix.length > 0 && { color: colors.danger }]}>
+            {toFix.length === 0
+              ? 'Aucune opération refusée.'
+              : 'Des saisies ont été refusées par le serveur : à refaire ou abandonner.'}
+          </Text>
+        </Pressable>
         <PrimaryButton
           label="Se déconnecter de ce téléphone"
           tone="danger"

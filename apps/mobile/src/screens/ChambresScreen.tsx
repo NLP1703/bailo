@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { UnitColor } from '@bailo/shared';
 import { diffDays } from '@bailo/shared';
 import { router } from 'expo-router';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -45,11 +45,23 @@ function tileHint(view: UnitView): string {
  * T3 — plan des chambres en grille colorée (RG18), consultable sans réseau.
  * Commun aux trois rôles ; `headerAction` ajoute un bouton en haut (menu du gardien).
  */
-export function ChambresScreen({ headerAction }: { headerAction?: ReactNode }) {
+export function ChambresScreen({
+  headerAction,
+  initialStatus,
+}: {
+  headerAction?: ReactNode;
+  initialStatus?: string;
+}) {
   const { units, tables, loading, empty } = useSiteData();
   const [query, setQuery] = useState('');
   const [block, setBlock] = useState<string | null>(null);
   const [status, setStatus] = useState<StatusFilter>('ALL');
+  // Ouvert depuis l'accueil (« chambres en retard ») : filtre déjà posé.
+  useEffect(() => {
+    if (initialStatus && STATUS_FILTERS.some((f) => f.key === initialStatus)) {
+      setStatus(initialStatus as StatusFilter);
+    }
+  }, [initialStatus]);
   const site = tables.sites[0];
   // Quatre cases par ligne (maquette T3) : largeur calculée, les pourcentages ne tenant
   // pas compte de l'espacement entre cases.

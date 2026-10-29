@@ -19,6 +19,10 @@ export interface SiteRow {
   id: string;
   name: string;
   graceDays: number;
+  reminderJm3: boolean;
+  reminderJ0: boolean;
+  reminderJp5: boolean;
+  reminderJp15: boolean;
 }
 
 export interface BlockRow {
@@ -54,7 +58,10 @@ export interface GuarantorRow {
   tenantId: string;
   name: string;
   phone: string | null;
-  relation?: string | null;
+  whatsapp: string | null;
+  relationship: string | null;
+  /** Payeur principal : c'est lui qui reçoit les relances (cahier n°1). */
+  isPrimaryPayer: boolean;
 }
 
 export interface OccupancyRow {

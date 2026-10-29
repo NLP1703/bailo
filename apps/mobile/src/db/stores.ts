@@ -166,6 +166,11 @@ export class SqliteOutboxStore implements OutboxStore {
     );
   }
 
+  /** L'utilisateur a refait ou abandonné une opération refusée (RGM6). */
+  async removeToFix(opId: string): Promise<void> {
+    await serialized(() => this.db.runAsync('DELETE FROM to_fix WHERE op_id = ?', opId));
+  }
+
   /** Opérations refusées, pour l'écran « À corriger » (RGM6). */
   async listToFix(): Promise<RejectedOperation[]> {
     const rows = await this.db.getAllAsync<{

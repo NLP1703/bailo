@@ -247,7 +247,12 @@ export function buildUnitViews(tables: SiteTables, today: Date): UnitView[] {
 /** Indicateurs du site pour l'accueil du gérant (T2). */
 export interface SiteSummary {
   collectedToday: number;
+  paymentsToday: number;
   collectedMonth: number;
+  /** Total des échéances du mois en cours (hors annulées). */
+  expectedMonth: number;
+  /** Chambres qui ont encore un reste sur une échéance du mois. */
+  toCollectUnits: number;
   /** Reste à encaisser sur les échéances du mois en cours. */
   toCollectMonth: number;
   overdue: number;
@@ -269,9 +274,18 @@ export function siteSummary(tables: SiteTables, views: UnitView[], today: Date):
   const overdueCharges = views.flatMap((v) =>
     v.openCharges.filter((c) => c.liveStatus === 'OVERDUE'),
   );
+  const todays = valid.filter((p) => p.paidAt.slice(0, 10) === day);
+  const unitByOccupancy = new Map(tables.occupancies.map((o) => [o.id, o.unitId]));
   return {
-    collectedToday: sum(valid.filter((p) => p.paidAt.slice(0, 10) === day)),
+    collectedToday: sum(todays),
+    paymentsToday: todays.length,
     collectedMonth: sum(valid.filter((p) => p.paidAt.slice(0, 7) === month)),
+    expectedMonth: monthCharges
+      .filter((c) => c.status !== 'CANCELLED')
+      .reduce((s, c) => s + c.amount, 0),
+    toCollectUnits: new Set(
+      monthCharges.filter((c) => c.remaining > 0).map((c) => unitByOccupancy.get(c.occupancyId)),
+    ).size,
     toCollectMonth: monthCharges.reduce((s, c) => s + c.remaining, 0),
     overdue: overdueCharges.reduce((s, c) => s + c.remaining, 0),
     overdueUnits: views.filter((v) => v.color === 'RED').length,

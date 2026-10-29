@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildUnitViews, siteSummary, withPending, type QueuedOp } from '../derive';
+import { remindersForToday } from '../reminders';
 import type { ChargeRow, SiteTables } from '../types';
 
 const TODAY = new Date('2026-10-15T10:00:00Z');
@@ -20,7 +21,17 @@ function rent(id: string, month: number, paid = 0, amount = 15000): ChargeRow {
 
 function tables(charges: ChargeRow[], extra: Partial<SiteTables> = {}): SiteTables {
   return {
-    sites: [{ id: 's1', name: 'Cité Test', graceDays: 0 }],
+    sites: [
+      {
+        id: 's1',
+        name: 'Cité Test',
+        graceDays: 0,
+        reminderJm3: true,
+        reminderJ0: true,
+        reminderJp5: true,
+        reminderJp15: false,
+      },
+    ],
     blocks: [{ id: 'b1', siteId: 's1', name: 'Bloc A', sortOrder: 1 }],
     units: [
       {
@@ -182,5 +193,55 @@ describe('accueil du gérant (T2)', () => {
     expect(summary.overdue).toBe(5000 + 15000);
     expect(summary.occupied).toBe(1);
     expect(summary.total).toBe(3);
+  });
+});
+
+describe('relances du jour (T9, RG11-RG12)', () => {
+  it('rappel à J−3 au locataire, retard à J+5 au payeur principal', () => {
+    const t = tables([
+      { ...rent('c10', 10), dueDate: '2026-10-10T00:00:00.000Z' },
+      { ...rent('c11', 11), dueDate: '2026-10-18T00:00:00.000Z' },
+    ]);
+    const items = remindersForToday(t, buildUnitViews(t, TODAY), TODAY);
+    expect(items.map((i) => [i.kind, i.stage, i.amount])).toEqual([
+      ['late', 'J_PLUS_5', 15000],
+      ['upcoming', 'J_MINUS_3', 15000],
+    ]);
+    expect(items[0]!.recipient.label).toBe('au locataire');
+
+    const withPayer = tables(t.charges, {
+      guarantors: [
+        {
+          id: 'g1',
+          tenantId: 't1',
+          name: 'Martin Arnaud',
+          phone: '677000002',
+          whatsapp: null,
+          relationship: 'Père',
+          isPrimaryPayer: true,
+        },
+      ],
+    });
+    const late = remindersForToday(withPayer, buildUnitViews(withPayer, TODAY), TODAY)[0]!;
+    expect(late.recipient).toMatchObject({
+      name: 'Martin Arnaud',
+      phone: '677000002',
+      label: 'au père (payeur)',
+    });
+    expect(late.message).toContain('Bonjour Martin');
+    expect(late.message).toContain('A01');
+  });
+
+  it('palier désactivé sur le site : la chambre reste dans « autres retards »', () => {
+    const t = tables([{ ...rent('c10', 10), dueDate: '2026-09-30T00:00:00.000Z' }]);
+    // J+15 désactivé dans la fixture.
+    const items = remindersForToday(t, buildUnitViews(t, TODAY), TODAY);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ kind: 'late', stage: null, key: 'unit:u1' });
+  });
+
+  it('rien sur une échéance réglée (RG12)', () => {
+    const t = tables([{ ...rent('c11', 11, 15000), dueDate: '2026-10-18T00:00:00.000Z' }]);
+    expect(remindersForToday(t, buildUnitViews(t, TODAY), TODAY)).toHaveLength(0);
   });
 });

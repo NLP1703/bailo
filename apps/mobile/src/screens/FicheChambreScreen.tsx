@@ -97,7 +97,12 @@ export function FicheChambreScreen({ unitId }: { unitId: string }) {
         </View>
 
         {view.tenant && view.occupancy ? (
-          <Pressable style={s.card} accessibilityRole="summary">
+          <Pressable
+            style={s.card}
+            accessibilityRole={user?.role === 'CARETAKER' ? 'summary' : 'button'}
+            disabled={user?.role === 'CARETAKER'}
+            onPress={() => router.push(`/locataire/${view.tenant!.id}`)}
+          >
             <View style={s.tenantRow}>
               <View style={s.avatar}>
                 <Text style={s.avatarText}>{initials(view.tenant.name)}</Text>

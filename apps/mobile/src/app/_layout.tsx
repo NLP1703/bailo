@@ -57,6 +57,9 @@ function RootNavigator() {
         <Stack.Screen name="releves" />
         <Stack.Screen name="pannes" />
         <Stack.Screen name="depense" />
+        <Stack.Screen name="relances" />
+        <Stack.Screen name="a-corriger" />
+        <Stack.Screen name="locataire/[id]" />
       </Stack.Protected>
       <Stack.Screen name="index" />
     </Stack>
