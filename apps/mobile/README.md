@@ -75,22 +75,22 @@ console ; une version de production sans chiffrement refuse de démarrer.
 
 ## LM3 : état
 
-« Testé » : déroulé sur l'émulateur avec l'API locale et les comptes de démo, y compris
-sans réseau. « Écrit » : code et tests unitaires faits, essai sur l'émulateur à faire.
+Tous les écrans ci-dessous ont été déroulés sur l'émulateur avec l'API locale et les
+comptes de démo, y compris sans réseau (T7) et avec un refus réel du serveur (T16).
 
 | Écran                  | État                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------ |
-| T2 Accueil du gérant   | Écrit                                                                          |
+| T2 Accueil du gérant   | Testé                                                                          |
 | T3 Plan des chambres   | Testé (couleurs RG18, filtres bloc et statut, recherche)                       |
 | T4 Fiche chambre       | Testé                                                                          |
-| T5 Fiche locataire     | Écrit                                                                          |
+| T5 Fiche locataire     | Testé                                                                          |
 | T7 Encaisser           | Testé (affectation RG5, reçu provisoire WhatsApp) ; photo de la preuve à venir |
 | T8 Ma caisse           | Testé (remise déclarée, à confirmer par le propriétaire en LM4)                |
-| T9 Relances du jour    | Écrit (envoi WhatsApp ou SMS, marqué sur le téléphone)                         |
+| T9 Relances du jour    | Testé (message ouvert dans WhatsApp ou SMS, marque annulable)                  |
 | T10 Tournée de relevés | Testé (contrôle RG19) ; photo du compteur à venir                              |
 | T11 Pannes             | Testé ; photos à venir                                                         |
-| T12 Nouvelle dépense   | Écrit ; photo du justificatif à venir                                          |
-| T16 À corriger         | Écrit (refaire ou abandonner)                                                  |
+| T12 Nouvelle dépense   | Testé ; photo du justificatif à venir                                          |
+| T16 À corriger         | Testé (refaire ou abandonner)                                                  |
 | T6 Nouvelle entrée     | **À faire** : création d'occupation hors-ligne et photo de la pièce d'identité |
 
 Reste aussi pour finir LM3 : l'envoi des photos (§ 6 du protocole : file d'envoi

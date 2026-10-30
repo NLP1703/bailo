@@ -34,8 +34,9 @@ export function recipientOf(tenant: TenantRow, guarantors: GuarantorRow[]): Remi
   return { name: tenant.name, phone: tenant.whatsapp ?? tenant.phone, label: 'au locataire' };
 }
 
+/** Nom complet : un prénom seul (« Bonjour Martin ») ou un libellé (« Parent de… ») sonne faux. */
 function greeting(name: string): string {
-  return `Bonjour ${name.split(/\s+/)[0] ?? name}`;
+  return `Bonjour ${name.trim()}`;
 }
 
 /**

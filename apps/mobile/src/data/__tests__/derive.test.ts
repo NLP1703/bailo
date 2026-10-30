@@ -228,7 +228,7 @@ describe('relances du jour (T9, RG11-RG12)', () => {
       phone: '677000002',
       label: 'au père (payeur)',
     });
-    expect(late.message).toContain('Bonjour Martin');
+    expect(late.message).toContain('Bonjour Martin Arnaud,');
     expect(late.message).toContain('A01');
   });
 

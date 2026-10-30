@@ -115,9 +115,11 @@ export function PannesScreen({ standalone, unitId }: { standalone?: boolean; uni
 
   const formView = (
     <>
-      <Text style={s.title} accessibilityRole="header">
-        Nouvelle panne
-      </Text>
+      {!standalone ? (
+        <Text style={s.title} accessibilityRole="header">
+          Nouvelle panne
+        </Text>
+      ) : null}
       <View style={f.field}>
         <Text style={f.label}>Chambre</Text>
         {selected ? (

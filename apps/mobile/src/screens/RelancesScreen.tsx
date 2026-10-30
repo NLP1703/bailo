@@ -5,7 +5,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { remindersForToday, type ReminderItem } from '../data/reminders';
 import { useSiteData } from '../data/useSiteData';
-import { metaWithPrefix, setMeta } from '../db/meta';
+import { deleteMeta, metaWithPrefix, setMeta } from '../db/meta';
 import { SyncBanner } from '../ui/components';
 import { Card } from '../ui/form';
 import { formatFcfa, whatsappNumber } from '../ui/format';
@@ -78,6 +78,16 @@ export function RelancesScreen({ standalone }: { standalone?: boolean }) {
     setSent((prev) => new Map(prev).set(item.key, mark));
   };
 
+  // L'app sait que le message a été ouvert, pas qu'il est parti : la marque s'annule.
+  const unmark = async (item: ReminderItem) => {
+    await deleteMeta(`reminder:${day}:${item.key}`);
+    setSent((prev) => {
+      const next = new Map(prev);
+      next.delete(item.key);
+      return next;
+    });
+  };
+
   const sentCount = items.filter((i) => sent.has(i.key)).length;
   const dateLabel = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -96,7 +106,7 @@ export function RelancesScreen({ standalone }: { standalone?: boolean }) {
           </Text>
         ) : null}
         <Text style={s.subtitle}>
-          {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)} · {sentCount} envoyée
+          {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)} · {sentCount} traitée
           {sentCount > 1 ? 's' : ''} sur {items.length}
         </Text>
         {isQuietHours(new Date().getHours()) ? (
@@ -146,14 +156,20 @@ export function RelancesScreen({ standalone }: { standalone?: boolean }) {
                     {done ? (
                       <View style={s.doneRow}>
                         <Ionicons name="checkmark-circle" size={18} color={colors.success} />
-                        <Text style={s.done}>
-                          Envoyée à{' '}
+                        <Text style={[s.done, { flex: 1 }]}>
+                          Message ouvert dans {done.channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} à{' '}
                           {new Date(done.at).toLocaleTimeString('fr-FR', {
                             hour: '2-digit',
                             minute: '2-digit',
-                          })}{' '}
-                          par {done.channel === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                          })}
                         </Text>
+                        <Pressable
+                          onPress={() => void unmark(item)}
+                          accessibilityRole="button"
+                          hitSlop={10}
+                        >
+                          <Text style={s.undo}>Annuler</Text>
+                        </Pressable>
                       </View>
                     ) : item.recipient.phone ? (
                       <View style={s.actions}>
@@ -250,4 +266,5 @@ const s = StyleSheet.create({
   actionText: { fontSize: 15, fontWeight: '600', color: colors.brand },
   doneRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   done: { fontSize: 14, color: colors.success },
+  undo: { fontSize: 14, fontWeight: '600', color: colors.brand },
 });

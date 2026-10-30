@@ -17,3 +17,8 @@ export async function metaWithPrefix(prefix: string): Promise<Map<string, string
   );
   return new Map(rows.map((r) => [r.key, r.value]));
 }
+
+export async function deleteMeta(key: string): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM meta WHERE key = ?', key);
+}
