@@ -5,6 +5,7 @@ import { AppState } from 'react-native';
 import { PULL_INTERVAL_MS } from '../lib/config';
 import { useSession } from '../lib/session';
 import { getSync } from './engine';
+import { processUploads } from './photos';
 
 const initial: SyncState = {
   phase: 'idle',
@@ -29,9 +30,11 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     if (status !== 'ready' || !siteId) return;
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
+    // Envoi, réception, puis photos en attente (elles passent après les saisies).
     const run = () =>
       void getSync()
         .then(({ engine }) => engine.syncNow(siteId))
+        .then(() => processUploads())
         .catch(() => undefined);
 
     void getSync().then(({ engine }) => {

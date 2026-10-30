@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSiteData } from '../data/useSiteData';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
+import { PhotoField } from '../ui/PhotoField';
+import { queueShots, type Shot } from '../sync/photos';
 import { PrimaryButton, SyncBanner } from '../ui/components';
 import { Card, Choices, Field, f, PendingBadge } from '../ui/form';
 import { shortDate } from '../ui/format';
@@ -54,6 +56,7 @@ export function PannesScreen({ standalone, unitId }: { standalone?: boolean; uni
   const [kind, setKind] = useState<Kind | null>(null);
   const [priority, setPriority] = useState<MaintenancePriority>('NORMAL');
   const [description, setDescription] = useState('');
+  const [shots, setShots] = useState<Shot[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +92,7 @@ export function PannesScreen({ standalone, unitId }: { standalone?: boolean; uni
     setError(null);
     try {
       const { engine } = await getSync();
-      await engine.enqueue({
+      const op = await engine.enqueue({
         type: 'ticket.create',
         siteId,
         payload: {
@@ -99,7 +102,9 @@ export function PannesScreen({ standalone, unitId }: { standalone?: boolean; uni
           ...(unit ? { unitId: unit } : {}),
         },
       });
+      queueShots(op.opId, siteId, 'ticket-photo', shots);
       void engine.syncNow(siteId);
+      setShots([]);
       setForm(false);
       setKind(null);
       setPriority('NORMAL');
@@ -174,6 +179,7 @@ export function PannesScreen({ standalone, unitId }: { standalone?: boolean; uni
         multiline
         style={{ minHeight: 96, textAlignVertical: 'top', paddingTop: 12 }}
       />
+      <PhotoField label="Photos (facultatif)" shots={shots} onChange={setShots} max={3} />
       {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
       <PrimaryButton
         label="Signaler la panne"

@@ -28,8 +28,27 @@ export const SYNC_OPERATION_TYPES = [
   'ticket.create',
   'expense.create',
   'cashHandover.create',
+  'attachment.link',
 ] as const;
 export type SyncOperationType = (typeof SYNC_OPERATION_TYPES)[number];
+
+/**
+ * Rattache une photo déjà déposée (§ 6) à l'élément créé par une autre opération du
+ * téléphone, désignée par son `opId` : l'élément peut avoir été créé hors-ligne.
+ */
+export const attachmentLinkDto = z.object({
+  targetOpId: uuid,
+  key: z.string().min(1).max(512),
+});
+export type AttachmentLinkDto = z.infer<typeof attachmentLinkDto>;
+
+/** Usage de fichier attendu pour chaque type d'élément auquel une photo se rattache. */
+export const ATTACHMENT_PURPOSE: Record<string, string> = {
+  'payment.create': 'payment-proof',
+  'meterReading.create': 'meter-photo',
+  'ticket.create': 'ticket-photo',
+  'expense.create': 'expense-proof',
+};
 
 /** Contenu attendu pour chaque type (version 1). Le site vient de l'opération elle-même. */
 export const SYNC_PAYLOAD_SCHEMAS = {
@@ -38,6 +57,7 @@ export const SYNC_PAYLOAD_SCHEMAS = {
   'ticket.create': createTicketDto.omit({ siteId: true }),
   'expense.create': createExpenseDto.omit({ siteId: true }),
   'cashHandover.create': createHandoverDto,
+  'attachment.link': attachmentLinkDto,
 } as const satisfies Record<SyncOperationType, z.ZodTypeAny>;
 
 export const syncOperationDto = z.object({

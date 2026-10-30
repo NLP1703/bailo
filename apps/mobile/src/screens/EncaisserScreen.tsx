@@ -18,6 +18,8 @@ import type { UnitView } from '../data/types';
 import { useSiteData } from '../data/useSiteData';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
+import { PhotoField } from '../ui/PhotoField';
+import { queueShots, type Shot } from '../sync/photos';
 import { PrimaryButton, SyncBanner } from '../ui/components';
 import { formatFcfa, PAYMENT_MODE_LABELS, shortDate, whatsappNumber } from '../ui/format';
 import { chargeLabel } from '../ui/labels';
@@ -55,6 +57,7 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
   const [amountText, setAmountText] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
   const [reference, setReference] = useState('');
+  const [shots, setShots] = useState<Shot[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Done | null>(null);
@@ -123,6 +126,7 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
           ...(mode !== 'ESPECES' && reference.trim() ? { reference: reference.trim() } : {}),
         },
       });
+      queueShots(op.opId, siteId, 'payment-proof', shots);
       void engine.syncNow(siteId);
       setDone({
         opId: op.opId,
@@ -145,6 +149,7 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
     setSelectedId(null);
     setAmountText('');
     setReference('');
+    setShots([]);
     setMode('ESPECES');
     if (standalone) router.back();
   };
@@ -323,6 +328,8 @@ export function EncaisserScreen({ unitId, standalone }: { unitId?: string; stand
                 autoCapitalize="characters"
               />
             ) : null}
+
+            <PhotoField label="Photo de la preuve (facultatif)" shots={shots} onChange={setShots} />
 
             {plan ? (
               <View style={s.card}>

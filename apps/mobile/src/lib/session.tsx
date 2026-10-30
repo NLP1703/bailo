@@ -18,6 +18,7 @@ import {
   type RegisteredDevice,
 } from '../sync/engine';
 import { configureTransport } from '../sync/transport';
+import { wipePhotos } from '../sync/photos';
 import { api, ApiError, login, logoutRemote, onExpired, refreshSession } from './api';
 
 /** Deux téléphones déjà actifs : l'utilisateur choisit lequel déconnecter (RGM10). */
@@ -95,6 +96,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await logoutRemote();
     await resetSync();
     await deleteDatabase();
+    wipePhotos();
     await clearPin();
     await wipeSession();
     setUser(null);

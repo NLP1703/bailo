@@ -16,6 +16,8 @@ import type { MeterReadingRow, MeterRow, PendingMarker } from '../data/types';
 import { useSiteData } from '../data/useSiteData';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
+import { PhotoField } from '../ui/PhotoField';
+import { queueShots, type Shot } from '../sync/photos';
 import { PrimaryButton, SyncBanner } from '../ui/components';
 import { Card, Choices, Field, PendingBadge } from '../ui/form';
 import { amountShort, shortDate } from '../ui/format';
@@ -53,6 +55,7 @@ export function RelevesScreen({ standalone }: { standalone?: boolean }) {
   const current = type ?? types[0] ?? null;
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [valueText, setValueText] = useState('');
+  const [shots, setShots] = useState<Shot[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,7 +101,7 @@ export function RelevesScreen({ standalone }: { standalone?: boolean }) {
     setError(null);
     try {
       const { engine } = await getSync();
-      await engine.enqueue({
+      const op = await engine.enqueue({
         type: 'meterReading.create',
         siteId,
         payload: {
@@ -108,8 +111,10 @@ export function RelevesScreen({ standalone }: { standalone?: boolean }) {
           billOccupancy: true,
         },
       });
+      queueShots(op.opId, siteId, 'meter-photo', shots);
       void engine.syncNow(siteId);
       setValueText('');
+      setShots([]);
       setPickedId(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enregistrement impossible.');
@@ -196,6 +201,11 @@ export function RelevesScreen({ standalone }: { standalone?: boolean }) {
                     ? `Consommation : ${qty(value - previous.value, meter)}`
                     : undefined
                 }
+              />
+              <PhotoField
+                label="Photo du compteur (facultatif)"
+                shots={shots}
+                onChange={setShots}
               />
               {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
               <PrimaryButton

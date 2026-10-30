@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSiteData } from '../data/useSiteData';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
+import { PhotoField } from '../ui/PhotoField';
+import { queueShots, type Shot } from '../sync/photos';
 import { PrimaryButton, SyncBanner } from '../ui/components';
 import { Card, Choices, Field, PendingBadge } from '../ui/form';
 import { formatFcfa, shortDate } from '../ui/format';
@@ -50,6 +52,7 @@ export function DepenseScreen() {
   const [amountText, setAmountText] = useState('');
   const [day, setDay] = useState<'0' | '1' | '2'>('0');
   const [payee, setPayee] = useState('');
+  const [shots, setShots] = useState<Shot[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<{ label: string; amount: number } | null>(null);
@@ -66,7 +69,7 @@ export function DepenseScreen() {
     setError(null);
     try {
       const { engine } = await getSync();
-      await engine.enqueue({
+      const op = await engine.enqueue({
         type: 'expense.create',
         siteId,
         payload: {
@@ -77,7 +80,9 @@ export function DepenseScreen() {
           ...(payee.trim() ? { payee: payee.trim() } : {}),
         },
       });
+      queueShots(op.opId, siteId, 'expense-proof', shots);
       void engine.syncNow(siteId);
+      setShots([]);
       setSaved({ label: label.trim(), amount });
       setCategory(null);
       setLabel('');
@@ -147,6 +152,11 @@ export function DepenseScreen() {
             value={payee}
             onChangeText={setPayee}
             placeholder="Nom du prestataire"
+          />
+          <PhotoField
+            label="Photo du justificatif (facultatif)"
+            shots={shots}
+            onChange={setShots}
           />
           {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
           <PrimaryButton

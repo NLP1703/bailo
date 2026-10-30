@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite';
 import { getSecret, setSecret } from '../lib/secure';
 
 const DB_NAME = 'bailo.db';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 let current: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -78,6 +78,19 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS records_site ON records (site_id, tbl);
     CREATE TABLE IF NOT EXISTS cursors (site_id TEXT PRIMARY KEY NOT NULL, cursor TEXT NOT NULL);
+    -- v2 : photos à envoyer (§ 6), séparées de la file des opérations.
+    CREATE TABLE IF NOT EXISTS uploads (
+      id TEXT PRIMARY KEY NOT NULL,
+      target_op_id TEXT NOT NULL,
+      site_id TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      uri TEXT NOT NULL,
+      status TEXT NOT NULL,
+      key TEXT,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT,
+      created_at TEXT NOT NULL
+    );
     PRAGMA user_version = ${SCHEMA_VERSION};
   `);
 }

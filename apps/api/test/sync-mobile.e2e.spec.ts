@@ -548,6 +548,57 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(rows.map((r) => r.id)).toEqual([handover.id]);
   });
 
+  it('photos rattachées aux saisies du téléphone (§ 6), contrôlées par compte et par usage', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.caretaker);
+    const key = (purpose: string) => `accounts/${f.accountId}/${purpose}/${randomUUID()}.jpg`;
+    const link = (target: { opId: string }, k: string) =>
+      op('attachment.link', f.siteA.id, { targetOpId: target.opId, key: k });
+
+    const pay = op('payment.create', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      amount: 5000,
+      mode: 'ESPECES',
+    });
+    const ticket = op('ticket.create', f.siteA.id, { title: 'Fuite' });
+    const proof = key('payment-proof');
+    const photo1 = key('ticket-photo');
+    const photo2 = key('ticket-photo');
+    const res = await push(f.caretaker, deviceId, [
+      pay,
+      ticket,
+      link(pay, proof),
+      link(ticket, photo1),
+      link(ticket, photo2),
+      link(ticket, photo2), // même photo renvoyée sous un autre opId : pas de doublon
+      link(ticket, key('payment-proof')), // mauvais usage
+      link(pay, `accounts/${randomUUID()}/payment-proof/x.jpg`), // autre compte
+      link({ opId: randomUUID() }, key('payment-proof')), // saisie inconnue
+    ]).expect(200);
+    expect(
+      res.body.results.map((r: { status: string; errorCode?: string }) => r.errorCode ?? r.status),
+    ).toEqual([
+      'applied',
+      'applied',
+      'applied',
+      'applied',
+      'applied',
+      'applied',
+      'SYNC_INVALID_PAYLOAD',
+      'SYNC_INVALID_PAYLOAD',
+      'SYNC_NOT_FOUND',
+    ]);
+
+    const payment = await ctx.prisma.payment.findUniqueOrThrow({
+      where: { id: res.body.results[0].entityId },
+    });
+    expect(payment.proofKey).toBe(proof);
+    const saved = await ctx.prisma.maintenanceTicket.findUniqueOrThrow({
+      where: { id: res.body.results[1].entityId },
+    });
+    expect(saved.photoKeys).toEqual([photo1, photo2]);
+  });
+
   it('un locataire supprimé est signalé aux téléphones (pierre tombale)', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.owner);

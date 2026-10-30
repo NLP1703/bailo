@@ -11,6 +11,9 @@ export const FILE_PURPOSES = [
   'payment-proof', // F6.2 — preuve (capture MoMo, photo)
   'unit-photo', // F2.4 — photos d'une chambre
   'account-logo', // F1.5 — logo affiché sur les reçus
+  'meter-photo', // application mobile T10 — photo du compteur au relevé
+  'ticket-photo', // application mobile T11 — photos d'une panne
+  'expense-proof', // application mobile T12 — justificatif de dépense
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

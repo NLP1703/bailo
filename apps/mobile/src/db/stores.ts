@@ -18,7 +18,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  */
 let writes: Promise<unknown> = Promise.resolve();
 
-function serialized<T>(work: () => Promise<T>): Promise<T> {
+export function serialized<T>(work: () => Promise<T>): Promise<T> {
   const run = writes.then(work);
   writes = run.catch(() => undefined);
   return run;

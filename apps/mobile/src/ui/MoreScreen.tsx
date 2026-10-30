@@ -5,6 +5,7 @@ import { router, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
+import { pendingPhotos, processUploads } from '../sync/photos';
 import { useSyncState } from '../sync/useSync';
 import { PrimaryButton, Screen, styles, SyncBanner, Title } from './components';
 import { colors, touch } from './theme';
@@ -59,6 +60,15 @@ export function MoreScreen() {
   const sync = useSyncState();
   const [toFix, setToFix] = useState<RejectedOperation[]>([]);
   const [busy, setBusy] = useState(false);
+  const [photos, setPhotos] = useState<{ count: number; lastError: string | null }>({
+    count: 0,
+    lastError: null,
+  });
+  useEffect(() => {
+    void pendingPhotos()
+      .then(setPhotos)
+      .catch(() => undefined);
+  }, [sync.pendingCount, sync.lastSuccessAt]);
 
   const load = useCallback(() => {
     void getSync()
@@ -74,6 +84,8 @@ export function MoreScreen() {
     try {
       const { engine } = await getSync();
       await engine.syncNow(user.siteId);
+      await processUploads();
+      setPhotos(await pendingPhotos());
       load();
     } finally {
       setBusy(false);
@@ -106,6 +118,7 @@ export function MoreScreen() {
           <Text style={styles.cardText}>
             Dernière réussite : {formatTime(sync.lastSuccessAt)}
             {'\n'}En attente d’envoi : {sync.pendingCount}
+            {photos.count > 0 ? `\nPhotos en attente : ${photos.count}` : ''}
           </Text>
           <View style={{ marginTop: 12 }}>
             <PrimaryButton

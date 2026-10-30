@@ -2,6 +2,7 @@ import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/c
 import { Prisma } from '@prisma/client';
 import {
   SYNC_ERRORS,
+  ATTACHMENT_PURPOSE,
   SYNC_OPERATION_TYPES,
   SYNC_PAYLOAD_SCHEMAS,
   type LegacySyncPushDto,
@@ -41,6 +42,7 @@ const ALLOWED_ROLES: Record<SyncOperationType, readonly UserRole[]> = {
   'ticket.create': ['OWNER', 'MANAGER', 'CARETAKER'],
   'expense.create': ['OWNER', 'MANAGER'],
   'cashHandover.create': ['OWNER', 'MANAGER', 'CARETAKER'],
+  'attachment.link': ['OWNER', 'MANAGER', 'CARETAKER'],
 };
 
 /** Opération restée « en cours » plus longtemps : on ne sait plus si elle a été appliquée (§ 5). */
@@ -359,6 +361,11 @@ export class SyncService {
         const expense = await this.expenses.create(ctx, { ...payload, siteId: op.siteId });
         return { entityId: expense.id, entity: expense };
       }
+      case 'attachment.link': {
+        const payload = parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['attachment.link']['_output'];
+        const entityId = await this.linkAttachment(ctx, op.siteId, payload);
+        return { entityId, entity: { id: entityId, key: payload.key } };
+      }
       case 'cashHandover.create': {
         const payload =
           parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['cashHandover.create']['_output'];
@@ -366,6 +373,60 @@ export class SyncService {
         return { entityId: handover.id, entity: handover };
       }
     }
+  }
+
+  /**
+   * Photo déposée par le téléphone (§ 6) : rattachée à l'élément créé par l'opération
+   * `targetOpId` du même compte. La clé doit appartenir au compte et correspondre au
+   * type d'élément (preuve de paiement, photo de compteur, de panne, justificatif).
+   */
+  private async linkAttachment(
+    ctx: RequestContext,
+    siteId: string,
+    payload: { targetOpId: string; key: string },
+  ): Promise<string> {
+    const target = await this.prisma.syncOperation.findFirst({
+      where: { opId: payload.targetOpId, accountId: ctx.accountId },
+    });
+    if (!target || target.status !== 'APPLIED' || !target.entityId) {
+      throw new OpRejected(
+        SYNC_ERRORS.NOT_FOUND,
+        'La saisie liée à cette photo n’a pas été enregistrée : la photo n’est pas rattachée.',
+      );
+    }
+    if (target.siteId !== siteId) {
+      throw new OpRejected(SYNC_ERRORS.SITE_MISMATCH, 'Photo et saisie de sites différents.');
+    }
+    const purpose = ATTACHMENT_PURPOSE[target.type];
+    if (!purpose || !payload.key.startsWith(`accounts/${ctx.accountId}/${purpose}/`)) {
+      throw new OpRejected(SYNC_ERRORS.INVALID_PAYLOAD, 'Fichier non valable pour cette saisie.');
+    }
+    const id = target.entityId;
+    switch (target.type) {
+      case 'payment.create':
+        await this.prisma.payment.update({ where: { id }, data: { proofKey: payload.key } });
+        break;
+      case 'meterReading.create':
+        await this.prisma.meterReading.update({ where: { id }, data: { photoKey: payload.key } });
+        break;
+      case 'expense.create':
+        await this.prisma.expense.update({ where: { id }, data: { proofKey: payload.key } });
+        break;
+      case 'ticket.create': {
+        const ticket = await this.prisma.maintenanceTicket.findUniqueOrThrow({
+          where: { id },
+          select: { photoKeys: true },
+        });
+        if (!ticket.photoKeys.includes(payload.key)) {
+          await this.prisma.maintenanceTicket.update({
+            where: { id },
+            data: { photoKeys: [...ticket.photoKeys, payload.key] },
+          });
+        }
+        break;
+      }
+    }
+    return id;
   }
 
   // ─── Réception ───────────────────────────────────────────────────────────
