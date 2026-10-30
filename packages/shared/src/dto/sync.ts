@@ -4,7 +4,9 @@ import { uuid } from './common';
 import { createExpenseDto } from './expenses';
 import { createTicketDto } from './maintenance';
 import { recordReadingDto } from './meters';
+import { createOccupancyDto } from './occupancies';
 import { createPaymentDto } from './payments';
+import { createTenantDto } from './tenants';
 
 const isoDateTime = z.string().datetime({ offset: true });
 
@@ -28,6 +30,8 @@ export const SYNC_OPERATION_TYPES = [
   'ticket.create',
   'expense.create',
   'cashHandover.create',
+  'tenant.create',
+  'occupancy.create',
   'attachment.link',
 ] as const;
 export type SyncOperationType = (typeof SYNC_OPERATION_TYPES)[number];
@@ -42,12 +46,24 @@ export const attachmentLinkDto = z.object({
 });
 export type AttachmentLinkDto = z.infer<typeof attachmentLinkDto>;
 
+/**
+ * Nouvelle entrée créée depuis le téléphone (T6). Le locataire vient d'une opération
+ * `tenant.create` du même lot, pas encore connue du serveur : on le désigne par son
+ * `opId` (`tenantOpId`), que le serveur résout en identifiant une fois le locataire créé
+ * — même mécanisme que `attachment.link`.
+ */
+export const syncOccupancyDto = createOccupancyDto
+  .omit({ tenantId: true, clientId: true })
+  .extend({ tenantOpId: uuid });
+export type SyncOccupancyDto = z.infer<typeof syncOccupancyDto>;
+
 /** Usage de fichier attendu pour chaque type d'élément auquel une photo se rattache. */
 export const ATTACHMENT_PURPOSE: Record<string, string> = {
   'payment.create': 'payment-proof',
   'meterReading.create': 'meter-photo',
   'ticket.create': 'ticket-photo',
   'expense.create': 'expense-proof',
+  'tenant.create': 'tenant-id',
 };
 
 /** Contenu attendu pour chaque type (version 1). Le site vient de l'opération elle-même. */
@@ -57,6 +73,8 @@ export const SYNC_PAYLOAD_SCHEMAS = {
   'ticket.create': createTicketDto.omit({ siteId: true }),
   'expense.create': createExpenseDto.omit({ siteId: true }),
   'cashHandover.create': createHandoverDto,
+  'tenant.create': createTenantDto,
+  'occupancy.create': syncOccupancyDto,
   'attachment.link': attachmentLinkDto,
 } as const satisfies Record<SyncOperationType, z.ZodTypeAny>;
 

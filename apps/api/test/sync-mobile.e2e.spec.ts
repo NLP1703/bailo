@@ -599,6 +599,95 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(saved.photoKeys).toEqual([photo1, photo2]);
   });
 
+  it('nouvelle entrée hors-ligne (T6) : locataire + occupation liés par opId, pièce rattachée', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.owner);
+    const free = (
+      await api()
+        .post('/api/v1/units')
+        .set(auth(f.owner))
+        .send({ siteId: f.siteA.id, code: 'A09', baseRent: 30000 })
+        .expect(201)
+    ).body as { id: string };
+
+    const tenantOp = op('tenant.create', f.siteA.id, {
+      name: 'Awa Nkolo',
+      phone: '690111222',
+      occupation: 'étudiante',
+    });
+    const occOp = op('occupancy.create', f.siteA.id, {
+      unitId: free.id,
+      tenantOpId: tenantOp.opId,
+      startDate: '2026-10-01',
+      monthlyRent: 30000,
+      dueDay: 5,
+      deposit: 30000,
+      advance: { months: 2 },
+      paymentMode: 'ESPECES',
+    });
+    const idKey = `accounts/${f.accountId}/tenant-id/${randomUUID()}.jpg`;
+    const link = op('attachment.link', f.siteA.id, { targetOpId: tenantOp.opId, key: idKey });
+
+    const res = await push(f.owner, deviceId, [tenantOp, occOp, link]).expect(200);
+    expect(res.body.results.map((r: { status: string }) => r.status)).toEqual([
+      'applied',
+      'applied',
+      'applied',
+    ]);
+
+    const tenant = await ctx.prisma.tenant.findUniqueOrThrow({
+      where: { id: res.body.results[0].entityId },
+    });
+    expect(tenant.name).toBe('Awa Nkolo');
+    expect(tenant.idDocKey).toBe(idKey);
+
+    const occ = await ctx.prisma.occupancy.findUniqueOrThrow({
+      where: { id: res.body.results[1].entityId },
+    });
+    expect(occ).toMatchObject({ tenantId: tenant.id, unitId: free.id, status: 'ACTIVE' });
+
+    // Caution (30 000) + 2 mois d'avance (60 000) encaissés à l'entrée, en un paiement.
+    const payments = await ctx.prisma.payment.findMany({ where: { occupancyId: occ.id } });
+    expect(payments).toHaveLength(1);
+    expect(payments[0]!.amount).toBe(90000);
+  });
+
+  it('nouvelle entrée : refusée au gardien, et sans locataire enregistré', async () => {
+    const f = await fixtures();
+    const { deviceId } = await register(f.caretaker);
+    const refused = await push(f.caretaker, deviceId, [
+      op('tenant.create', f.siteA.id, { name: 'Refusé' }),
+    ]).expect(200);
+    expect(refused.body.results[0]).toMatchObject({
+      status: 'rejected',
+      errorCode: 'SYNC_FORBIDDEN',
+    });
+
+    const { deviceId: ownerDevice } = await register(f.owner);
+    const free = (
+      await api()
+        .post('/api/v1/units')
+        .set(auth(f.owner))
+        .send({ siteId: f.siteA.id, code: 'A08', baseRent: 20000 })
+        .expect(201)
+    ).body as { id: string };
+    const orphan = await push(f.owner, ownerDevice, [
+      op('occupancy.create', f.siteA.id, {
+        unitId: free.id,
+        tenantOpId: randomUUID(),
+        startDate: '2026-10-01',
+        monthlyRent: 20000,
+        dueDay: 5,
+        deposit: 0,
+      }),
+    ]).expect(200);
+    expect(orphan.body.results[0]).toMatchObject({
+      status: 'rejected',
+      errorCode: 'SYNC_NOT_FOUND',
+    });
+    expect(await ctx.prisma.occupancy.count({ where: { unitId: free.id } })).toBe(0);
+  });
+
   it('un locataire supprimé est signalé aux téléphones (pierre tombale)', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.owner);

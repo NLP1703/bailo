@@ -26,6 +26,8 @@ import { MaintenanceService } from '../maintenance/maintenance.service';
 import { ExpensesService } from '../expenses/expenses.service';
 import { CashService } from '../cash/cash.service';
 import { DevicesService } from '../devices/devices.service';
+import { TenantsService } from '../tenants/tenants.service';
+import { OccupanciesService } from '../occupancies/occupancies.service';
 
 export interface LegacySyncPushResult {
   clientId: string;
@@ -42,6 +44,8 @@ const ALLOWED_ROLES: Record<SyncOperationType, readonly UserRole[]> = {
   'ticket.create': ['OWNER', 'MANAGER', 'CARETAKER'],
   'expense.create': ['OWNER', 'MANAGER'],
   'cashHandover.create': ['OWNER', 'MANAGER', 'CARETAKER'],
+  'tenant.create': ['OWNER', 'MANAGER'],
+  'occupancy.create': ['OWNER', 'MANAGER'],
   'attachment.link': ['OWNER', 'MANAGER', 'CARETAKER'],
 };
 
@@ -109,6 +113,8 @@ export class SyncService {
     private readonly expenses: ExpensesService,
     private readonly cash: CashService,
     private readonly devices: DevicesService,
+    private readonly tenants: TenantsService,
+    private readonly occupancies: OccupanciesService,
   ) {}
 
   // ─── Envoi ───────────────────────────────────────────────────────────────
@@ -372,6 +378,44 @@ export class SyncService {
         const handover = (await this.cash.createHandover(ctx, payload)) as { id: string };
         return { entityId: handover.id, entity: handover };
       }
+      case 'tenant.create': {
+        const payload = parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['tenant.create']['_output'];
+        const tenant = await this.tenants.create(payload);
+        return { entityId: tenant.id, entity: tenant };
+      }
+      case 'occupancy.create': {
+        const payload =
+          parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['occupancy.create']['_output'];
+        const { tenantOpId, ...rest } = payload;
+        // Le locataire a été créé par une opération précédente du même téléphone : on
+        // retrouve son identifiant serveur par l'`opId` (même mécanisme que la photo).
+        const tenantOp = await this.prisma.syncOperation.findFirst({
+          where: { opId: tenantOpId, accountId: ctx.accountId },
+        });
+        if (
+          !tenantOp ||
+          tenantOp.type !== 'tenant.create' ||
+          tenantOp.status !== 'APPLIED' ||
+          !tenantOp.entityId
+        ) {
+          throw new OpRejected(
+            SYNC_ERRORS.NOT_FOUND,
+            'Le locataire de cette entrée n’a pas été enregistré : l’occupation n’est pas créée.',
+          );
+        }
+        const unit = await this.prisma.unit.findFirst({
+          where: { id: rest.unitId, accountId: ctx.accountId },
+          select: { siteId: true },
+        });
+        if (!unit) throw new OpRejected(SYNC_ERRORS.NOT_FOUND, 'Chambre introuvable.');
+        assertSameSite(unit.siteId, op.siteId);
+        const result = await this.occupancies.create(ctx, {
+          ...rest,
+          tenantId: tenantOp.entityId,
+          clientId: op.opId,
+        });
+        return { entityId: result.occupancy.id, entity: result.occupancy };
+      }
     }
   }
 
@@ -411,6 +455,9 @@ export class SyncService {
         break;
       case 'expense.create':
         await this.prisma.expense.update({ where: { id }, data: { proofKey: payload.key } });
+        break;
+      case 'tenant.create':
+        await this.prisma.tenant.update({ where: { id }, data: { idDocKey: payload.key } });
         break;
       case 'ticket.create': {
         const ticket = await this.prisma.maintenanceTicket.findUniqueOrThrow({

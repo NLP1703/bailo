@@ -7,7 +7,12 @@ import { api } from '../lib/api';
 import { getSync } from './engine';
 
 /** Usages photo des saisies de terrain (mêmes valeurs que FILE_PURPOSES côté serveur). */
-export type PhotoPurpose = 'payment-proof' | 'meter-photo' | 'ticket-photo' | 'expense-proof';
+export type PhotoPurpose =
+  | 'payment-proof'
+  | 'meter-photo'
+  | 'ticket-photo'
+  | 'expense-proof'
+  | 'tenant-id';
 
 /** Photo prise, avant compression. */
 export interface Shot {

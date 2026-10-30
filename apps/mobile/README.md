@@ -91,7 +91,7 @@ comptes de démo, y compris sans réseau (T7) et avec un refus réel du serveur 
 | T11 Pannes             | Testé ; photos (jusqu'à 3, § 6) testées E2E                                     |
 | T12 Nouvelle dépense   | Testé ; photo du justificatif (§ 6) testée E2E                                 |
 | T16 À corriger         | Testé (refaire ou abandonner)                                                  |
-| T6 Nouvelle entrée     | **À faire** : création d'occupation hors-ligne et photo de la pièce d'identité |
+| T6 Nouvelle entrée     | Intégré (locataire + occupation hors-ligne, photo de la pièce § 6) ; e2e       |
 
 L'envoi des photos (§ 6 du protocole) est intégré : prise à l'appareil sur
 l'encaissement (preuve), les relevés (compteur), les pannes (jusqu'à 3) et les
@@ -104,6 +104,14 @@ d'encaissement (`payment.proofKey`), compteur (`meterReading.photoKey`), panne (
 photos dans `maintenanceTicket.photoKeys`) et justificatif de dépense
 (`expense.proofKey`). Reste la recette des parcours PM1 à PM5 sur un vrai téléphone
 d'entrée de gamme.
+
+La nouvelle entrée (T6) crée le locataire puis son occupation en deux opérations qui
+partent à la suite : l'occupation désigne le locataire par l'`opId` de sa création (pas
+encore d'identifiant serveur), que le serveur résout une fois le locataire appliqué —
+même mécanisme que `attachment.link`. La photo de la pièce d'identité suit le locataire
+(usage `tenant-id`, rattachée en `tenant.idDocKey`). Caution, avance et échéances sont
+calculées par le serveur à la réception. Parcours couvert par les tests e2e de
+synchronisation (création liée par `opId`, refus au gardien, occupation sans locataire).
 
 ## Organisation du code
 

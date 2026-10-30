@@ -8,5 +8,6 @@ import { OccupanciesModule } from '../occupancies/occupancies.module';
   imports: [OccupanciesModule],
   controllers: [TenantsController],
   providers: [TenantsService, ImportService],
+  exports: [TenantsService],
 })
 export class TenantsModule {}

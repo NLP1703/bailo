@@ -221,6 +221,13 @@ export function FicheChambreScreen({ unitId }: { unitId: string }) {
               router.push({ pathname: '/encaisser', params: { unitId: view.unit.id } })
             }
           />
+        ) : user?.role !== 'CARETAKER' ? (
+          <PrimaryButton
+            label="Nouvelle entrée"
+            onPress={() =>
+              router.push({ pathname: '/nouvelle-entree', params: { unitId: view.unit.id } })
+            }
+          />
         ) : null}
       </View>
     </SafeAreaView>

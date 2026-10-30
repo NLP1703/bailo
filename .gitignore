@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 .turbo/
+.swc-cache/
 coverage/
 *.log
 .env
