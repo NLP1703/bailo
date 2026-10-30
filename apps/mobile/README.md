@@ -84,7 +84,7 @@ comptes de démo, y compris sans réseau (T7) et avec un refus réel du serveur 
 | T3 Plan des chambres   | Testé (couleurs RG18, filtres bloc et statut, recherche)                       |
 | T4 Fiche chambre       | Testé                                                                          |
 | T5 Fiche locataire     | Testé                                                                          |
-| T7 Encaisser           | Testé (affectation RG5, reçu provisoire WhatsApp) ; photo de la preuve (§ 6)   |
+| T7 Encaisser           | Testé (affectation RG5, reçu WhatsApp) ; photo de la preuve (§ 6) testée E2E   |
 | T8 Ma caisse           | Testé (remise déclarée, à confirmer par le propriétaire en LM4)                |
 | T9 Relances du jour    | Testé (message ouvert dans WhatsApp ou SMS, marque annulable)                  |
 | T10 Tournée de relevés | Testé (contrôle RG19) ; photo du compteur (§ 6)                                |
@@ -97,10 +97,11 @@ L'envoi des photos (§ 6 du protocole) est intégré : prise à l'appareil sur
 l'encaissement (preuve), les relevés (compteur), les pannes (jusqu'à 3) et les
 dépenses (justificatif), compression (≤ 1280 px, ≤ 300 Ko), file d'envoi locale
 séparée avec reprise, puis rattachement côté serveur (`attachment.link`) une fois la
-saisie appliquée ; « Plus » affiche le nombre de photos encore à envoyer. Reste à
-exercer une vraie capture sur l'émulateur (le store de fichiers local n'est joignable
-que depuis le PC), puis la recette des parcours PM1 à PM5 sur un vrai téléphone
-d'entrée de gamme.
+saisie appliquée ; « Plus » affiche le nombre de photos encore à envoyer. La capture
+réelle a été validée de bout en bout sur l'émulateur (preuve d'encaissement : photo
+compressée à ~17 Ko, déposée sur le stockage puis rattachée au paiement via
+`proofKey`). Reste la recette des parcours PM1 à PM5 sur un vrai téléphone d'entrée
+de gamme.
 
 ## Organisation du code
 
