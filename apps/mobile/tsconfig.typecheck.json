@@ -1,0 +1,21 @@
+{
+  // Config dédiée au `typecheck` uniquement. Metro lit `tsconfig.json` pour résoudre
+  // les modules (Expo honore ses `paths`) : l'épinglage de « react » doit donc rester
+  // HORS de ce fichier-là, sinon le bundle résout « react » vers @types/react (types
+  // sans runtime) et l'app ne démarre plus.
+  //
+  // Le monorepo héberge deux @types/react (web en 18, mobile en 19) ; pnpm peut hisser
+  // la copie 18 dans son dossier de repli, où les .d.ts d'expo-router la récupèrent,
+  // d'où un conflit de namespace JSX (bigint absent de ReactNode). On épingle ici la
+  // résolution de « react » sur la copie 19 du mobile, pour le typecheck seulement.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"]
+    }
+  }
+}
