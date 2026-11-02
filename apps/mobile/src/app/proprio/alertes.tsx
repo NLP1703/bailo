@@ -1,9 +1,5 @@
-import { Placeholder } from '../../ui/components';
+import { AlertesScreen } from '../../screens/AlertesScreen';
 
-export default function Screen() {
-  return (
-    <Placeholder title="Alertes" lot="LM4">
-      Paiements reçus, écarts de caisse, pannes urgentes et annulations (maquette T16).
-    </Placeholder>
-  );
+export default function Alertes() {
+  return <AlertesScreen />;
 }
