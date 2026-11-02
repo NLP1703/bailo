@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { api, setDeviceKey } from '../lib/api';
 import { APP_VERSION } from '../lib/config';
 import { getSecret, setSecret } from '../lib/secure';
+import { getPushToken } from '../lib/push';
 import { transport } from './transport';
 
 export interface SyncContext {
@@ -40,10 +41,12 @@ export interface RegisteredDevice {
  * désigne celui à déconnecter.
  */
 export async function registerDevice(replaceDeviceId?: string): Promise<RegisteredDevice> {
+  const pushToken = await getPushToken();
   return api.post<RegisteredDevice>('/auth/device', {
     deviceId: await getDeviceId(),
     platform: Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : 'web',
     appVersion: APP_VERSION,
+    ...(pushToken ? { pushToken } : {}),
     ...(replaceDeviceId ? { replaceDeviceId } : {}),
   });
 }
