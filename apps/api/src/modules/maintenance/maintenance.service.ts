@@ -11,6 +11,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import type { RequestContext } from '../../common/tenancy/request-context';
 import { SiteAccessService } from '../../common/tenancy/site-access.service';
 import { listMaybePaginated } from '../../common/http/paginate';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class MaintenanceService {
@@ -18,6 +19,7 @@ export class MaintenanceService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly access: SiteAccessService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(ctx: RequestContext, q: TicketListQuery) {
@@ -50,7 +52,7 @@ export class MaintenanceService {
       });
       if (!unit || unit.siteId !== dto.siteId) throw new NotFoundException('Chambre introuvable sur ce site');
     }
-    return this.prisma.$transaction(async (tx) => {
+    const ticket = await this.prisma.$transaction(async (tx) => {
       const t = await tx.maintenanceTicket.create({
         data: {
           accountId: ctx.accountId,
@@ -71,6 +73,16 @@ export class MaintenanceService {
       });
       return t;
     });
+
+    // Panne urgente : on prévient propriétaire et gérants (notifications). Best-effort.
+    if (ticket.priority === 'URGENT') {
+      void this.notifications.notifyRoles(ctx.accountId, ['OWNER', 'MANAGER'], {
+        title: 'Panne urgente signalée',
+        body: ticket.title,
+        data: { kind: 'ticket', id: ticket.id },
+      });
+    }
+    return ticket;
   }
 
   async update(ctx: RequestContext, id: string, dto: UpdateTicketDto): Promise<MaintenanceTicket> {

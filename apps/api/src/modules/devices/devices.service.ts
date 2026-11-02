@@ -65,6 +65,8 @@ export class DevicesService {
       platform: dto.platform,
       model: dto.model ?? null,
       appVersion: dto.appVersion ?? null,
+      // Jeton push mis à jour seulement s'il est fourni (ne pas l'effacer sinon).
+      ...(dto.pushToken ? { pushToken: dto.pushToken } : {}),
       lastSeenAt: new Date(),
       // Une nouvelle connexion par mot de passe réactive un appareil déconnecté.
       revokedAt: null,

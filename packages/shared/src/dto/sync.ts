@@ -162,6 +162,8 @@ export const registerDeviceDto = z.object({
   platform: z.enum(['android', 'ios', 'web']),
   appVersion: z.string().max(20).optional(),
   model: z.string().max(80).optional(),
+  /** Jeton de notifications push (Expo) ; renvoyé à chaque enregistrement pour rester à jour. */
+  pushToken: z.string().max(200).optional(),
   /** Appareil à déconnecter pour faire de la place (limite de 2 atteinte). */
   replaceDeviceId: uuid.optional(),
 });

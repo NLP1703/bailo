@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createTestApp, resetDb, seedAccount, seedUser, type TestContext } from './utils/test-app';
+import { NotificationsService } from '../src/modules/notifications/notifications.service';
 
 /**
  * Protocole de synchronisation mobile (apps/mobile/docs/02-protocole-synchronisation.md)
@@ -27,7 +28,7 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     return res.body.accessToken as string;
   }
 
-  async function register(token: string, deviceId = randomUUID(), extra: object = {}) {
+  async function register(token: string, deviceId: string = randomUUID(), extra: object = {}) {
     const res = await api()
       .post('/api/v1/auth/device')
       .set(auth(token))
@@ -153,6 +154,30 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     const row = await ctx.prisma.device.findFirst({ where: { deviceKey: first.deviceId } });
     expect(row?.revokedAt).not.toBeNull();
     expect(await ctx.prisma.auditLog.count({ where: { entity: 'device' } })).toBe(1);
+  });
+
+  it('notifications push : jeton enregistré sur l’appareil et ciblage par rôle', async () => {
+    const f = await fixtures();
+    await register(f.owner, randomUUID(), { pushToken: 'ExponentPushToken[owner-xyz]' });
+    await register(f.caretaker, randomUUID(), { pushToken: 'ExponentPushToken[caretaker]' });
+
+    const owner = await ctx.prisma.user.findFirstOrThrow({ where: { phone: '690000001' } });
+    const dev = await ctx.prisma.device.findFirstOrThrow({ where: { userId: owner.id } });
+    expect(dev.pushToken).toBe('ExponentPushToken[owner-xyz]');
+
+    // Un ré-enregistrement sans jeton ne doit pas l'effacer.
+    await register(f.owner, dev.deviceKey);
+    expect(
+      (await ctx.prisma.device.findUniqueOrThrow({ where: { id: dev.id } })).pushToken,
+    ).toBe('ExponentPushToken[owner-xyz]');
+
+    const notifications = ctx.app.get(NotificationsService);
+    expect(await notifications.tokensForRoles(f.accountId, ['OWNER'])).toEqual([
+      'ExponentPushToken[owner-xyz]',
+    ]);
+    const team = await notifications.tokensForRoles(f.accountId, ['OWNER', 'CARETAKER']);
+    expect(team).toContain('ExponentPushToken[owner-xyz]');
+    expect(team).toContain('ExponentPushToken[caretaker]');
   });
 
   it('le propriétaire voit tous les appareils, le gardien seulement les siens', async () => {

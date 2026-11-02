@@ -1,16 +1,18 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import type { CashQuery, CreateHandoverDto } from '@bailo/shared';
+import { formatFcfa, type CashQuery, type CreateHandoverDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { toDate } from '../../common/time/to-date';
 import type { RequestContext } from '../../common/tenancy/request-context';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CashService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Journal de caisse (espèces) d'un encaisseur + état des remises. */
@@ -80,8 +82,8 @@ export class CashService {
     const expected = aggregate._sum.amount ?? 0;
     const variance = dto.handedAmount - expected;
 
-    return this.prisma.$transaction(async (tx) => {
-      const handover = await tx.cashHandover.create({
+    const handover = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.cashHandover.create({
         data: {
           accountId: ctx.accountId,
           collectorId: dto.collectorId,
@@ -98,12 +100,23 @@ export class CashService {
         accountId: ctx.accountId,
         actorId: ctx.userId,
         entity: 'cash_handover',
-        entityId: handover.id,
+        entityId: created.id,
         action: 'CREATE',
         after: { expected, handed: dto.handedAmount, variance },
       });
-      return handover;
+      return created;
     });
+
+    // Remise déclarée par l'équipe : on prévient le propriétaire qu'il a une confirmation
+    // à faire (T14 + notifications). Best-effort, hors transaction.
+    if (!handover.settledAt) {
+      void this.notifications.notifyRoles(ctx.accountId, ['OWNER'], {
+        title: 'Remise de caisse à confirmer',
+        body: `${formatFcfa(handover.handedAmount)} remis${variance !== 0 ? ` (écart ${formatFcfa(variance)})` : ''}`,
+        data: { kind: 'cashHandover', id: handover.id },
+      });
+    }
+    return handover;
   }
 
   /**
