@@ -1,10 +1,5 @@
-import { Placeholder } from '../../ui/components';
+import { EquipeScreen } from '../../screens/EquipeScreen';
 
-export default function Screen() {
-  return (
-    <Placeholder title="Équipe" lot="LM4">
-      Activité de chaque membre, appareils connectés, opérations en attente ou à corriger (maquette
-      T15).
-    </Placeholder>
-  );
+export default function Equipe() {
+  return <EquipeScreen />;
 }

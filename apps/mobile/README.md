@@ -18,7 +18,7 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 | LM1 Cadrage (sem. 1–2)        | Décisions, protocole de synchronisation, écrans, appareils de test, maquettes  | Livré (retours attendus)     |
 | LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | Livré (API + app)            |
 | LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | Livré (recette terrain à venir) |
-| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | **En cours** (vue d'ensemble, remises de caisse) |
+| LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | **En cours** (vue d'ensemble, remises de caisse, équipe) |
 | LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | À venir                      |
 | LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                      |
 
