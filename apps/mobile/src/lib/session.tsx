@@ -40,6 +40,8 @@ export interface SessionUser {
   accountName: string;
   siteIds: string[];
   readOnly: boolean;
+  /** Sites accessibles (tous ceux du compte pour le propriétaire), pour la vue d'ensemble. */
+  sites: { id: string; name: string }[];
   /** Site affiché par défaut (MG1.4). */
   siteId: string | null;
 }
@@ -61,13 +63,13 @@ interface SessionValue {
 const SessionContext = createContext<SessionValue | null>(null);
 
 async function fetchUser(): Promise<SessionUser> {
-  const me = await api.get<Omit<SessionUser, 'siteId'>>('/me');
-  let siteId = me.siteIds[0] ?? null;
-  if (!siteId) {
-    // Le propriétaire voit tous les sites : on prend le premier de la liste.
-    const sites = await api.get<Array<{ id: string }>>('/sites').catch(() => []);
-    siteId = sites[0]?.id ?? null;
-  }
+  const me = await api.get<Omit<SessionUser, 'siteId' | 'sites'>>('/me');
+  // `/sites` est cloisonné par accès : tous les sites du compte pour le propriétaire,
+  // seulement les siens pour le gérant ou le gardien. Donne aussi les noms (vue d'ensemble).
+  const all = await api.get<Array<{ id: string; name: string }>>('/sites').catch(() => []);
+  const sites =
+    me.siteIds.length > 0 ? all.filter((site) => me.siteIds.includes(site.id)) : all;
+  const siteId = me.siteIds[0] ?? sites[0]?.id ?? null;
   return {
     id: me.id,
     name: me.name,
@@ -75,6 +77,7 @@ async function fetchUser(): Promise<SessionUser> {
     accountName: me.accountName,
     siteIds: me.siteIds,
     readOnly: me.readOnly,
+    sites: sites.map((site) => ({ id: site.id, name: site.name })),
     siteId,
   };
 }

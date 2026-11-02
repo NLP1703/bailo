@@ -1,6 +1,13 @@
 import type { SyncState } from '@bailo/sync';
 import * as Network from 'expo-network';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { AppState } from 'react-native';
 import { PULL_INTERVAL_MS } from '../lib/config';
 import { useSession } from '../lib/session';
@@ -24,16 +31,26 @@ const SyncStateContext = createContext<SyncState>(initial);
 export function SyncProvider({ children }: { children: ReactNode }) {
   const { status, user } = useSession();
   const [state, setState] = useState<SyncState>(initial);
-  const siteId = user?.siteId ?? null;
+  // Le propriétaire suit plusieurs sites : on les réceptionne tous (le gérant et le
+  // gardien n'en ont qu'un). L'envoi est commun, la réception se fait site par site.
+  const siteIds = useMemo(() => {
+    const ids = user?.sites?.map((site) => site.id) ?? [];
+    if (ids.length > 0) return ids;
+    return user?.siteId ? [user.siteId] : [];
+  }, [user?.sites, user?.siteId]);
+  const siteKey = siteIds.join(',');
 
   useEffect(() => {
-    if (status !== 'ready' || !siteId) return;
+    if (status !== 'ready' || siteIds.length === 0) return;
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
-    // Envoi, réception, puis photos en attente (elles passent après les saisies).
+    // Envoi (commun), réception de chaque site, puis photos en attente (après les saisies).
     const run = () =>
       void getSync()
-        .then(({ engine }) => engine.syncNow(siteId))
+        .then(async ({ engine }) => {
+          await engine.flush();
+          for (const id of siteIds) await engine.pull(id);
+        })
         .then(() => processUploads())
         .catch(() => undefined);
 
@@ -60,7 +77,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       app.remove();
       clearInterval(timer);
     };
-  }, [status, siteId]);
+  }, [status, siteKey]);
 
   return <SyncStateContext.Provider value={state}>{children}</SyncStateContext.Provider>;
 }
