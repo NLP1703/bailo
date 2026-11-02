@@ -3,7 +3,7 @@ import { useSession } from '../lib/session';
 import { getSync } from '../sync/engine';
 import { useSyncState } from '../sync/useSync';
 import { buildUnitViews, siteSummary, withPending, type QueuedOp, type SiteSummary } from './derive';
-import type { SiteTables } from './types';
+import type { CashHandoverRow, SiteTables } from './types';
 
 const TABLES: Array<keyof SiteTables> = [
   'sites',
@@ -62,6 +62,8 @@ export interface AllSitesData {
   loading: boolean;
   sites: SiteOverview[];
   total: SiteSummary;
+  /** Remises de caisse déclarées par l'équipe, en attente de confirmation (T14). */
+  pendingHandovers: CashHandoverRow[];
 }
 
 type RawBySite = Record<string, { tables: SiteTables; queue: QueuedOp[] }>;
@@ -109,6 +111,13 @@ export function useAllSites(): AllSitesData {
       return { id: site.id, name: site.name, summary: siteSummary(tables, views, today) };
     });
     const total = sites.reduce((acc, s) => addSummary(acc, s.summary), EMPTY_SUMMARY);
-    return { loading: raw === null, sites, total };
+    // Les remises de caisse sont propres au compte (pas au site) : la réception renvoie le
+    // même jeu pour chaque site, on lit donc celui du premier site et on déduplique par id.
+    const seen = new Set<string>();
+    const pendingHandovers = Object.values(raw ?? {})
+      .flatMap((bySite) => bySite.tables.cash_handovers)
+      .filter((h) => !h.settledAt && !seen.has(h.id) && seen.add(h.id))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return { loading: raw === null, sites, total, pendingHandovers };
   }, [raw, siteList]);
 }

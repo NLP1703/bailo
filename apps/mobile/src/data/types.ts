@@ -143,6 +143,8 @@ export interface ExpenseRow {
 export interface CashHandoverRow {
   id: string;
   collectorId: string;
+  /** Nom de l'encaisseur, joint à la réception pour l'affichage (T14). */
+  collectorName: string | null;
   periodStart: string;
   periodEnd: string;
   expectedAmount: number;

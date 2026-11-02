@@ -19,3 +19,9 @@ export const createHandoverDto = z.object({
   note: z.string().max(240).optional(),
 });
 export type CreateHandoverDto = z.infer<typeof createHandoverDto>;
+
+/** Confirmation par le propriétaire d'une remise déclarée par l'équipe (T14). */
+export const settleHandoverDto = z.object({
+  handoverId: uuid,
+});
+export type SettleHandoverDto = z.infer<typeof settleHandoverDto>;

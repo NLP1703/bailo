@@ -44,6 +44,7 @@ const ALLOWED_ROLES: Record<SyncOperationType, readonly UserRole[]> = {
   'ticket.create': ['OWNER', 'MANAGER', 'CARETAKER'],
   'expense.create': ['OWNER', 'MANAGER'],
   'cashHandover.create': ['OWNER', 'MANAGER', 'CARETAKER'],
+  'cashHandover.settle': ['OWNER'],
   'tenant.create': ['OWNER', 'MANAGER'],
   'occupancy.create': ['OWNER', 'MANAGER'],
   'attachment.link': ['OWNER', 'MANAGER', 'CARETAKER'],
@@ -377,6 +378,12 @@ export class SyncService {
           parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['cashHandover.create']['_output'];
         const handover = (await this.cash.createHandover(ctx, payload)) as { id: string };
         return { entityId: handover.id, entity: handover };
+      }
+      case 'cashHandover.settle': {
+        const payload =
+          parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['cashHandover.settle']['_output'];
+        const settled = (await this.cash.settleHandover(ctx, payload.handoverId)) as { id: string };
+        return { entityId: settled.id, entity: settled };
       }
       case 'tenant.create': {
         const payload = parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['tenant.create']['_output'];
@@ -724,19 +731,29 @@ export class SyncService {
           orderBy,
           take,
         });
-      case 'cash_handovers':
-        // Remises de l'utilisateur lui-même (écran « Ma caisse ») : elles ne dépendent pas
-        // du site, seulement de l'encaisseur.
-        return this.prisma.cashHandover.findMany({
-          where: {
-            ...base,
-            accountId,
-            collectorId: ctx.userId,
-            createdAt: { gte: new Date(now - 120 * DAY) },
-          },
+      case 'cash_handovers': {
+        // Remises de caisse : liées à l'encaisseur, pas au site (« Ma caisse », T8). Le
+        // propriétaire reçoit en plus celles qui lui restent à confirmer (settledAt nul,
+        // T14), quel que soit l'encaisseur. On y joint le nom du collecteur pour l'affichage.
+        const scope =
+          ctx.role === 'OWNER'
+            ? { OR: [{ collectorId: ctx.userId }, { settledAt: null }] }
+            : { collectorId: ctx.userId };
+        const rows = await this.prisma.cashHandover.findMany({
+          where: { ...base, accountId, ...scope, createdAt: { gte: new Date(now - 120 * DAY) } },
           orderBy,
           take,
         });
+        const collectorIds = [...new Set(rows.map((r) => r.collectorId))];
+        const collectors = collectorIds.length
+          ? await this.prisma.user.findMany({
+              where: { id: { in: collectorIds } },
+              select: { id: true, name: true },
+            })
+          : [];
+        const nameById = new Map(collectors.map((u) => [u.id, u.name]));
+        return rows.map((row) => ({ ...row, collectorName: nameById.get(row.collectorId) ?? null }));
+      }
       case 'expenses': {
         const start = new Date();
         start.setUTCDate(1);

@@ -548,6 +548,57 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(rows.map((r) => r.id)).toEqual([handover.id]);
   });
 
+  it('remises de caisse (T14) : le gardien déclare, le propriétaire reçoit et confirme', async () => {
+    const f = await fixtures();
+    const { deviceId: caretakerDevice } = await register(f.caretaker);
+    const me = await ctx.prisma.user.findFirstOrThrow({ where: { phone: '690000002' } });
+
+    // Le gardien encaisse puis déclare sa remise : elle reste à confirmer (settledAt nul).
+    const pay = op('payment.create', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      amount: 8000,
+      mode: 'ESPECES',
+    });
+    const declare = op('cashHandover.create', f.siteA.id, {
+      collectorId: me.id,
+      periodStart: new Date(Date.now() - 86_400_000).toISOString(),
+      periodEnd: new Date(Date.now() + 1000).toISOString(),
+      handedAmount: 8000,
+    });
+    const declared = await push(f.caretaker, caretakerDevice, [pay, declare]).expect(200);
+    const handoverId = declared.body.results[1].entityId as string;
+    expect(
+      (await ctx.prisma.cashHandover.findUniqueOrThrow({ where: { id: handoverId } })).settledAt,
+    ).toBeNull();
+
+    // Le propriétaire reçoit la remise à confirmer, avec le nom de l'encaisseur.
+    const { deviceId: ownerDevice } = await register(f.owner);
+    const { pages } = await pullAll(f.owner, ownerDevice, f.siteA.id, null);
+    const received = pages.flatMap(
+      (p) => (p.changes.cash_handovers ?? []) as Array<{ id: string; collectorName: string }>,
+    );
+    expect(received.find((r) => r.id === handoverId)?.collectorName).toBe('Gardien');
+
+    // Le gardien ne peut pas confirmer ; le propriétaire oui (idempotent au renvoi).
+    const refused = await push(f.caretaker, caretakerDevice, [
+      op('cashHandover.settle', f.siteA.id, { handoverId }),
+    ]).expect(200);
+    expect(refused.body.results[0]).toMatchObject({
+      status: 'rejected',
+      errorCode: 'SYNC_FORBIDDEN',
+    });
+
+    const settle = op('cashHandover.settle', f.siteA.id, { handoverId });
+    const ok = await push(f.owner, ownerDevice, [settle]).expect(200);
+    expect(ok.body.results[0].status).toBe('applied');
+    expect(
+      (await ctx.prisma.cashHandover.findUniqueOrThrow({ where: { id: handoverId } })).settledAt,
+    ).not.toBeNull();
+
+    const again = await push(f.owner, ownerDevice, [settle]).expect(200);
+    expect(again.body.results[0].status).toBe('duplicate');
+  });
+
   it('photos rattachées aux saisies du téléphone (§ 6), contrôlées par compte et par usage', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.caretaker);

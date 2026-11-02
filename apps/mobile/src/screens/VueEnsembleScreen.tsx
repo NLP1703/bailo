@@ -1,4 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAllSites } from '../data/useAllSites';
 import { useSession } from '../lib/session';
@@ -13,7 +15,7 @@ import { colors } from '../ui/theme';
 export function VueEnsembleScreen() {
   const { user } = useSession();
   const sync = useSyncState();
-  const { sites, total, loading } = useAllSites();
+  const { sites, total, loading, pendingHandovers } = useAllSites();
   const month = monthLabel(new Date().getMonth() + 1);
   const occupancyRate = total.total ? Math.round((total.occupied / total.total) * 100) : 0;
 
@@ -64,6 +66,23 @@ export function VueEnsembleScreen() {
             {total.overdueUnits} chambre{total.overdueUnits > 1 ? 's' : ''} en retard
           </Text>
         </View>
+
+        {pendingHandovers.length > 0 ? (
+          <Pressable
+            style={[s.action, s.danger]}
+            accessibilityRole="button"
+            onPress={() => router.push('/remises')}
+          >
+            <Ionicons name="wallet" size={24} color={colors.danger} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.actionTitle}>
+                {pendingHandovers.length} remise{pendingHandovers.length > 1 ? 's' : ''} à confirmer
+              </Text>
+              <Text style={s.muted}>Déclarée(s) par votre équipe</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+          </Pressable>
+        ) : null}
 
         <Text style={s.section}>Par site</Text>
         {loading && sites.length === 0 ? (
@@ -137,6 +156,17 @@ const s = StyleSheet.create({
   },
   danger: { borderColor: '#FECACA', backgroundColor: '#FEF2F2' },
   tileValue: { fontSize: 20, fontWeight: '700', color: colors.text },
+  action: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  actionTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
   section: { fontSize: 16, fontWeight: '600', color: colors.text, marginTop: 6 },
   card: {
     gap: 6,

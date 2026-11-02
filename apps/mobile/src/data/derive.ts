@@ -122,6 +122,7 @@ export function withPending(tables: SiteTables, queue: QueuedOp[]): SiteTables {
       handovers.push({
         id: op.opId,
         collectorId: String(p.collectorId ?? ''),
+        collectorName: null,
         periodStart: String(p.periodStart ?? op.createdAt),
         periodEnd: String(p.periodEnd ?? op.createdAt),
         expectedAmount: 0,

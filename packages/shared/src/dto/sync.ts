@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createHandoverDto } from './cash';
+import { createHandoverDto, settleHandoverDto } from './cash';
 import { uuid } from './common';
 import { createExpenseDto } from './expenses';
 import { createTicketDto } from './maintenance';
@@ -30,6 +30,7 @@ export const SYNC_OPERATION_TYPES = [
   'ticket.create',
   'expense.create',
   'cashHandover.create',
+  'cashHandover.settle',
   'tenant.create',
   'occupancy.create',
   'attachment.link',
@@ -73,6 +74,7 @@ export const SYNC_PAYLOAD_SCHEMAS = {
   'ticket.create': createTicketDto.omit({ siteId: true }),
   'expense.create': createExpenseDto.omit({ siteId: true }),
   'cashHandover.create': createHandoverDto,
+  'cashHandover.settle': settleHandoverDto,
   'tenant.create': createTenantDto,
   'occupancy.create': syncOccupancyDto,
   'attachment.link': attachmentLinkDto,

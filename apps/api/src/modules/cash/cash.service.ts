@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { CashQuery, CreateHandoverDto } from '@bailo/shared';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -103,6 +103,34 @@ export class CashService {
         after: { expected, handed: dto.handedAmount, variance },
       });
       return handover;
+    });
+  }
+
+  /**
+   * Confirmation d'une remise déclarée par l'équipe (T14) : le propriétaire atteste
+   * l'avoir reçue. Idempotent — une remise déjà confirmée est renvoyée telle quelle.
+   */
+  async settleHandover(ctx: RequestContext, handoverId: string) {
+    const handover = await this.prisma.cashHandover.findFirst({
+      where: { id: handoverId, accountId: ctx.accountId },
+    });
+    if (!handover) throw new NotFoundException('Remise de caisse introuvable');
+    if (handover.settledAt) return handover;
+
+    return this.prisma.$transaction(async (tx) => {
+      const settled = await tx.cashHandover.update({
+        where: { id: handover.id },
+        data: { settledAt: new Date() },
+      });
+      await this.audit.log(tx, {
+        accountId: ctx.accountId,
+        actorId: ctx.userId,
+        entity: 'cash_handover',
+        entityId: handover.id,
+        action: 'UPDATE',
+        after: { settledAt: settled.settledAt },
+      });
+      return settled;
     });
   }
 

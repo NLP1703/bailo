@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   cashQuery,
@@ -38,5 +38,13 @@ export class CashController {
     @Body(new ZodValidationPipe(createHandoverDto)) dto: CreateHandoverDto,
   ) {
     return this.cash.createHandover(ctx, dto);
+  }
+
+  // Le propriétaire confirme une remise déclarée par l'équipe (T14).
+  @Post('handovers/:id/settle')
+  @Roles('OWNER')
+  @ApiOperation({ summary: 'Confirmer une remise de caisse déclarée' })
+  async settleHandover(@CurrentUser() ctx: RequestContext, @Param('id') id: string) {
+    return this.cash.settleHandover(ctx, id);
   }
 }
