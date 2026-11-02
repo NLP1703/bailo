@@ -91,7 +91,7 @@ comptes de démo, y compris sans réseau (T7) et avec un refus réel du serveur 
 | T11 Pannes             | Testé ; photos (jusqu'à 3, § 6) testées E2E                                     |
 | T12 Nouvelle dépense   | Testé ; photo du justificatif (§ 6) testée E2E                                 |
 | T16 À corriger         | Testé (refaire ou abandonner)                                                  |
-| T6 Nouvelle entrée     | Intégré (locataire + occupation hors-ligne, photo de la pièce § 6) ; e2e       |
+| T6 Nouvelle entrée     | Intégré (locataire + occupation hors-ligne, photo § 6) ; e2e + recette émulateur|
 
 L'envoi des photos (§ 6 du protocole) est intégré : prise à l'appareil sur
 l'encaissement (preuve), les relevés (compteur), les pannes (jusqu'à 3) et les
