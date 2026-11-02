@@ -105,6 +105,7 @@ describe('Relances, tableau de bord & exports (e2e)', () => {
         clientId: randomUUID(),
         amount: 10000,
         mode: 'ESPECES',
+        paidAt: '2026-10-20',
       })
       .expect(201);
 
