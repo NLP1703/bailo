@@ -95,6 +95,16 @@ export function LocataireScreen({ tenantId }: { tenantId: string }) {
                 router.push({ pathname: '/sortie', params: { occupancyId: view.occupancy!.id } })
               }
             />
+            <PrimaryButton
+              label="Créer un contrat"
+              tone="outline"
+              onPress={() =>
+                router.push({
+                  pathname: '/contrat-nouveau',
+                  params: { occupancyId: view.occupancy!.id },
+                })
+              }
+            />
           </Card>
         ) : null}
 

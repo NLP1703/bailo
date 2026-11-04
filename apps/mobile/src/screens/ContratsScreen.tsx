@@ -82,7 +82,10 @@ export function ContratsScreen() {
         ) : loading && contracts.length === 0 ? (
           <Text style={s.muted}>Chargement…</Text>
         ) : contracts.length === 0 ? (
-          <Text style={s.muted}>Aucun contrat. Créez-en depuis le site web pour l’instant.</Text>
+          <Text style={s.muted}>
+            Aucun contrat. Créez-en un depuis la fiche d’un locataire ayant une occupation
+            active (« Créer un contrat »).
+          </Text>
         ) : (
           contracts.map((c) => (
             <Pressable

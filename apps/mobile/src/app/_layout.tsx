@@ -65,6 +65,7 @@ function RootNavigator() {
         <Stack.Screen name="remises" />
         <Stack.Screen name="sortie" />
         <Stack.Screen name="contrats" />
+        <Stack.Screen name="contrat-nouveau" />
         <Stack.Screen name="contrat/[id]" />
         <Stack.Screen name="comptabilite" />
         <Stack.Screen name="administration" />

@@ -110,6 +110,19 @@ export async function request<T>(method: string, path: string, body?: unknown): 
   return parse<T>(res);
 }
 
+/**
+ * En-têtes authentifiés pour un téléchargement binaire direct (hors `request`), p. ex. le
+ * PDF d'un contrat via `File.downloadFileAsync`. Rafraîchit le jeton d'accès s'il manque ;
+ * l'appelant relance une fois en cas de 401 (après `refreshSession`).
+ */
+export async function authDownloadHeaders(): Promise<Record<string, string>> {
+  if (!accessToken) await refreshSession();
+  const h = headers();
+  // Un GET de fichier n'a pas de corps JSON : on évite d'induire le serveur en erreur.
+  delete h['Content-Type'];
+  return h;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {}),

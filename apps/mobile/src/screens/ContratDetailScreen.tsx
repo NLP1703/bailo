@@ -1,14 +1,23 @@
+import { Directory, File, Paths } from 'expo-file-system';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '../lib/api';
+import { API_URL } from '../lib/config';
+import { api, authDownloadHeaders, refreshSession } from '../lib/api';
 import { useSession } from '../lib/session';
 import { PrimaryButton } from '../ui/components';
 import { Card, Field } from '../ui/form';
+import { ContractBody } from '../ui/ContractBody';
 import { formatFcfa, shortDate } from '../ui/format';
 import { colors } from '../ui/theme';
 import { BackBar } from './FicheChambreScreen';
 import { StatusBadge, type ContractRow } from './ContratsScreen';
+
+/** Contrat complet renvoyé par `GET /contracts/:id` (le corps HTML et l'état de signature). */
+interface ContractFull extends ContractRow {
+  bodyHtml: string;
+  signedByTenant: boolean;
+}
 
 /**
  * LM5 — fiche d'un contrat (propriétaire et gérant) : état, parties, montants, et les
@@ -18,7 +27,7 @@ import { StatusBadge, type ContractRow } from './ContratsScreen';
  */
 export function ContratDetailScreen({ id, tenantName }: { id: string; tenantName?: string }) {
   const { user } = useSession();
-  const [contract, setContract] = useState<ContractRow | null>(null);
+  const [contract, setContract] = useState<ContractFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,11 +36,12 @@ export function ContratDetailScreen({ id, tenantName }: { id: string; tenantName
   const [reason, setReason] = useState('');
   const [showTerminate, setShowTerminate] = useState(false);
   const [busy, setBusy] = useState<null | 'send' | 'sign' | 'terminate'>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      setContract(await api.get<ContractRow>(`/contracts/${id}`));
+      setContract(await api.get<ContractFull>(`/contracts/${id}`));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Connexion requise pour voir ce contrat.');
     } finally {
@@ -42,6 +52,36 @@ export function ContratDetailScreen({ id, tenantName }: { id: string; tenantName
   useEffect(() => {
     void load();
   }, [load]);
+
+  /**
+   * Télécharge le PDF authentifié dans le cache puis l'ouvre avec le visionneur du téléphone
+   * (aperçu natif d'expo-file-system). Le nom (donc l'extension pdf/html de repli) vient de
+   * l'en-tête `Content-Disposition` renvoyé par le serveur ; on rejoue une fois après 401.
+   */
+  const openPdf = async () => {
+    setPdfBusy(true);
+    setError(null);
+    try {
+      const dir = new Directory(Paths.cache, 'contracts');
+      dir.create({ intermediates: true, idempotent: true });
+      const url = `${API_URL}/contracts/${id}/pdf`;
+      const download = async () =>
+        File.downloadFileAsync(url, dir, { headers: await authDownloadHeaders(), idempotent: true });
+      let file: File;
+      try {
+        file = await download();
+      } catch (e) {
+        if (/40[13]/.test(String(e)) && (await refreshSession())) file = await download();
+        else throw e;
+      }
+      if (await file.canPreview()) await file.preview();
+      else setError('Aucune application pour ouvrir le document sur ce téléphone.');
+    } catch {
+      setError('Impossible d’ouvrir le document. Vérifiez votre connexion et réessayez.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const readOnly = !!user?.readOnly;
 
@@ -109,6 +149,14 @@ export function ContratDetailScreen({ id, tenantName }: { id: string; tenantName
           ) : null}
           {c.terminationReason ? <Row label="Motif" value={c.terminationReason} /> : null}
         </Card>
+
+        <PrimaryButton
+          label="Ouvrir le PDF"
+          tone="outline"
+          busy={pdfBusy}
+          disabled={pdfBusy}
+          onPress={() => void openPdf()}
+        />
 
         {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
 
@@ -210,6 +258,12 @@ export function ContratDetailScreen({ id, tenantName }: { id: string; tenantName
             />
           )
         ) : null}
+
+        {/* Corps du contrat rendu en texte natif (le même contenu que le PDF). */}
+        <Text style={s.label}>Document</Text>
+        <Card>
+          <ContractBody html={c.bodyHtml} />
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
