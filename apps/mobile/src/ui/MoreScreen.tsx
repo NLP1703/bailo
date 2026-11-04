@@ -22,13 +22,20 @@ const LINKS: Array<{
     | 'construct-outline'
     | 'receipt-outline'
     | 'notifications-outline'
-    | 'document-text-outline';
+    | 'document-text-outline'
+    | 'calculator-outline';
   roles?: Role[];
 }> = [
   {
     href: '/contrats',
     label: 'Contrats',
     icon: 'document-text-outline',
+    roles: ['OWNER', 'MANAGER'],
+  },
+  {
+    href: '/comptabilite',
+    label: 'Comptabilité',
+    icon: 'calculator-outline',
     roles: ['OWNER', 'MANAGER'],
   },
   { href: '/caisse', label: 'Ma caisse', icon: 'wallet-outline', roles: ['MANAGER', 'CARETAKER'] },
