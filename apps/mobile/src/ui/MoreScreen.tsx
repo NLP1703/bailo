@@ -21,9 +21,16 @@ const LINKS: Array<{
     | 'speedometer-outline'
     | 'construct-outline'
     | 'receipt-outline'
-    | 'notifications-outline';
+    | 'notifications-outline'
+    | 'document-text-outline';
   roles?: Role[];
 }> = [
+  {
+    href: '/contrats',
+    label: 'Contrats',
+    icon: 'document-text-outline',
+    roles: ['OWNER', 'MANAGER'],
+  },
   { href: '/caisse', label: 'Ma caisse', icon: 'wallet-outline', roles: ['MANAGER', 'CARETAKER'] },
   {
     href: '/releves',
