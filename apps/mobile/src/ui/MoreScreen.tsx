@@ -23,7 +23,8 @@ const LINKS: Array<{
     | 'receipt-outline'
     | 'notifications-outline'
     | 'document-text-outline'
-    | 'calculator-outline';
+    | 'calculator-outline'
+    | 'shield-checkmark-outline';
   roles?: Role[];
 }> = [
   {
@@ -36,6 +37,12 @@ const LINKS: Array<{
     href: '/comptabilite',
     label: 'Comptabilité',
     icon: 'calculator-outline',
+    roles: ['OWNER', 'MANAGER'],
+  },
+  {
+    href: '/administration',
+    label: 'Administration',
+    icon: 'shield-checkmark-outline',
     roles: ['OWNER', 'MANAGER'],
   },
   { href: '/caisse', label: 'Ma caisse', icon: 'wallet-outline', roles: ['MANAGER', 'CARETAKER'] },
