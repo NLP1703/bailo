@@ -24,9 +24,16 @@ const LINKS: Array<{
     | 'notifications-outline'
     | 'document-text-outline'
     | 'calculator-outline'
-    | 'shield-checkmark-outline';
+    | 'shield-checkmark-outline'
+    | 'business-outline';
   roles?: Role[];
 }> = [
+  {
+    href: '/sites',
+    label: 'Sites',
+    icon: 'business-outline',
+    roles: ['OWNER', 'MANAGER'],
+  },
   {
     href: '/contrats',
     label: 'Contrats',
