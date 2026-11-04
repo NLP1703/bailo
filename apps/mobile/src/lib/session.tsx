@@ -19,7 +19,7 @@ import {
 } from '../sync/engine';
 import { configureTransport } from '../sync/transport';
 import { wipePhotos } from '../sync/photos';
-import { api, ApiError, login, logoutRemote, onExpired, refreshSession } from './api';
+import { api, ApiError, login, logoutRemote, onExpired, refreshSession, signup } from './api';
 
 /** Deux téléphones déjà actifs : l'utilisateur choisit lequel déconnecter (RGM10). */
 export class DeviceLimitError extends Error {
@@ -54,6 +54,13 @@ interface SessionValue {
   /** Message à afficher sur l'écran de connexion (session expirée, trop d'erreurs de PIN). */
   notice: string | null;
   signIn(identifier: string, password: string, replaceDeviceId?: string): Promise<void>;
+  signUp(dto: {
+    accountName: string;
+    ownerName: string;
+    email: string;
+    phone: string;
+    password: string;
+  }): Promise<void>;
   choosePin(pin: string): Promise<void>;
   unlock(pin: string): Promise<{ ok: boolean; remaining: number }>;
   unlockBiometric(): Promise<boolean>;
@@ -166,6 +173,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const signUp = useCallback(
+    async (dto: {
+      accountName: string;
+      ownerName: string;
+      email: string;
+      phone: string;
+      password: string;
+    }) => {
+      await signup(dto);
+      await registerDevice();
+      const me = await fetchUser();
+      await setSecret('user', JSON.stringify(me));
+      setUser(me);
+      setNotice(null);
+      setStatus('choosePin');
+    },
+    [],
+  );
+
   const choosePin = useCallback(async (pin: string) => {
     await setPin(pin);
     setStatus('ready');
@@ -206,8 +232,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [afterUnlock]);
 
   const value = useMemo<SessionValue>(
-    () => ({ status, user, notice, signIn, choosePin, unlock, unlockBiometric, signOut }),
-    [status, user, notice, signIn, choosePin, unlock, unlockBiometric, signOut],
+    () => ({ status, user, notice, signIn, signUp, choosePin, unlock, unlockBiometric, signOut }),
+    [status, user, notice, signIn, signUp, choosePin, unlock, unlockBiometric, signOut],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

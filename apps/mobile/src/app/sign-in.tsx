@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 import { ApiError } from '../lib/api';
@@ -115,8 +116,13 @@ export default function SignIn() {
           </View>
         ) : null}
         <PrimaryButton label="Se connecter" onPress={() => void submit()} busy={busy} />
+        <PrimaryButton
+          label="Créer un compte"
+          tone="outline"
+          onPress={() => router.push('/sign-up')}
+        />
         <Text style={[styles.subtitle, { textAlign: 'center' }]}>
-          Les comptes sont créés par le bailleur. Mot de passe oublié : depuis le site Bailo.
+          Mot de passe oublié : depuis le site Bailo.
         </Text>
       </KeyboardAvoidingView>
     </Screen>

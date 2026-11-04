@@ -33,6 +33,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={status === 'signedOut'}>
         <Stack.Screen name="sign-in" />
+        <Stack.Screen name="sign-up" />
       </Stack.Protected>
       <Stack.Protected guard={status === 'choosePin'}>
         <Stack.Screen name="choose-pin" />
@@ -60,6 +61,16 @@ function RootNavigator() {
         <Stack.Screen name="relances" />
         <Stack.Screen name="a-corriger" />
         <Stack.Screen name="locataire/[id]" />
+        <Stack.Screen name="nouvelle-entree" />
+        <Stack.Screen name="remises" />
+        <Stack.Screen name="sortie" />
+        <Stack.Screen name="contrats" />
+        <Stack.Screen name="contrat/[id]" />
+        <Stack.Screen name="comptabilite" />
+        <Stack.Screen name="administration" />
+        <Stack.Screen name="audit" />
+        <Stack.Screen name="sites" />
+        <Stack.Screen name="site/[id]" />
       </Stack.Protected>
       <Stack.Screen name="index" />
     </Stack>

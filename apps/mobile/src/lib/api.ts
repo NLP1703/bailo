@@ -132,6 +132,23 @@ export async function login(identifier: string, password: string): Promise<void>
   await storeSession(await parse<AuthSession>(res));
 }
 
+/** Crée un compte bailleur (propriétaire) et ouvre la session (F2.1, aucun OTP requis). */
+export async function signup(dto: {
+  accountName: string;
+  ownerName: string;
+  email: string;
+  phone: string;
+  password: string;
+}): Promise<void> {
+  accessToken = null;
+  const res = await fetch(`${API_URL}/auth/signup`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ ...dto, phone: dto.phone.replace(/[\s.-]/g, '') }),
+  });
+  await storeSession(await parse<AuthSession>(res));
+}
+
 export async function logoutRemote(): Promise<void> {
   const refreshToken = await getSecret('refreshToken');
   try {
