@@ -88,6 +88,13 @@ export function LocataireScreen({ tenantId }: { tenantId: string }) {
                 router.push({ pathname: '/encaisser', params: { unitId: view.unit.id } })
               }
             />
+            <PrimaryButton
+              label={view.occupancy.status === 'NOTICE' ? 'Clôturer la sortie' : 'Gérer la sortie'}
+              tone="outline"
+              onPress={() =>
+                router.push({ pathname: '/sortie', params: { occupancyId: view.occupancy!.id } })
+              }
+            />
           </Card>
         ) : null}
 

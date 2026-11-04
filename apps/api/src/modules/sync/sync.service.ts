@@ -47,6 +47,8 @@ const ALLOWED_ROLES: Record<SyncOperationType, readonly UserRole[]> = {
   'cashHandover.settle': ['OWNER'],
   'tenant.create': ['OWNER', 'MANAGER'],
   'occupancy.create': ['OWNER', 'MANAGER'],
+  'occupancy.notice': ['OWNER', 'MANAGER'],
+  'occupancy.close': ['OWNER', 'MANAGER'],
   'attachment.link': ['OWNER', 'MANAGER', 'CARETAKER'],
 };
 
@@ -423,7 +425,40 @@ export class SyncService {
         });
         return { entityId: result.occupancy.id, entity: result.occupancy };
       }
+      case 'occupancy.notice': {
+        const payload =
+          parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['occupancy.notice']['_output'];
+        const { occupancyId, ...rest } = payload;
+        await this.assertOccupancyInSite(ctx, occupancyId, op.siteId);
+        const updated = await this.occupancies.notice(ctx, occupancyId, rest);
+        return { entityId: updated.id, entity: updated };
+      }
+      case 'occupancy.close': {
+        const payload =
+          parsed.data as (typeof SYNC_PAYLOAD_SCHEMAS)['occupancy.close']['_output'];
+        const { occupancyId, ...rest } = payload;
+        await this.assertOccupancyInSite(ctx, occupancyId, op.siteId);
+        const result = await this.occupancies.close(ctx, occupancyId, rest);
+        return { entityId: result.occupancy.id, entity: result.occupancy };
+      }
     }
+  }
+
+  /**
+   * L'occupation visée par un préavis / une clôture appartient bien au compte et au site de
+   * l'opération (le téléphone l'a reçue par pull). Sinon refus explicite.
+   */
+  private async assertOccupancyInSite(
+    ctx: RequestContext,
+    occupancyId: string,
+    siteId: string,
+  ): Promise<void> {
+    const occ = await this.prisma.occupancy.findFirst({
+      where: { id: occupancyId, accountId: ctx.accountId },
+      include: { unit: { select: { siteId: true } } },
+    });
+    if (!occ) throw new OpRejected(SYNC_ERRORS.NOT_FOUND, 'Occupation introuvable.');
+    assertSameSite(occ.unit.siteId, siteId);
   }
 
   /**

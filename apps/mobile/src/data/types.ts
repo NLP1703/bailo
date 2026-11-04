@@ -64,6 +64,17 @@ export interface GuarantorRow {
   isPrimaryPayer: boolean;
 }
 
+/** Décompte de sortie (RG15), calculé par le serveur et renvoyé sur l'occupation clôturée. */
+export interface CloseSummary {
+  depositPaid: number;
+  unpaidTotal: number;
+  retenuesTotal: number;
+  /** > 0 : à rembourser au locataire ; < 0 : reste dû par le locataire. */
+  refund: number;
+  retenues: { amount: number; reason: string }[];
+  actualEndDate: string;
+}
+
 export interface OccupancyRow {
   id: string;
   unitId: string;
@@ -71,10 +82,12 @@ export interface OccupancyRow {
   startDate: string;
   plannedEndDate: string | null;
   actualEndDate: string | null;
+  noticeDate: string | null;
   monthlyRent: number;
   dueDay: number;
   deposit: number;
   status: OccupancyStatus;
+  closeSummary: CloseSummary | null;
 }
 
 export interface ChargeRow {

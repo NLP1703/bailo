@@ -764,6 +764,45 @@ describe('Synchronisation mobile et appareils (e2e)', () => {
     expect(await ctx.prisma.occupancy.count({ where: { unitId: free.id } })).toBe(0);
   });
 
+  it('sortie du locataire : préavis puis clôture (RG15), refusée au gardien', async () => {
+    const f = await fixtures();
+    const { deviceId: ownerDevice } = await register(f.owner);
+
+    // Le gardien ne peut ni donner un préavis ni clôturer (OWNER/MANAGER seulement).
+    const { deviceId: caretakerDevice } = await register(f.caretaker);
+    const refused = await push(f.caretaker, caretakerDevice, [
+      op('occupancy.notice', f.siteA.id, { occupancyId: f.occupancyId, noticeDate: '2026-10-01' }),
+    ]).expect(200);
+    expect(refused.body.results[0]).toMatchObject({
+      status: 'rejected',
+      errorCode: 'SYNC_FORBIDDEN',
+    });
+
+    // Le propriétaire enregistre le préavis : l'occupation passe en NOTICE.
+    const notice = op('occupancy.notice', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      noticeDate: '2026-10-01',
+    });
+    const noticed = await push(f.owner, ownerDevice, [notice]).expect(200);
+    expect(noticed.body.results[0].status).toBe('applied');
+    expect(
+      (await ctx.prisma.occupancy.findUniqueOrThrow({ where: { id: f.occupancyId } })).status,
+    ).toBe('NOTICE');
+
+    // Puis la clôture avec une retenue motivée : statut CLOSED et décompte calculé (RG15).
+    const close = op('occupancy.close', f.siteA.id, {
+      occupancyId: f.occupancyId,
+      actualEndDate: '2026-10-15',
+      retenues: [{ amount: 3000, reason: 'Réparation mur' }],
+    });
+    const closed = await push(f.owner, ownerDevice, [close]).expect(200);
+    expect(closed.body.results[0].status).toBe('applied');
+    const occ = await ctx.prisma.occupancy.findUniqueOrThrow({ where: { id: f.occupancyId } });
+    expect(occ.status).toBe('CLOSED');
+    expect(occ.actualEndDate).not.toBeNull();
+    expect((occ.closeSummary as { retenuesTotal: number }).retenuesTotal).toBe(3000);
+  });
+
   it('un locataire supprimé est signalé aux téléphones (pierre tombale)', async () => {
     const f = await fixtures();
     const { deviceId } = await register(f.owner);

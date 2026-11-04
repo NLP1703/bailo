@@ -4,7 +4,7 @@ import { uuid } from './common';
 import { createExpenseDto } from './expenses';
 import { createTicketDto } from './maintenance';
 import { recordReadingDto } from './meters';
-import { createOccupancyDto } from './occupancies';
+import { closeOccupancyDto, createOccupancyDto, noticeOccupancyDto } from './occupancies';
 import { createPaymentDto } from './payments';
 import { createTenantDto } from './tenants';
 
@@ -33,6 +33,8 @@ export const SYNC_OPERATION_TYPES = [
   'cashHandover.settle',
   'tenant.create',
   'occupancy.create',
+  'occupancy.notice',
+  'occupancy.close',
   'attachment.link',
 ] as const;
 export type SyncOperationType = (typeof SYNC_OPERATION_TYPES)[number];
@@ -58,6 +60,16 @@ export const syncOccupancyDto = createOccupancyDto
   .extend({ tenantOpId: uuid });
 export type SyncOccupancyDto = z.infer<typeof syncOccupancyDto>;
 
+/**
+ * Sortie du locataire saisie depuis le téléphone (préavis puis clôture) sur une occupation
+ * déjà connue : on la désigne par son identifiant serveur (`occupancyId`), reçu par pull.
+ */
+export const syncNoticeOccupancyDto = noticeOccupancyDto.extend({ occupancyId: uuid });
+export type SyncNoticeOccupancyDto = z.infer<typeof syncNoticeOccupancyDto>;
+
+export const syncCloseOccupancyDto = closeOccupancyDto.extend({ occupancyId: uuid });
+export type SyncCloseOccupancyDto = z.infer<typeof syncCloseOccupancyDto>;
+
 /** Usage de fichier attendu pour chaque type d'élément auquel une photo se rattache. */
 export const ATTACHMENT_PURPOSE: Record<string, string> = {
   'payment.create': 'payment-proof',
@@ -77,6 +89,8 @@ export const SYNC_PAYLOAD_SCHEMAS = {
   'cashHandover.settle': settleHandoverDto,
   'tenant.create': createTenantDto,
   'occupancy.create': syncOccupancyDto,
+  'occupancy.notice': syncNoticeOccupancyDto,
+  'occupancy.close': syncCloseOccupancyDto,
   'attachment.link': attachmentLinkDto,
 } as const satisfies Record<SyncOperationType, z.ZodTypeAny>;
 
