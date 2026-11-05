@@ -20,7 +20,7 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 | LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | Livré (recette terrain à venir) |
 | LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | **En cours** (écrans + push câblés ; build natif compilé + APK autonome ; reste credentials FCM/EAS — voir [docs/05](docs/05-notifications-push.md)) |
 | LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | **Livré** (inscription, sites, contrats + création/ouverture PDF, sorties, compta, admin ; recette émulateur déroulée sur l'API locale avec le compte démo) |
-| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                      |
+| LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | **En cours** (profils de build EAS + plan de recette terrain prêts — voir [docs/06](docs/06-pilotes-et-recette.md) ; reste comptes Expo/Google Play, appareils et déroulé) |
 
 ## Documents de cadrage (LM1)
 
@@ -28,6 +28,8 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 2. [Protocole de synchronisation](docs/02-protocole-synchronisation.md) — le cœur du hors-ligne
 3. [Écrans et navigation](docs/03-ecrans-et-navigation.md) — la liste qui sert de base aux maquettes
 4. [Appareils de test](docs/04-appareils-de-test.md) — l'appareil de référence et la grille de tests
+5. [Notifications push](docs/05-notifications-push.md) — Firebase Cloud Messaging, credentials (LM4)
+6. [Pilotes et recette](docs/06-pilotes-et-recette.md) — build EAS, APK/Play Store, recette terrain (LM6)
 
 ## Pile technique retenue
 
