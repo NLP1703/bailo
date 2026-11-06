@@ -6,7 +6,11 @@ expo-env.d.ts
 android/
 ios/
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
+
+# Secrets de publication (clé de signature, compte de service Play Store)
+credentials/
