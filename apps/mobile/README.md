@@ -19,7 +19,7 @@ seulement les reçus et rappels envoyés par WhatsApp, SMS ou e-mail.
 | LM2 Socle mobile (sem. 3–5)   | Projet Expo, connexion, PIN, base locale chiffrée, moteur de synchronisation   | Livré (API + app)            |
 | LM3 Gestionnaire (sem. 6–9)   | Chambres, encaissement hors-ligne, caisse, relevés, pannes, dépenses, relances | Livré (recette terrain à venir) |
 | LM4 Propriétaire (sem. 10–12) | Vue multi-sites, contrôle de l'équipe, remises de caisse, notifications        | **En cours** (écrans + push câblés ; build natif compilé + APK autonome ; reste credentials FCM/EAS — voir [docs/05](docs/05-notifications-push.md)) |
-| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | **Livré** (inscription, sites, contrats + création/ouverture PDF, sorties, compta, admin ; reste recette émulateur) |
+| LM5 Parité web (sem. 13–16)   | Inscription, sites, contrats, sorties, comptabilité, administration            | **Livré** (inscription, sites, contrats + création/ouverture PDF, sorties, compta, admin ; recette émulateur déroulée sur l'API locale avec le compte démo) |
 | LM6 Pilotes (sem. 17–18)      | Test sur 3 cités, recette, APK et Play Store                                   | À venir                      |
 
 ## Documents de cadrage (LM1)
@@ -112,6 +112,23 @@ même mécanisme que `attachment.link`. La photo de la pièce d'identité suit l
 (usage `tenant-id`, rattachée en `tenant.idDocKey`). Caution, avance et échéances sont
 calculées par le serveur à la réception. Parcours couvert par les tests e2e de
 synchronisation (création liée par `opId`, refus au gardien, occupation sans locataire).
+
+## LM5 : recette émulateur
+
+Les écrans de parité web ont été déroulés sur l'émulateur Android avec l'API
+locale (`EXPO_PUBLIC_API_URL=http://10.0.2.2:3000/api/v1`) et le compte démo
+propriétaire (`690000000` / `demo1234`, cité « Cité Obélix »).
+
+| Écran                        | État                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| Inscription (signup)         | Testé (formulaire bailleur, écran « Créer un compte »)                             |
+| Vue d'ensemble multi-sites   | Testé (synthèse Cité Obélix, détail par site, état de synchronisation)            |
+| Sites                        | Testé (liste, fiche site : coordonnées, facturation, relances automatiques)       |
+| Contrats                     | Testé (liste, fiche : métadonnées, corps HTML rendu en natif, « Ouvrir le PDF »)  |
+| Ouverture du document        | Testé (téléchargement authentifié + ouverture par le lecteur natif du téléphone)  |
+| Comptabilité (OHADA)         | Testé (bascule période, journal équilibré, grand livre 571 Caisse / 706 Loyers)   |
+| Administration               | Testé (quotas du plan, membres actifs, dernières connexions)                      |
+| Journal d'audit              | Testé (filtre Tout/Sensibles, actions tracées, étiquette « sensible »)            |
 
 ## Organisation du code
 
